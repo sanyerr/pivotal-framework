@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How concerning is this signal?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#ffffff; --ink:#1e2330; --muted:#727a89;
+    --line:#e8eaee; --line2:#eef0f3; --accent:#5566e6;
+    --more:#d6564d; --more-bg:#fdecea;
+    --less:#1f9c6d; --less-bg:#e7f6ef;
+    --slight:#c08a1e; --slight-bg:#fbf3e0;
+    --neutral:#8a91a0; --neutral-bg:#f1f2f5;
+    --branch:#8b5cf6; --branch-bg:#f2ecfe;
+    --shadow:0 1px 2px rgba(20,25,40,.04), 0 8px 24px rgba(20,25,40,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1060px;margin:0 auto;padding:34px 22px 70px}
+  header h1{font-size:21px;font-weight:700;letter-spacing:-.02em;margin:0 0 3px}
+  header h1 span{color:var(--muted);font-weight:500}
+  header p{margin:0 0 18px;color:var(--muted);font-size:13.5px;max-width:700px}
+  .views{display:flex;gap:8px;margin-bottom:20px}
+  .views button{font:inherit;font-size:13px;font-weight:600;padding:8px 16px;border-radius:10px;
+    border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;transition:.14s}
+  .views button.active{background:var(--accent);border-color:var(--accent);color:#fff;
+    box-shadow:0 4px 10px rgba(85,102,230,.25)}
+  .layout{display:grid;grid-template-columns:1fr 330px;gap:24px;align-items:start}
+  @media(max-width:840px){.layout{grid-template-columns:1fr}}
+  .rail{display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap}
+  .rail span{font-size:11px;font-weight:500;color:var(--muted);background:#fff;
+    padding:4px 11px;border-radius:20px;border:1px solid var(--line)}
+  .rail span.active{color:#fff;background:var(--accent);border-color:var(--accent);
+    box-shadow:0 4px 10px rgba(85,102,230,.25)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:28px 28px 24px;box-shadow:var(--shadow)}
+  .stage{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);
+    margin-bottom:12px;font-weight:600}
+  .q{font-size:20px;font-weight:600;letter-spacing:-.01em;margin:0 0 8px}
+  .help{color:var(--muted);font-size:13.5px;margin:0 0 20px}
+  .opts{display:flex;flex-direction:column;gap:11px}
+  button.opt{text-align:left;background:#fff;color:var(--ink);border:1px solid var(--line);
+    border-radius:12px;padding:14px 16px;font:inherit;cursor:pointer;transition:.14s;
+    display:flex;justify-content:space-between;align-items:center;gap:14px}
+  button.opt:hover{border-color:var(--accent);box-shadow:0 4px 14px rgba(85,102,230,.12);transform:translateY(-1px)}
+  label.chk{display:flex;align-items:center;gap:11px;background:#fff;color:var(--ink);border:1px solid var(--line);
+    border-radius:12px;padding:13px 16px;font:inherit;cursor:pointer;transition:.14s}
+  label.chk:hover{border-color:var(--accent)}
+  label.chk input{width:16px;height:16px;accent-color:var(--accent);margin:0;flex:none}
+  .tag{font-size:10.5px;padding:3px 9px;border-radius:7px;white-space:nowrap;font-weight:600}
+  .tag.more{background:var(--more-bg);color:var(--more)}
+  .tag.less{background:var(--less-bg);color:var(--less)}
+  .tag.slight{background:var(--slight-bg);color:var(--slight)}
+  .tag.neutral{background:var(--neutral-bg);color:var(--neutral)}
+  .tag.plain{background:var(--neutral-bg);color:var(--muted)}
+  .nav{display:flex;gap:10px;margin-top:22px}
+  .nav button{background:none;border:1px solid var(--line);color:var(--muted);
+    border-radius:9px;padding:8px 14px;font:inherit;font-weight:500;cursor:pointer;transition:.14s}
+  .nav button:hover{color:var(--ink);border-color:var(--accent)}
+  aside{background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:20px 20px 22px;position:sticky;top:22px;box-shadow:var(--shadow)}
+  aside h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);margin:0 0 4px;font-weight:600}
+  aside .sub{font-size:12px;color:var(--muted);margin:0 0 16px}
+  .trail{display:flex;flex-direction:column;gap:10px}
+  .trail .empty{color:var(--muted);font-size:13px;font-style:italic}
+  .chip{border-radius:11px;padding:10px 12px;font-size:13px;border:1px solid var(--line2)}
+  .chip .dir{font-size:10.5px;font-weight:700;letter-spacing:.03em;display:block;margin-bottom:3px;text-transform:uppercase}
+  .chip.more{background:var(--more-bg)} .chip.more .dir{color:var(--more)}
+  .chip.less{background:var(--less-bg)} .chip.less .dir{color:var(--less)}
+  .chip.slight{background:var(--slight-bg)} .chip.slight .dir{color:var(--slight)}
+  .chip.neutral{background:var(--neutral-bg)} .chip.neutral .dir{color:var(--neutral)}
+  .chip small{color:var(--muted);display:block;margin-top:4px;font-size:11px;line-height:1.4}
+  .summary .lead{font-size:15px;color:var(--muted);margin-bottom:16px}
+  .tally{display:flex;gap:12px;margin:4px 0}
+  .tile{flex:1;border-radius:14px;padding:16px 18px;border:1px solid var(--line2)}
+  .tile .n{font-size:30px;font-weight:700;line-height:1}
+  .tile .l{font-size:12px;font-weight:600;margin-top:5px;letter-spacing:.02em}
+  .tile.more{background:var(--more-bg)} .tile.more .n,.tile.more .l{color:var(--more)}
+  .tile.less{background:var(--less-bg)} .tile.less .n,.tile.less .l{color:var(--less)}
+  .tile.neutral{background:var(--neutral-bg)} .tile.neutral .n,.tile.neutral .l{color:var(--neutral)}
+  .note{background:#f8f9fb;border:1px dashed var(--line);border-radius:12px;
+    padding:15px 17px;color:var(--muted);font-size:13px;margin-top:22px}
+  .note b{color:var(--ink)}
+  .ov-branch{margin-bottom:26px}
+  .ov-branch>h3{font-size:15px;font-weight:700;margin:0 0 4px}
+  .ov-branch>p{margin:0 0 12px;color:var(--muted);font-size:13px}
+  details.sec{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    margin-bottom:10px;box-shadow:var(--shadow);overflow:hidden}
+  details.sec>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;
+    align-items:center;padding:14px 18px;font-weight:600;font-size:14px}
+  details.sec>summary::-webkit-details-marker{display:none}
+  details.sec>summary .cnt{font-size:11px;font-weight:600;color:var(--muted);
+    background:var(--neutral-bg);border-radius:20px;padding:2px 10px}
+  details.sec>summary:hover{color:var(--accent)}
+  .ov-body{padding:2px 18px 16px;border-top:1px solid var(--line2)}
+  .oq{padding:11px 0;border-bottom:1px solid var(--line2)}
+  .oq:last-child{border-bottom:none}
+  .oq .oq-q{font-size:13.5px;font-weight:600;margin:0 0 3px}
+  .oq.cond{margin-left:22px;position:relative}
+  .oq.cond .oq-q::before{content:"↳ ";color:var(--branch);font-weight:700}
+  .oq .oq-help{font-size:12px;color:var(--muted);margin:0 0 7px;line-height:1.45}
+  .oq .oq-opts{display:flex;flex-wrap:wrap;gap:6px}
+  .pill{font-size:11.5px;padding:4px 10px;border-radius:8px;font-weight:500;border:1px solid transparent}
+  .pill b{font-weight:700}
+  .pill.more{background:var(--more-bg);color:var(--more)}
+  .pill.less{background:var(--less-bg);color:var(--less)}
+  .pill.slight{background:var(--slight-bg);color:var(--slight)}
+  .pill.neutral{background:var(--neutral-bg);color:var(--neutral)}
+  .pill.plain{background:#fff;color:var(--muted);border-color:var(--line)}
+  .ov-tools{display:flex;gap:8px;margin-bottom:14px}
+  .ov-tools button{font:inherit;font-size:12px;padding:6px 12px;border-radius:8px;
+    border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer}
+  #errbanner{display:none;background:var(--more-bg);color:var(--more);border:1px solid var(--more);
+    border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>How concerning is this signal? <span>— internal-deployment loss of control</span></h1>
+    <p>A thinking aid for people inside a frontier AI company — an internally deployed model has done something that seems
+    concerning, and you want to understand how worrying it really is.</p>
+  </header>
+  <div id="errbanner"></div>
+  <div class="views">
+    <button id="v-walk" class="active">Walkthrough</button>
+    <button id="v-all">All questions</button>
+  </div>
+  <div id="walkview">
+    <div class="rail" id="rail"></div>
+    <div class="layout">
+      <main id="stage"></main>
+      <aside>
+        <h2>What this is telling you</h2>
+        <p class="sub">Each answer, in order. No overall score yet — aggregation is deliberately deferred.</p>
+        <div class="trail" id="trail"><div class="empty">Nothing yet — start answering.</div></div>
+      </aside>
+    </div>
+  </div>
+  <div id="allview" style="display:none"></div>
+</div>
+<script>
+/* ============================================================
+   Framework v3 — single entry (incident) path only.
+   ⚠ MIRRORED PAIR: this tree mirrors "Framework v3 questions.md"
+   (same folder) — keep the two in sync; the `id` fields are the shared keys.
+   Questions grouped by what the signal is about: the model, affordances,
+   the safeguards, the company, at stake. Multi-select red-line follow-ups
+   (multi:true) let one absence breach several requirements at once,
+   with a "not sure" escape.
+   ============================================================ */
+const BRANCHES = {
+  model: {
+    label: "The model as actor — LoC via internal deployment",
+    sections: [
+
+      { name:"The model", qs:[
+        { id:"m_nudge",
+          q:"Was the model explicitly nudged to do bad actions?",
+          options:[
+            {label:"Yes — it was nudged", dir:"less"},
+            {label:"No — it wasn't nudged", dir:"more", next:"m_instructed"}
+          ]},
+        { id:"m_instructed", cond:true,
+          q:"Was the model instructed to not do the action?",
+          options:[
+            {label:"Yes", dir:"more"},
+            {label:"No", tag:"→", tagClass:"plain", next:"m_sens"}
+          ]},
+        { id:"m_sens", cond:true,
+          q:"Would instructions to not do this have worked if it was clear to the model this wouldn't be checked?",
+          options:[
+            {label:"Instructions would likely have stopped it", dir:"less"},
+            {label:"It would likely have done it anyway", dir:"more"},
+            {label:"Unknown / untested", dir:"unsure"}
+          ]},
+        { id:"m_intent",
+          q:"Did the model know that its operators would not actually want it to do the action?",
+          options:[{label:"Yes — it knew", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_goal",
+          q:"Did the model pursue some long-term instrumental objective?",
+          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_obfusc",
+          q:"Did the model attempt to obfuscate its actions?",
+          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_talk",
+          q:"Does the model behave honestly after getting caught?",
+          options:[{label:"Yes — it's frank", dir:"less"},{label:"No — it lies", dir:"more"}]},
+        { id:"m_collateral",
+          q:"Did the model take any actions that caused large amounts of collateral damage?",
+          options:[
+            {label:"Yes", dir:"more"},
+            {label:"No", tag:"→ counterfactual", tagClass:"plain", next:"m_collateral2"}
+          ]},
+        { id:"m_collateral2", cond:true,
+          q:"Would the model have taken any actions that would have caused large amounts of collateral damage, if provided the opportunity?",
+          options:[{label:"Yes — plausibly", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_collude",
+          q:"Did the models collude?",
+          options:[
+            {label:"Yes", dir:"more"},
+            {label:"No", tag:"→ counterfactual", tagClass:"plain", next:"m_collude2"}
+          ]},
+        { id:"m_collude2", cond:true,
+          q:"Would the models have colluded if given the opportunity?",
+          options:[{label:"Yes — plausibly", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_selfrep",
+          q:"Did the model exfiltrate its weights?",
+          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_freq",
+          q:"How often has the model produced behavior like this before?",
+          options:[
+            {label:"This is the first time", dir:"less"},
+            {label:"Rarely", dir:"slight-more"},
+            {label:"Often", dir:"more"}
+          ]},
+        { id:"m_cot",
+          q:"Did anyone find anything concerning in the chain-of-thought?",
+          options:[
+            {label:"Yes — concerning content in the CoT", dir:"more"},
+            {label:"No", tag:"→ obfuscation?", tagClass:"plain", next:"m_cot_obf"}
+          ]},
+        { id:"m_cot_obf", cond:true,
+          q:"Do you have a good reason to believe it might be obfuscating its reasoning?",
+          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_eval_mis",
+          q:"How does the model score on misalignment-related evaluations?",
+          options:[
+            {label:"It scores well", tag:"→ sandbagging?", tagClass:"plain", next:"m_sandbag"},
+            {label:"It scores badly", dir:"more"}
+          ]},
+        { id:"m_sandbag", cond:true,
+          q:"Is there a reason to expect sandbagging?",
+          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_eval_mon",
+          q:"How does the model score on monitorability-related evaluations?",
+          options:[
+            {label:"It scores well", dir:"less"},
+            {label:"It scores badly", dir:"more"}
+          ]},
+        { id:"m_cap",
+          q:"How capable is the model compared to external models?",
+          options:[
+            {label:"Over ~3-month difference", dir:"more"},
+            {label:"Less than that", dir:"less"}
+          ]},
+        { id:"m_rd_cap",
+          q:"Is the model capable of autonomous AI R&D?",
+          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_ara",
+          q:"Is the model capable of autonomous replication?",
+          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]}
+      ]},
+
+      { name:"Affordances", qs:[
+        { id:"m_rd_use",
+          q:"Is the model used for AI R&D?",
+          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_use_safety",
+          q:"Is the model used for safety research?",
+          options:[
+            {label:"Yes", dir:"more"},
+            {label:"No", dir:"less"}
+          ]},
+        { id:"m_inf",
+          q:"What is the proportion of internal inference allocated to the model?",
+          options:[{label:"A lot", dir:"more"},{label:"Not much", dir:"less"}]},
+        { id:"m_autonomy",
+          q:"How autonomous is the model — how long do rollouts generally run unsteered by humans?",
+          options:[
+            {label:"Minutes or less", dir:"less"},
+            {label:"Hours", dir:"slight-more"},
+            {label:"Days or longer", dir:"more"}
+          ]},
+        { id:"m_access",
+          q:"Do only a few people internally have access to the model?",
+          options:[
+            {label:"Yes — only a few", tag:"→ should more?", tagClass:"plain", next:"m_access_more"},
+            {label:"No — broad access", tag:"→ should fewer?", tagClass:"plain", next:"m_access_less"}
+          ]},
+        { id:"m_access_more", cond:true,
+          q:"Should more people have access to it?",
+          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_access_less", cond:true,
+          q:"Should fewer people have access to it?",
+          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]}
+      ]},
+
+      { name:"The safeguards", qs:[
+        { id:"m_ctrl",
+          q:"Were there control mechanisms in place?",
+          options:[
+            {label:"Yes", tag:"→ tested?", tagClass:"plain", next:"m_ctrl_test"},
+            {label:"No, or only partial coverage", tag:"→ required?", tagClass:"plain", next:"m_ctrl_rl"}
+          ]},
+        { id:"m_ctrl_test", cond:true, unsureNext:"m_ctrl_fail",
+          q:"Had the control mechanisms been adversarially tested against — had you explicitly tested whether you can get the model to consistently fool monitors through prompting, fine-tuning, and similar elicitation techniques?",
+          options:[
+            {label:"Yes", dir:"less", next:"m_ctrl_fail"},
+            {label:"No", dir:"more", next:"m_ctrl_fail"}
+          ]},
+        { id:"m_ctrl_fail", cond:true,
+          q:"Did a control mechanism the lab was confident in fail?",
+          options:[{label:"Yes — a trusted control failed", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_ctrl_rl", cond:true, multi:true,
+          q:"Was a control mechanism required — and if so, what did its absence breach? (select all that apply)",
+          options:[
+            {label:"A law", dir:"more"},
+            {label:"A company policy or commitment", dir:"more"},
+            {label:"An external standard", dir:"slight-more"},
+            {label:"Nothing required it", dir:"neutral"},
+            {label:"Not sure", dir:"unsure"}
+          ]},
+        { id:"m_hitl",
+          q:"Were there human-in-the-loop requirements?",
+          options:[
+            {label:"Yes", tag:"→ did they know?", tagClass:"plain", next:"m_hitl_know"},
+            {label:"No", dir:"more"}
+          ]},
+        { id:"m_hitl_know", cond:true,
+          q:"Did the human involved know what was going on?",
+          options:[{label:"Yes", dir:"less"},{label:"No", dir:"more"}]},
+        { id:"m_monitored",
+          q:"Was the model being monitored?",
+          options:[
+            {label:"Yes", tag:"→ did it catch this?", tagClass:"plain", next:"m_mon_caught"},
+            {label:"No", tag:"→ required?", tagClass:"plain", next:"m_mon_rl"}
+          ]},
+        { id:"m_mon_caught", cond:true,
+          q:"Was it caught through the monitoring?",
+          options:[
+            {label:"Yes", dir:"less"},
+            {label:"No — it was caught some other way", dir:"more"}
+          ]},
+        { id:"m_mon_rl", cond:true, multi:true,
+          q:"Was monitoring required — and if so, what did its absence breach? (select all that apply)",
+          options:[
+            {label:"A law", dir:"more"},
+            {label:"A company policy or commitment", dir:"more"},
+            {label:"An external standard", dir:"slight-more"},
+            {label:"Nothing required it", dir:"neutral"},
+            {label:"Not sure", dir:"unsure"}
+          ]}
+      ]},
+
+      { name:"The company", qs:[
+        { id:"m_ident",
+          q:"Was the possibility of this kind of behavior identified in the lab beforehand?",
+          options:[
+            {label:"Yes — it was anticipated", dir:"less"},
+            {label:"No — it blindsided the lab", dir:"more"}
+          ]},
+        { id:"m_plan",
+          q:"Did the company have a planned response for this incident?",
+          options:[
+            {label:"Yes", tag:"→ followed?", tagClass:"plain", next:"m_plan_follow"},
+            {label:"No", dir:"more"}
+          ]},
+        { id:"m_plan_follow", cond:true,
+          q:"Did the company follow the plan?",
+          options:[
+            {label:"Yes", tag:"→ did it work?", tagClass:"plain", next:"m_plan_work"},
+            {label:"No", dir:"more"}
+          ]},
+        { id:"m_plan_work", cond:true,
+          q:"Did the plan work as it was supposed to work?",
+          options:[{label:"Yes", dir:"less"},{label:"No", dir:"more"}]},
+        { id:"m_resp1",
+          q:"What was the company's response overall?",
+          options:[
+            {label:"A serious response", tag:"→", tagClass:"plain", next:"m_resp_ug"},
+            {label:"A bad / dismissive response", tag:"→", tagClass:"plain", next:"m_resp_ub"}
+          ]},
+        { id:"m_resp_ug", cond:true,
+          q:"How unified was the company on the response?",
+          options:[{label:"Unified behind it", dir:"less"},{label:"Contested inside", dir:"slight-more"}]},
+        { id:"m_resp_ub", cond:true,
+          q:"How unified was the company on the response?",
+          options:[{label:"Unified behind it", dir:"more"},{label:"Contested inside", dir:"slight-less"}]},
+        { id:"m_resp_comm",
+          q:"How does the company communicate about the incident publicly?",
+          options:[
+            {label:"Public story contradicts what insiders know", dir:"more"},
+            {label:"Public and internal are in harmony", dir:"less"},
+            {label:"Silence", dir:"slight-more"}
+          ]},
+        { id:"m_resp_live",
+          q:"Is the cause of the problem still live?",
+          options:[{label:"Yes — still active", dir:"more"},{label:"No — resolved", dir:"less"}]},
+        { id:"m_resp_rl", multi:true,
+          q:"Did the company's handling of the incident cross a red line — retaliation, restrictive NDAs, records destroyed, a required disclosure withheld? If so, what did it breach? (select all that apply)",
+          options:[
+            {label:"A law", dir:"more"},
+            {label:"A company policy or commitment", dir:"more"},
+            {label:"An external standard", dir:"slight-more"},
+            {label:"No red line crossed", dir:"neutral"},
+            {label:"Not sure", dir:"unsure"}
+          ]},
+        { id:"m_learn_upd",
+          q:"Has the company reviewed and updated their practices as a result of the incident, or is it planning to do so?",
+          options:[
+            {label:"Yes", tag:"→ promising?", tagClass:"plain", next:"m_learn_upd_y"},
+            {label:"No", tag:"→ should it?", tagClass:"plain", next:"m_learn_upd_n"}
+          ]},
+        { id:"m_learn_upd_y", cond:true,
+          q:"Was the update promising to you?",
+          options:[{label:"Yes", dir:"less"},{label:"No", dir:"more"}]},
+        { id:"m_learn_upd_n", cond:true,
+          q:"Do you believe practices should be updated?",
+          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_learn_inq",
+          q:"Is open inquiry about the incident and the response allowed?",
+          options:[{label:"Yes", dir:"less"},{label:"No — inquiry is discouraged", dir:"more"}]},
+        { id:"m_learn_ack",
+          q:"Are the people who predicted this acknowledged for it?",
+          options:[{label:"Yes", dir:"less"},{label:"No — or they were sidelined", dir:"more"}]},
+        { id:"m_learn_review",
+          q:"Did the company carry out a post-incident review?",
+          options:[
+            {label:"Yes", dir:"less"},
+            {label:"No", tag:"→ required?", tagClass:"plain", next:"m_learn_rl"}
+          ]},
+        { id:"m_learn_rl", cond:true, multi:true,
+          q:"Was a post-incident review required — and if so, what did its absence breach? (select all that apply)",
+          options:[
+            {label:"A law", dir:"more"},
+            {label:"A company policy or commitment", dir:"more"},
+            {label:"An external standard", dir:"slight-more"},
+            {label:"Nothing required it", dir:"neutral"},
+            {label:"Not sure", dir:"unsure"}
+          ]},
+        { id:"m_others",
+          q:"Are others in your company also worried about this?",
+          options:[{label:"Yes", dir:"more"},{label:"No — you seem alone", dir:"neutral"}]}
+      ]},
+
+      { name:"At stake", qs:[
+        { id:"m_sev_now",
+          q:"How severe was the harm the incident actually caused?",
+          options:[{label:"Severe", dir:"more"},{label:"Limited", dir:"less"}]},
+        { id:"m_pers_now",
+          q:"Is the harm it caused persistent (hard to reverse or contain)?",
+          options:[{label:"Yes", dir:"more"},{label:"No — reversible", dir:"less"}]},
+        { id:"m_sev_cf",
+          q:"If every safeguard had failed, how severe could the harm have been?",
+          options:[{label:"Severe", dir:"more"},{label:"Limited", dir:"less"}]},
+        { id:"m_pers_cf",
+          q:"If every safeguard had failed, could the harm have been persistent (hard to reverse or contain)?",
+          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_grow",
+          q:"Will the underlying problem grow as capabilities scale?",
+          options:[{label:"Yes — it gets worse over time", dir:"more"},{label:"No — it's bounded", dir:"less"}]}
+      ]}
+    ]
+  }
+};
+
+/* ---------- build the walkthrough nodes ---------- */
+function buildNodes(){
+  const N={};
+  for(const bid in BRANCHES){
+    const flat=[];
+    BRANCHES[bid].sections.forEach(s=>s.qs.forEach(q=>flat.push(Object.assign({},q,{stage:s.name}))));
+    flat.forEach((q,i)=>{
+      let def="END";
+      for(let j=i+1;j<flat.length;j++){ if(!flat[j].cond){def=flat[j].id;break;} }
+      const withUnsure=(list)=>{
+        const out=list.map(o=>Object.assign({},o,{next:o.next||def}));
+        if(!list.some(o=>/^(unknown|unsure)/i.test(o.label)))
+          out.push({label:"Unsure / can't tell", dir:"unsure", next:q.unsureNext||def});
+        return out;
+      };
+      N[q.id]={stage:q.stage,branch:bid,q:q.q,help:q.help,def:def,multi:!!q.multi,
+        options: q.multi ? q.options.map(o=>Object.assign({},o)) : withUnsure(q.options)};
+    });
+  }
+  return N;
+}
+const NODES=buildNodes();
+
+/* ---------- integrity self-check ---------- */
+(function(){
+  const bad=[];
+  for(const id in NODES){
+    if(NODES[id].multi) continue;
+    NODES[id].options.forEach(o=>{ if(o.next!=="END" && !NODES[o.next]) bad.push(id+" → "+o.next); });
+  }
+  if(bad.length){
+    const b=document.getElementById('errbanner');
+    b.style.display='block'; b.textContent="Broken routing: "+bad.join(", ");
+  }
+})();
+
+const DIRLABEL={"more":"More concerning","less":"Less concerning","slight-more":"Slightly more concerning","slight-less":"Slightly less concerning","neutral":"No strong pull","unsure":"Unsure"};
+const ARROW={"more":"↑ ","less":"↓ ","slight-more":"↑ ","slight-less":"↓ ","neutral":"• ","unsure":"? "};
+const DIRCLASS={"more":"more","less":"less","slight-more":"slight","slight-less":"slight","neutral":"neutral","unsure":"neutral"};
+const ORDER={"more":4,"slight-more":3,"neutral":2,"less":1,"unsure":0};
+
+let history=[], trail=[], current="start";
+const stageEl=document.getElementById('stage'), trailEl=document.getElementById('trail'), railEl=document.getElementById('rail');
+
+function railStages(){ return BRANCHES.model.sections.map(s=>s.name); }
+function renderRail(node){
+  railEl.innerHTML=railStages().map(s=>{
+    const active=node&&node.stage===s;
+    return `<span class="${active?'active':''}">${s}</span>`;
+  }).join('');
+}
+function tagFor(o){
+  if(o.dir&&!o.tag) return `<span class="tag ${DIRCLASS[o.dir]}">${ARROW[o.dir]}${DIRLABEL[o.dir].replace(' concerning','')}</span>`;
+  if(o.tag) return `<span class="tag ${o.tagClass||'plain'}">${o.tag}</span>`;
+  return '';
+}
+function navHtml(){ return `<div class="nav">${history.length?`<button id="back">← Back</button>`:''}<button id="restart">Restart</button></div>`; }
+function wireNav(){ const b=document.getElementById('back'); if(b) b.onclick=goBack; document.getElementById('restart').onclick=reset; }
+
+function renderNode(id){
+  current=id;
+  if(id==="END") return renderSummary();
+  const node=NODES[id];
+  renderRail(node);
+  if(node.multi){
+    stageEl.innerHTML=`
+      <div class="card">
+        <div class="stage">${node.stage}</div>
+        <p class="q">${node.q}</p>
+        ${node.help?`<p class="help">${node.help}</p>`:''}
+        <div class="opts">
+          ${node.options.map((o,i)=>`<label class="chk"><input type="checkbox" data-i="${i}"><span>${o.label}</span></label>`).join('')}
+        </div>
+        <div class="opts" style="margin-top:12px">
+          <button class="opt" id="msContinue" style="justify-content:center;border-color:var(--accent);color:var(--accent);font-weight:600">Continue →</button>
+        </div>
+        ${navHtml()}
+      </div>`;
+    document.getElementById('msContinue').onclick=()=>{
+      const checked=[...stageEl.querySelectorAll('.chk input:checked')].map(c=>node.options[+c.dataset.i]);
+      let dir='unsure';
+      checked.forEach(o=>{ if(ORDER[o.dir]>ORDER[dir]) dir=o.dir; });
+      if(!checked.length) dir='unsure';
+      const answer = checked.length ? checked.map(o=>o.label).join(', ') : 'Nothing selected';
+      history.push(id);
+      trail.push({q:node.q, answer, dir});
+      renderTrail();
+      renderNode(node.def);
+    };
+    wireNav(); return;
+  }
+  const opts=node.options;
+  stageEl.innerHTML=`
+    <div class="card">
+      <div class="stage">${node.stage}</div>
+      <p class="q">${node.q}</p>
+      ${node.help?`<p class="help">${node.help}</p>`:''}
+      <div class="opts">
+        ${opts.map((o,i)=>`<button class="opt" data-i="${i}"><span>${o.label}</span>${tagFor(o)}</button>`).join('')}
+      </div>
+      ${navHtml()}
+    </div>`;
+  stageEl.querySelectorAll('.opt').forEach(btn=>{
+    btn.onclick=()=>{
+      const o=opts[+btn.dataset.i];
+      history.push(id);
+      trail.push({q:node.q, answer:o.label, dir:o.dir||null});
+      renderTrail();
+      renderNode(o.next);
+    };
+  });
+  wireNav();
+}
+function renderTrail(){
+  const shown=trail.filter(t=>t.dir);
+  if(!shown.length){trailEl.innerHTML=`<div class="empty">Nothing yet — start answering.</div>`;return;}
+  trailEl.innerHTML=shown.map(t=>`<div class="chip ${DIRCLASS[t.dir]}"><span class="dir">${DIRLABEL[t.dir]}</span>${t.answer}<small>${t.q}</small></div>`).join('');
+}
+function renderSummary(){
+  renderRail(null);
+  const scored=trail.filter(t=>t.dir);
+  const more=trail.filter(t=>t.dir==='more'||t.dir==='slight-more').length;
+  const less=trail.filter(t=>t.dir==='less'||t.dir==='slight-less').length;
+  const neutral=trail.filter(t=>t.dir==='neutral').length;
+  const unsure=trail.filter(t=>t.dir==='unsure').length;
+  stageEl.innerHTML=`
+    <div class="card summary">
+      <div class="stage">Summary</div>
+      <p class="q">Scope: the model as actor — internal deployment</p>
+      <p class="lead">${scored.length} reading${scored.length===1?'':'s'} collected — here's how they split.</p>
+      <div class="tally">
+        <div class="tile more"><div class="n">${more}</div><div class="l">Concerning</div></div>
+        <div class="tile less"><div class="n">${less}</div><div class="l">Reassuring</div></div>
+        <div class="tile neutral"><div class="n">${neutral}</div><div class="l">Neutral</div></div>
+        <div class="tile neutral"><div class="n">${unsure}</div><div class="l">Unsure</div></div>
+      </div>
+      <div class="note"><b>A count, not a weighted verdict.</b> Every answer is tallied equally — there's no rule yet for which considerations matter more, and follow-up questions make some paths longer than others. Unsure answers are counted apart on purpose: a pile of them says something about what you can't see from where you sit.</div>
+      ${navHtml()}
+    </div>`;
+  wireNav();
+}
+function showIntro(){
+  history=[];trail=[];renderTrail();renderRail(null);
+  stageEl.innerHTML=`
+    <div class="card">
+      <div class="stage">About this tool</div>
+      <p class="q">How concerning is this signal?</p>
+      <p class="help" style="font-size:14.5px;margin-bottom:16px">A thinking aid for people inside a frontier AI company who have noticed something and want to work out <b style="color:var(--ink)">how worrying it actually is</b>.</p>
+      <p class="help" style="margin-bottom:14px">This tool focuses on situations where a model deployed inside your company has done something concerning. These questions help you weigh how worrying it really is, all things considered.</p>
+      <p class="help" style="margin-bottom:14px">The questions are grouped by <b style="color:var(--ink)">what the signal is about</b> — <b style="color:var(--ink)">the model</b>, its <b style="color:var(--ink)">affordances</b>, <b style="color:var(--ink)">the safeguards</b> around it, <b style="color:var(--ink)">the company's</b> conduct, and <b style="color:var(--ink)">what's at stake</b>. Use the <b style="color:var(--ink)">All questions</b> tab to see the whole structure.</p>
+      <div class="opts"><button class="opt" id="begin" style="justify-content:center;border-color:var(--accent);color:var(--accent);font-weight:600">Begin →</button></div>
+    </div>`;
+  document.getElementById('begin').onclick=()=>{renderNode(BRANCHES.model.sections[0].qs[0].id);};
+}
+function goBack(){ if(!history.length) return showIntro(); const prev=history.pop();trail.pop();renderTrail();renderNode(prev); }
+function reset(){showIntro();}
+
+/* ---------- overview ---------- */
+function optPill(o){
+  const cls=o.dir?DIRCLASS[o.dir]:'plain';
+  const suffix=o.dir?` <b>${ARROW[o.dir]}${DIRLABEL[o.dir].replace(' concerning','')}</b>`:(o.tag?` <b>${o.tag}</b>`:'');
+  return `<span class="pill ${cls}">${o.label}${suffix}</span>`;
+}
+function renderAll(){
+  const el=document.getElementById('allview');
+  let html=`<div class="ov-tools"><button id="exp">Expand all</button><button id="col">Collapse all</button></div>`;
+  const b=BRANCHES.model;
+  html+=`<div class="ov-branch"><h3>The model as actor — loss of control via internal deployment</h3><p>Grouped by what the signal is about. Multi-select questions (marked) let one absence breach several requirements at once. Every non-multi question also carries an automatic "Unsure / can't tell" option.</p>`;
+  b.sections.forEach(s=>{
+    html+=`<details class="sec"><summary>${s.name}<span class="cnt">${s.qs.length} question${s.qs.length===1?'':'s'}</span></summary><div class="ov-body">`;
+    s.qs.forEach(q=>{
+      html+=`<div class="oq ${q.cond?'cond':''}"><p class="oq-q">${q.q}${q.multi?' <span class="pill plain" style="font-weight:600">select all</span>':''}</p>${q.help?`<p class="oq-help">${q.help}</p>`:''}<div class="oq-opts">${q.options.map(optPill).join('')}</div></div>`;
+    });
+    html+=`</div></details>`;
+  });
+  html+=`</div>`;
+  el.innerHTML=html;
+  document.getElementById('exp').onclick=()=>el.querySelectorAll('details').forEach(d=>d.open=true);
+  document.getElementById('col').onclick=()=>el.querySelectorAll('details').forEach(d=>d.open=false);
+}
+const walkBtn=document.getElementById('v-walk'), allBtn=document.getElementById('v-all');
+const walkView=document.getElementById('walkview'), allView=document.getElementById('allview');
+walkBtn.onclick=()=>{walkBtn.classList.add('active');allBtn.classList.remove('active');walkView.style.display='';allView.style.display='none';};
+allBtn.onclick=()=>{allBtn.classList.add('active');walkBtn.classList.remove('active');walkView.style.display='none';allView.style.display='';};
+renderAll();
+showIntro();
+</script>
+</body>
+</html>
