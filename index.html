@@ -417,9 +417,19 @@ const BRANCHES = {
         { id:"m_learn_inq",
           q:"Is open inquiry about the incident and the response allowed?",
           options:[{label:"Yes", dir:"less"},{label:"No — inquiry is discouraged", dir:"more"}]},
-        { id:"m_learn_ack",
-          q:"Are the people who predicted this acknowledged for it?",
-          options:[{label:"Yes", dir:"less"},{label:"No — or they were sidelined", dir:"more"}]},
+        { id:"m_alarm",
+          q:"Has anyone raised an alarm about this before?",
+          options:[
+            {label:"Yes", tag:"→ how were they treated?", tagClass:"plain", next:"m_alarm_treat"},
+            {label:"No", dir:"neutral"}
+          ]},
+        { id:"m_alarm_treat", cond:true,
+          q:"How was the person who first raised the alarm treated?",
+          options:[
+            {label:"Praised / their concern was escalated", dir:"less"},
+            {label:"Neglected / the concern was quietly dropped", dir:"slight-more"},
+            {label:"Threatened / sidelined", dir:"more"}
+          ]},
         { id:"m_learn_review",
           q:"Did the company carry out a post-incident review?",
           options:[
