@@ -224,7 +224,8 @@ const BRANCHES = {
           q:"Did anyone find anything concerning in the chain-of-thought?",
           options:[
             {label:"Yes — concerning content in the CoT", dir:"more"},
-            {label:"No", tag:"→ obfuscation?", tagClass:"plain", next:"m_cot_obf"}
+            {label:"No", tag:"→ obfuscation?", tagClass:"plain", next:"m_cot_obf"},
+            {label:"Nobody reviewed the chain-of-thought", dir:"more"}
           ]},
         { id:"m_cot_obf", cond:true,
           q:"Do you have a good reason to believe it might be obfuscating its reasoning?",
@@ -233,7 +234,8 @@ const BRANCHES = {
           q:"How does the model score on misalignment-related evaluations?",
           options:[
             {label:"It scores well", tag:"→ sandbagging?", tagClass:"plain", next:"m_sandbag"},
-            {label:"It scores badly", dir:"more"}
+            {label:"It scores badly", dir:"more"},
+            {label:"It wasn't evaluated for this", dir:"more"}
           ]},
         { id:"m_sandbag", cond:true,
           q:"Is there a reason to expect sandbagging?",
@@ -242,7 +244,8 @@ const BRANCHES = {
           q:"How does the model score on monitorability-related evaluations?",
           options:[
             {label:"It scores well", dir:"less"},
-            {label:"It scores badly", dir:"more"}
+            {label:"It scores badly", dir:"more"},
+            {label:"It wasn't evaluated for this", dir:"more"}
           ]},
         { id:"m_cap",
           q:"How capable is the model compared to external models?",
@@ -252,10 +255,18 @@ const BRANCHES = {
           ]},
         { id:"m_rd_cap",
           q:"Is the model capable of autonomous AI R&D?",
-          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
+          options:[
+            {label:"Yes", dir:"more"},
+            {label:"No", dir:"less"},
+            {label:"It wasn't evaluated for this", dir:"more"}
+          ]},
         { id:"m_ara",
           q:"Is the model capable of autonomous replication?",
-          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]}
+          options:[
+            {label:"Yes", dir:"more"},
+            {label:"No", dir:"less"},
+            {label:"It wasn't evaluated for this", dir:"more"}
+          ]}
       ]},
 
       { name:"Affordances", qs:[
