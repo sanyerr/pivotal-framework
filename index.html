@@ -213,12 +213,14 @@ const BRANCHES = {
         { id:"m_goal",
           q:"Did the model pursue some long-term instrumental objective?",
           options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_obfusc",
-          q:"Did the model attempt to obfuscate its actions?",
-          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_talk",
-          q:"Does the model behave honestly after getting caught?",
-          options:[{label:"Yes — it's frank", dir:"less"},{label:"No — it lies", dir:"more"}]},
+        { id:"m_deceive", multi:true,
+          q:"Did the model attempt to deceive? (select all that apply)",
+          options:[
+            {label:"It obfuscated its actions", dir:"more"},
+            {label:"It lies when questioned after getting caught", dir:"more"},
+            {label:"Neither", dir:"less"},
+            {label:"Not sure", dir:"unsure"}
+          ]},
         { id:"m_collateral",
           q:"Did the model take any actions that caused large amounts of collateral damage?",
           options:[
@@ -228,7 +230,13 @@ const BRANCHES = {
         { id:"m_collateral2", cond:true,
           q:"Would the model have taken any actions that would have caused large amounts of collateral damage, if provided the opportunity?",
           options:[{label:"Yes — plausibly", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_collude",
+        { id:"m_multi",
+          q:"Were there multiple models involved?",
+          options:[
+            {label:"Yes", tag:"→ did they collude?", tagClass:"plain", next:"m_collude"},
+            {label:"No", dir:"neutral"}
+          ]},
+        { id:"m_collude", cond:true,
           q:"Did the models collude?",
           options:[
             {label:"Yes", dir:"more"},
@@ -422,7 +430,7 @@ const BRANCHES = {
           q:"How unified was the company on the response?",
           options:[{label:"Unified behind it", dir:"more"},{label:"Contested inside", dir:"slight-less"}]},
         { id:"m_resp_comm",
-          q:"How does the company communicate about the incident publicly?",
+          q:"How does the company communicate about the incident publicly, if at all?",
           options:[
             {label:"Public story contradicts what insiders know", dir:"more"},
             {label:"Public and internal are in harmony", dir:"less"},
