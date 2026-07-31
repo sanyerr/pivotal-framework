@@ -59,6 +59,21 @@
   .tag.slight{background:var(--slight-bg);color:var(--slight)}
   .tag.neutral{background:var(--neutral-bg);color:var(--neutral)}
   .tag.plain{background:var(--neutral-bg);color:var(--muted)}
+  .notebox{margin:0 0 18px}
+  .noteToggle{font:inherit;font-size:12.5px;font-weight:500;color:var(--muted);background:#fff;
+    border:1px dashed var(--line);border-radius:10px;padding:7px 13px;cursor:pointer;transition:.14s}
+  .noteToggle:hover{color:var(--accent);border-color:var(--accent)}
+  .noteWrap .noteLbl{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+  .noteWrap textarea{width:100%;font:inherit;font-size:13.5px;color:var(--ink);background:#fdfdfe;
+    border:1px solid var(--line);border-radius:12px;padding:11px 13px;resize:vertical;min-height:74px}
+  .noteWrap textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(85,102,230,.10)}
+  .notelist{margin:20px 0 0;display:flex;flex-direction:column;gap:12px}
+  .notelist .ni{border:1px solid var(--line2);border-radius:12px;padding:12px 14px;background:#fbfbfd}
+  .notelist .ni .niq{font-size:12.5px;font-weight:600;color:var(--muted);margin:0 0 5px}
+  .notelist .ni .nia{font-size:11.5px;color:var(--muted);margin:0 0 6px}
+  .notelist .ni .nit{font-size:13.5px;white-space:pre-wrap;margin:0}
+  .chip .note-in-chip{display:block;margin-top:6px;font-size:12px;color:var(--ink);
+    white-space:pre-wrap;border-left:2px solid var(--line);padding-left:8px}
   .nav{display:flex;gap:10px;margin-top:22px}
   .nav button{background:none;border:1px solid var(--line);color:var(--muted);
     border-radius:9px;padding:8px 14px;font:inherit;font-weight:500;cursor:pointer;transition:.14s}
@@ -76,6 +91,12 @@
   .chip.slight{background:var(--slight-bg)} .chip.slight .dir{color:var(--slight)}
   .chip.neutral{background:var(--neutral-bg)} .chip.neutral .dir{color:var(--neutral)}
   .chip small{color:var(--muted);display:block;margin-top:4px;font-size:11px;line-height:1.4}
+  .chip .cq{display:block;color:var(--muted);font-size:11.5px;line-height:1.4;margin-bottom:5px}
+  .chip .ca{display:block;font-size:13px;font-weight:500}
+  .dlrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:2px}
+  .dlrow .dl{font:inherit;font-size:13px;font-weight:600;padding:11px 18px;border-radius:11px;
+    border:1px solid var(--accent);background:#fff;color:var(--accent);cursor:pointer;transition:.14s}
+  .dlrow .dl:hover{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(85,102,230,.22)}
   .summary .lead{font-size:15px;color:var(--muted);margin-bottom:16px}
   .tally{display:flex;gap:12px;margin:4px 0}
   .tile{flex:1;border-radius:14px;padding:16px 18px;border:1px solid var(--line2)}
@@ -518,13 +539,45 @@ const NODES=buildNodes();
   }
 })();
 
+/* ---------- display switches ----------
+   Nothing about how an answer is read, or where it leads, is shown while
+   answering — both steer the answer. Directions are still recorded and still
+   drive the summary tally; routing still happens. Flip any to true to show.
+     options  — the ↑ more / ↓ less tag on each answer button
+     routing  — the "→ follow-up" hint on answers that open a follow-up
+     trail    — the direction label/colour on the sidebar chips
+     overview — the coloured pills in the "All questions" tab (documentation,
+                not a question being answered — left on)                     */
+const SHOW={options:false, routing:false, trail:false, overview:true};
+
 const DIRLABEL={"more":"More concerning","less":"Less concerning","slight-more":"Slightly more concerning","slight-less":"Slightly less concerning","neutral":"No strong pull","unsure":"Unsure"};
 const ARROW={"more":"↑ ","less":"↓ ","slight-more":"↑ ","slight-less":"↓ ","neutral":"• ","unsure":"? "};
 const DIRCLASS={"more":"more","less":"less","slight-more":"slight","slight-less":"slight","neutral":"neutral","unsure":"neutral"};
 const ORDER={"more":4,"slight-more":3,"neutral":2,"less":1,"unsure":0};
 
 let history=[], trail=[], current="start";
+/* per-question free-text notes, keyed by node id. Lives in this tab only:
+   never sent anywhere, never persisted — gone when the page is closed. */
+let notes={};
 const stageEl=document.getElementById('stage'), trailEl=document.getElementById('trail'), railEl=document.getElementById('rail');
+
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function noteHtml(id){
+  const val=notes[id]||'', open=!!val;
+  return `<div class="notebox">
+      <button type="button" class="noteToggle" id="noteToggle"${open?' style="display:none"':''}>＋ Add a note (optional)</button>
+      <div class="noteWrap" id="noteWrap"${open?'':' hidden'}>
+        <label class="noteLbl" for="noteInput">Anything you want to record about this — context, detail, what you're unsure about. Shown back to you at the end. Nothing is stored or sent anywhere.</label>
+        <textarea id="noteInput" rows="3" placeholder="Optional">${esc(val)}</textarea>
+      </div>
+    </div>`;
+}
+function wireNote(id){
+  const t=document.getElementById('noteToggle'), w=document.getElementById('noteWrap'), i=document.getElementById('noteInput');
+  if(t) t.onclick=()=>{t.style.display='none';w.hidden=false;i.focus();};
+  if(i) i.oninput=()=>{notes[id]=i.value;};
+}
+function takeNote(id){ return (notes[id]||'').trim(); }
 
 function railStages(){ return BRANCHES.model.sections.map(s=>s.name); }
 function renderRail(node){
@@ -534,8 +587,9 @@ function renderRail(node){
   }).join('');
 }
 function tagFor(o){
-  if(o.dir&&!o.tag) return `<span class="tag ${DIRCLASS[o.dir]}">${ARROW[o.dir]}${DIRLABEL[o.dir].replace(' concerning','')}</span>`;
-  if(o.tag) return `<span class="tag ${o.tagClass||'plain'}">${o.tag}</span>`;
+  if(o.dir&&!o.tag) return SHOW.options
+    ? `<span class="tag ${DIRCLASS[o.dir]}">${ARROW[o.dir]}${DIRLABEL[o.dir].replace(' concerning','')}</span>` : '';
+  if(o.tag) return SHOW.routing ? `<span class="tag ${o.tagClass||'plain'}">${o.tag}</span>` : '';
   return '';
 }
 function navHtml(){ return `<div class="nav">${history.length?`<button id="back">← Back</button>`:''}<button id="restart">Restart</button></div>`; }
@@ -552,6 +606,7 @@ function renderNode(id){
         <div class="stage">${node.stage}</div>
         <p class="q">${node.q}</p>
         ${node.help?`<p class="help">${node.help}</p>`:''}
+        ${noteHtml(id)}
         <div class="opts">
           ${node.options.map((o,i)=>`<label class="chk"><input type="checkbox" data-i="${i}"><span>${o.label}</span></label>`).join('')}
         </div>
@@ -567,11 +622,11 @@ function renderNode(id){
       if(!checked.length) dir='unsure';
       const answer = checked.length ? checked.map(o=>o.label).join(', ') : 'Nothing selected';
       history.push(id);
-      trail.push({q:node.q, answer, dir});
+      trail.push({stage:node.stage, q:node.q, answer, dir, note:takeNote(id)});
       renderTrail();
       renderNode(node.def);
     };
-    wireNav(); return;
+    wireNote(id); wireNav(); return;
   }
   const opts=node.options;
   stageEl.innerHTML=`
@@ -579,6 +634,7 @@ function renderNode(id){
       <div class="stage">${node.stage}</div>
       <p class="q">${node.q}</p>
       ${node.help?`<p class="help">${node.help}</p>`:''}
+      ${noteHtml(id)}
       <div class="opts">
         ${opts.map((o,i)=>`<button class="opt" data-i="${i}"><span>${o.label}</span>${tagFor(o)}</button>`).join('')}
       </div>
@@ -588,17 +644,69 @@ function renderNode(id){
     btn.onclick=()=>{
       const o=opts[+btn.dataset.i];
       history.push(id);
-      trail.push({q:node.q, answer:o.label, dir:o.dir||null});
+      trail.push({stage:node.stage, q:node.q, answer:o.label, dir:o.dir||null, note:takeNote(id)});
       renderTrail();
       renderNode(o.next);
     };
   });
-  wireNav();
+  wireNote(id); wireNav();
 }
 function renderTrail(){
-  const shown=trail.filter(t=>t.dir);
+  const shown = SHOW.trail ? trail.filter(t=>t.dir) : trail;
   if(!shown.length){trailEl.innerHTML=`<div class="empty">Nothing yet — start answering.</div>`;return;}
-  trailEl.innerHTML=shown.map(t=>`<div class="chip ${DIRCLASS[t.dir]}"><span class="dir">${DIRLABEL[t.dir]}</span>${t.answer}<small>${t.q}</small></div>`).join('');
+  trailEl.innerHTML=shown.map(t=>{
+    const n=t.note?`<span class="note-in-chip">${esc(t.note)}</span>`:'';
+    const body=`<span class="cq">${esc(t.q)}</span><span class="ca">${esc(t.answer)}</span>${n}`;
+    return SHOW.trail
+      ? `<div class="chip ${DIRCLASS[t.dir]}"><span class="dir">${DIRLABEL[t.dir]}</span>${body}</div>`
+      : `<div class="chip neutral">${body}</div>`;
+  }).join('');
+}
+/* ---------- take your answers with you ----------
+   Built and saved entirely in the browser: a Blob and an <a download> click,
+   no network, no storage. What the file contains is what the screen showed —
+   so per-answer directions go in only if SHOW.trail is on.               */
+function stamp(){const d=new Date(),p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;}
+function saveFile(name,mime,text){
+  const url=URL.createObjectURL(new Blob([text],{type:mime}));
+  const a=document.createElement('a'); a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+/* Which of the four columns an answer counts +1 towards. Same collapse the
+   on-screen tally uses: "slightly more" counts in Concerning like "more" —
+   the slight/full distinction is recorded but deliberately not weighted. */
+const COL={"more":"Concerning","slight-more":"Concerning","less":"Reassuring",
+           "slight-less":"Reassuring","neutral":"Neutral","unsure":"Unsure"};
+const COLS=["Concerning","Reassuring","Neutral","Unsure"];
+function counts(){
+  const c={Concerning:0,Reassuring:0,Neutral:0,Unsure:0,uncounted:0};
+  trail.forEach(t=>{ t.dir?c[COL[t.dir]]++:c.uncounted++; });
+  return c;
+}
+function asMarkdown(){
+  const c=counts(); let out=`# How concerning is this signal? — your answers\n\n`;
+  out+=`Scope: the model as actor — loss of control via internal deployment. Completed ${stamp()}.\n\n`;
+  out+=`This file was written by your browser and never left it.\n\n`;
+  out+=`## Tally\n\n| Reading | Count |\n| --- | ---: |\n`;
+  COLS.forEach(k=>{out+=`| ${k} | ${c[k]} |\n`;});
+  if(c.uncounted) out+=`| Not counted (routing answers) | ${c.uncounted} |\n`;
+  out+=`\n**A count, not a weighted verdict.** Every answer below carries a \`+1\` towards exactly one of the four columns, so you can recount them yourself. There is no rule yet for which considerations matter more, and follow-up questions make some paths longer than others. Unsure answers are counted apart on purpose: a pile of them says something about what you can't see from where you sit.\n`;
+  let stage=null;
+  trail.forEach(t=>{
+    if(t.stage!==stage){stage=t.stage; out+=`\n## ${stage}\n`;}
+    const mark=t.dir?`+1 ${COL[t.dir]}${/^slight/.test(t.dir)?' (slightly)':''}`:'not counted';
+    out+=`\n**${t.q}**\n\n${t.answer}  \n\`${mark}\`\n`;
+    if(t.note) out+=`\n> ${t.note.replace(/\n/g,'\n> ')}\n`;
+  });
+  return out;
+}
+function wireDownloads(){
+  const md=document.getElementById('dlmd');
+  if(md) md.onclick=()=>saveFile(
+    `how concerning is this signal ${stamp().replace(/[: ]/g,'-')}.md`,
+    'text/markdown;charset=utf-8', asMarkdown());
 }
 function renderSummary(){
   renderRail(null);
@@ -607,6 +715,7 @@ function renderSummary(){
   const less=trail.filter(t=>t.dir==='less'||t.dir==='slight-less').length;
   const neutral=trail.filter(t=>t.dir==='neutral').length;
   const unsure=trail.filter(t=>t.dir==='unsure').length;
+  const noted=trail.filter(t=>t.note);
   stageEl.innerHTML=`
     <div class="card summary">
       <div class="stage">Summary</div>
@@ -619,9 +728,19 @@ function renderSummary(){
         <div class="tile neutral"><div class="n">${unsure}</div><div class="l">Unsure</div></div>
       </div>
       <div class="note"><b>A count, not a weighted verdict.</b> Every answer is tallied equally — there's no rule yet for which considerations matter more, and follow-up questions make some paths longer than others. Unsure answers are counted apart on purpose: a pile of them says something about what you can't see from where you sit.</div>
+      ${noted.length?`
+      <div class="stage" style="margin-top:26px">Your notes</div>
+      <div class="notelist">
+        ${noted.map(t=>`<div class="ni"><p class="niq">${esc(t.q)}</p><p class="nia">${esc(t.answer)}</p><p class="nit">${esc(t.note)}</p></div>`).join('')}
+      </div>`:''}
+      <div class="stage" style="margin-top:26px">Keep a copy</div>
+      <div class="dlrow">
+        <button class="dl" id="dlmd">↓ Download your answers (.md)</button>
+      </div>
+      <div class="note"><b>Nothing has been saved or sent.</b> Your answers and notes exist only in this browser tab and disappear when you close or restart it. The download is written by your own browser, on your machine — take a copy if you want to keep one.</div>
       ${navHtml()}
     </div>`;
-  wireNav();
+  wireDownloads(); wireNav();
 }
 function showIntro(){
   history=[];trail=[];renderTrail();renderRail(null);
@@ -632,17 +751,19 @@ function showIntro(){
       <p class="help" style="font-size:14.5px;margin-bottom:16px">A thinking aid for people inside a frontier AI company who have noticed something and want to work out <b style="color:var(--ink)">how worrying it actually is</b>.</p>
       <p class="help" style="margin-bottom:14px">This tool focuses on situations where a model deployed inside your company has done something concerning. These questions help you weigh how worrying it really is, all things considered.</p>
       <p class="help" style="margin-bottom:14px">The questions are grouped by <b style="color:var(--ink)">what the signal is about</b> — <b style="color:var(--ink)">the model</b>, its <b style="color:var(--ink)">affordances</b>, <b style="color:var(--ink)">the safeguards</b> around it, <b style="color:var(--ink)">the company's</b> conduct, and <b style="color:var(--ink)">what's at stake</b>. Use the <b style="color:var(--ink)">All questions</b> tab to see the whole structure.</p>
+      <p class="help" style="margin-bottom:14px">Every question has an optional notes box for anything you want to record about your own case; the notes are shown back to you at the end. <b style="color:var(--ink)">No answers and no notes are collected</b> — nothing leaves your browser.</p>
       <div class="opts"><button class="opt" id="begin" style="justify-content:center;border-color:var(--accent);color:var(--accent);font-weight:600">Begin →</button></div>
     </div>`;
   document.getElementById('begin').onclick=()=>{renderNode(BRANCHES.model.sections[0].qs[0].id);};
 }
 function goBack(){ if(!history.length) return showIntro(); const prev=history.pop();trail.pop();renderTrail();renderNode(prev); }
-function reset(){showIntro();}
+function reset(){notes={};showIntro();}
 
 /* ---------- overview ---------- */
 function optPill(o){
-  const cls=o.dir?DIRCLASS[o.dir]:'plain';
-  const suffix=o.dir?` <b>${ARROW[o.dir]}${DIRLABEL[o.dir].replace(' concerning','')}</b>`:(o.tag?` <b>${o.tag}</b>`:'');
+  const showDir=o.dir&&SHOW.overview;
+  const cls=showDir?DIRCLASS[o.dir]:'plain';
+  const suffix=showDir?` <b>${ARROW[o.dir]}${DIRLABEL[o.dir].replace(' concerning','')}</b>`:(o.tag&&!o.dir?` <b>${o.tag}</b>`:'');
   return `<span class="pill ${cls}">${o.label}${suffix}</span>`;
 }
 function renderAll(){
@@ -666,6 +787,10 @@ const walkBtn=document.getElementById('v-walk'), allBtn=document.getElementById(
 const walkView=document.getElementById('walkview'), allView=document.getElementById('allview');
 walkBtn.onclick=()=>{walkBtn.classList.add('active');allBtn.classList.remove('active');walkView.style.display='';allView.style.display='none';};
 allBtn.onclick=()=>{allBtn.classList.add('active');walkBtn.classList.remove('active');walkView.style.display='none';allView.style.display='';};
+if(!SHOW.trail){
+  document.querySelector('aside h2').textContent='Your answers so far';
+  document.querySelector('aside .sub').textContent='Each answer, in order, with any note you added.';
+}
 renderAll();
 showIntro();
 </script>
