@@ -637,16 +637,17 @@ function tagFor(o){
   return '';
 }
 function navHtml(){
-  const fwd = cursor==="END" ? false : answered(cursor);
+  /* Forward is absent, not greyed, when there is nothing recorded ahead */
+  const fwd = cursor!=="END" && answered(cursor);
   return `<div class="nav">
     <button id="back">← Back</button>
-    <button id="fwd"${fwd?'':' disabled'}>Forward →</button>
+    ${fwd?`<button id="fwd">Forward →</button>`:''}
     <button id="restart">Restart</button>
   </div>`;
 }
 function wireNav(){
   const b=document.getElementById('back'); if(b) b.onclick=goBack;
-  const f=document.getElementById('fwd'); if(f&&!f.disabled) f.onclick=goForward;
+  const f=document.getElementById('fwd'); if(f) f.onclick=goForward;
   document.getElementById('restart').onclick=reset;
 }
 
