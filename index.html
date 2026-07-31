@@ -752,7 +752,7 @@ function asMarkdown(){
   out+=`## Tally\n\n| Reading | Count |\n| --- | ---: |\n`;
   COLS.forEach(k=>{out+=`| ${k} | ${c[k]} |\n`;});
   if(c.uncounted) out+=`| Not counted (routing answers) | ${c.uncounted} |\n`;
-  out+=`\n**A count, not a weighted verdict.** Every answer below carries a \`+1\` towards exactly one of the four columns, so you can recount them yourself. There is no rule yet for which considerations matter more, and follow-up questions make some paths longer than others. Unsure answers are counted apart on purpose: a pile of them says something about what you can't see from where you sit.\n`;
+  out+=`\n**The tally.** Every answer below carries a \`+1\` towards exactly one of the four columns, so you can recount them yourself. Follow-up questions make some paths longer than others. Unsure answers are counted apart on purpose: a pile of them says something about what you can't see from where you sit.\n`;
   let stage=null;
   trail.forEach(t=>{
     if(t.stage!==stage){stage=t.stage; out+=`\n## ${stage}\n`;}
@@ -787,7 +787,7 @@ function renderSummary(){
         <div class="tile neutral"><div class="n">${neutral}</div><div class="l">Neutral</div></div>
         <div class="tile neutral"><div class="n">${unsure}</div><div class="l">Unsure</div></div>
       </div>
-      <div class="note"><b>A count, not a weighted verdict.</b> Every answer is tallied equally — there's no rule yet for which considerations matter more, and follow-up questions make some paths longer than others. Unsure answers are counted apart on purpose: a pile of them says something about what you can't see from where you sit.</div>
+      <div class="note"><b>The tally.</b> Every answer is tallied equally — follow-up questions make some paths longer than others. Unsure answers are counted apart on purpose: a pile of them says something about what you can't see from where you sit.</div>
       ${noted.length?`
       <div class="stage" style="margin-top:26px">Your notes</div>
       <div class="notelist">
