@@ -546,9 +546,10 @@ const NODES=buildNodes();
      options  — the ↑ more / ↓ less tag on each answer button
      routing  — the "→ follow-up" hint on answers that open a follow-up
      trail    — the direction label/colour on the sidebar chips
-     overview — the coloured pills in the "All questions" tab (documentation,
-                not a question being answered — left on)                     */
-const SHOW={options:false, routing:false, trail:false, overview:true};
+     overview — the same, in the "All questions" tab: off too, since that tab
+                is one click away from the walkthrough and priming a reader
+                there primes them for every question at once                 */
+const SHOW={options:false, routing:false, trail:false, overview:false};
 
 const DIRLABEL={"more":"More concerning","less":"Less concerning","slight-more":"Slightly more concerning","slight-less":"Slightly less concerning","neutral":"No strong pull","unsure":"Unsure"};
 const ARROW={"more":"↑ ","less":"↓ ","slight-more":"↑ ","slight-less":"↓ ","neutral":"• ","unsure":"? "};
@@ -762,8 +763,9 @@ function reset(){notes={};showIntro();}
 /* ---------- overview ---------- */
 function optPill(o){
   const showDir=o.dir&&SHOW.overview;
+  const showTag=o.tag&&!o.dir&&SHOW.overview&&SHOW.routing;
   const cls=showDir?DIRCLASS[o.dir]:'plain';
-  const suffix=showDir?` <b>${ARROW[o.dir]}${DIRLABEL[o.dir].replace(' concerning','')}</b>`:(o.tag&&!o.dir?` <b>${o.tag}</b>`:'');
+  const suffix=showDir?` <b>${ARROW[o.dir]}${DIRLABEL[o.dir].replace(' concerning','')}</b>`:(showTag?` <b>${o.tag}</b>`:'');
   return `<span class="pill ${cls}">${o.label}${suffix}</span>`;
 }
 function renderAll(){
