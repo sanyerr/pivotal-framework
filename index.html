@@ -77,7 +77,13 @@
   .nav{display:flex;gap:10px;margin-top:22px}
   .nav button{background:none;border:1px solid var(--line);color:var(--muted);
     border-radius:9px;padding:8px 14px;font:inherit;font-weight:500;cursor:pointer;transition:.14s}
-  .nav button:hover{color:var(--ink);border-color:var(--accent)}
+  .nav button:hover:not(:disabled){color:var(--ink);border-color:var(--accent)}
+  .nav button:disabled{opacity:.4;cursor:default}
+  button.opt.sel{border-color:var(--accent);background:#f3f4fe;box-shadow:inset 0 0 0 1px var(--accent)}
+  label.chk.sel{border-color:var(--accent);background:#f3f4fe}
+  .chip{cursor:pointer}
+  .chip:hover{border-color:var(--accent)}
+  .chip.cur{box-shadow:0 0 0 2px var(--accent)}
   aside{background:var(--card);border:1px solid var(--line);border-radius:18px;
     padding:20px 20px 22px;position:sticky;top:22px;box-shadow:var(--shadow)}
   aside h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);margin:0 0 4px;font-weight:600}
@@ -556,10 +562,48 @@ const ARROW={"more":"↑ ","less":"↓ ","slight-more":"↑ ","slight-less":"↓
 const DIRCLASS={"more":"more","less":"less","slight-more":"slight","slight-less":"slight","neutral":"neutral","unsure":"neutral"};
 const ORDER={"more":4,"slight-more":3,"neutral":2,"less":1,"unsure":0};
 
-let history=[], trail=[], current="start";
-/* per-question free-text notes, keyed by node id. Lives in this tab only:
-   never sent anywhere, never persisted — gone when the page is closed. */
-let notes={};
+/* ---------- state ----------
+   ONE store: `answers`, keyed by node id (an option index, or an array of
+   them for multi-selects). Everything else is derived from it — the path
+   through the tree, the sidebar, the tally, the download. So Back and
+   Forward only move a cursor; nothing is destroyed by navigating, and
+   changing an early answer re-derives the route rather than wiping what
+   came after. Unreachable answers stay in the store, silently uncounted,
+   and come back if the route reaches them again.
+   `notes` works the same way, and always did.                            */
+const START=BRANCHES.model.sections[0].qs[0].id;
+let answers={}, notes={}, trail=[], cursor=null;
+
+function answered(id){ return Object.prototype.hasOwnProperty.call(answers,id); }
+function nextFrom(id){
+  if(!answered(id)) return null;
+  const node=NODES[id];
+  return node.multi ? node.def : node.options[answers[id]].next;
+}
+/* walk from the first question along whatever has been answered */
+function walk(){
+  const path=[]; let id=START;
+  while(id && id!=="END" && answered(id) && !path.includes(id)){ path.push(id); id=nextFrom(id); }
+  return {path, next:id};
+}
+function multiReading(node,idx){
+  const chosen=idx.map(i=>node.options[i]);
+  let dir='unsure';
+  chosen.forEach(o=>{ if(ORDER[o.dir]>ORDER[dir]) dir=o.dir; });
+  return {dir, answer: chosen.length?chosen.map(o=>o.label).join(', '):'Nothing selected'};
+}
+/* the answered path, in order, as the rest of the tool wants to read it */
+function refresh(){
+  trail=walk().path.map(id=>{
+    const node=NODES[id], a=answers[id], note=(notes[id]||'').trim();
+    if(node.multi){
+      const r=multiReading(node,a);
+      return {id, stage:node.stage, q:node.q, answer:r.answer, dir:r.dir, note};
+    }
+    const o=node.options[a];
+    return {id, stage:node.stage, q:node.q, answer:o.label, dir:o.dir||null, note};
+  });
+}
 const stageEl=document.getElementById('stage'), trailEl=document.getElementById('trail'), railEl=document.getElementById('rail');
 
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -576,9 +620,8 @@ function noteHtml(id){
 function wireNote(id){
   const t=document.getElementById('noteToggle'), w=document.getElementById('noteWrap'), i=document.getElementById('noteInput');
   if(t) t.onclick=()=>{t.style.display='none';w.hidden=false;i.focus();};
-  if(i) i.oninput=()=>{notes[id]=i.value;};
+  if(i) i.oninput=()=>{notes[id]=i.value; refresh(); renderTrail();};
 }
-function takeNote(id){ return (notes[id]||'').trim(); }
 
 function railStages(){ return BRANCHES.model.sections.map(s=>s.name); }
 function renderRail(node){
@@ -593,13 +636,25 @@ function tagFor(o){
   if(o.tag) return SHOW.routing ? `<span class="tag ${o.tagClass||'plain'}">${o.tag}</span>` : '';
   return '';
 }
-function navHtml(){ return `<div class="nav">${history.length?`<button id="back">← Back</button>`:''}<button id="restart">Restart</button></div>`; }
-function wireNav(){ const b=document.getElementById('back'); if(b) b.onclick=goBack; document.getElementById('restart').onclick=reset; }
+function navHtml(){
+  const fwd = cursor==="END" ? false : answered(cursor);
+  return `<div class="nav">
+    <button id="back">← Back</button>
+    <button id="fwd"${fwd?'':' disabled'}>Forward →</button>
+    <button id="restart">Restart</button>
+  </div>`;
+}
+function wireNav(){
+  const b=document.getElementById('back'); if(b) b.onclick=goBack;
+  const f=document.getElementById('fwd'); if(f&&!f.disabled) f.onclick=goForward;
+  document.getElementById('restart').onclick=reset;
+}
 
 function renderNode(id){
-  current=id;
+  cursor=id;
   if(id==="END") return renderSummary();
   const node=NODES[id];
+  const prev=answered(id)?answers[id]:null;
   renderRail(node);
   if(node.multi){
     stageEl.innerHTML=`
@@ -609,7 +664,7 @@ function renderNode(id){
         ${node.help?`<p class="help">${node.help}</p>`:''}
         ${noteHtml(id)}
         <div class="opts">
-          ${node.options.map((o,i)=>`<label class="chk"><input type="checkbox" data-i="${i}"><span>${o.label}</span></label>`).join('')}
+          ${node.options.map((o,i)=>`<label class="chk${prev&&prev.includes(i)?' sel':''}"><input type="checkbox" data-i="${i}"${prev&&prev.includes(i)?' checked':''}><span>${o.label}</span></label>`).join('')}
         </div>
         <div class="opts" style="margin-top:12px">
           <button class="opt" id="msContinue" style="justify-content:center;border-color:var(--accent);color:var(--accent);font-weight:600">Continue →</button>
@@ -617,14 +672,8 @@ function renderNode(id){
         ${navHtml()}
       </div>`;
     document.getElementById('msContinue').onclick=()=>{
-      const checked=[...stageEl.querySelectorAll('.chk input:checked')].map(c=>node.options[+c.dataset.i]);
-      let dir='unsure';
-      checked.forEach(o=>{ if(ORDER[o.dir]>ORDER[dir]) dir=o.dir; });
-      if(!checked.length) dir='unsure';
-      const answer = checked.length ? checked.map(o=>o.label).join(', ') : 'Nothing selected';
-      history.push(id);
-      trail.push({stage:node.stage, q:node.q, answer, dir, note:takeNote(id)});
-      renderTrail();
+      answers[id]=[...stageEl.querySelectorAll('.chk input:checked')].map(c=>+c.dataset.i);
+      refresh(); renderTrail();
       renderNode(node.def);
     };
     wireNote(id); wireNav(); return;
@@ -637,17 +686,16 @@ function renderNode(id){
       ${node.help?`<p class="help">${node.help}</p>`:''}
       ${noteHtml(id)}
       <div class="opts">
-        ${opts.map((o,i)=>`<button class="opt" data-i="${i}"><span>${o.label}</span>${tagFor(o)}</button>`).join('')}
+        ${opts.map((o,i)=>`<button class="opt${prev===i?' sel':''}" data-i="${i}"><span>${o.label}</span>${tagFor(o)}</button>`).join('')}
       </div>
       ${navHtml()}
     </div>`;
   stageEl.querySelectorAll('.opt').forEach(btn=>{
     btn.onclick=()=>{
-      const o=opts[+btn.dataset.i];
-      history.push(id);
-      trail.push({stage:node.stage, q:node.q, answer:o.label, dir:o.dir||null, note:takeNote(id)});
-      renderTrail();
-      renderNode(o.next);
+      const i=+btn.dataset.i;
+      answers[id]=i;
+      refresh(); renderTrail();
+      renderNode(opts[i].next);
     };
   });
   wireNote(id); wireNav();
@@ -658,10 +706,12 @@ function renderTrail(){
   trailEl.innerHTML=shown.map(t=>{
     const n=t.note?`<span class="note-in-chip">${esc(t.note)}</span>`:'';
     const body=`<span class="cq">${esc(t.q)}</span><span class="ca">${esc(t.answer)}</span>${n}`;
-    return SHOW.trail
-      ? `<div class="chip ${DIRCLASS[t.dir]}"><span class="dir">${DIRLABEL[t.dir]}</span>${body}</div>`
-      : `<div class="chip neutral">${body}</div>`;
+    const cls=`chip ${SHOW.trail?DIRCLASS[t.dir]:'neutral'}${t.id===cursor?' cur':''}`;
+    const dir=SHOW.trail?`<span class="dir">${DIRLABEL[t.dir]}</span>`:'';
+    return `<div class="${cls}" data-id="${t.id}" title="Go back to this question">${dir}${body}</div>`;
   }).join('');
+  /* the sidebar is also the way back in: click any answer to revisit it */
+  trailEl.querySelectorAll('.chip').forEach(c=>{ c.onclick=()=>renderNode(c.dataset.id); });
 }
 /* ---------- take your answers with you ----------
    Built and saved entirely in the browser: a Blob and an <a download> click,
@@ -710,7 +760,7 @@ function wireDownloads(){
     'text/markdown;charset=utf-8', asMarkdown());
 }
 function renderSummary(){
-  renderRail(null);
+  refresh(); renderTrail(); renderRail(null);
   const scored=trail.filter(t=>t.dir);
   const more=trail.filter(t=>t.dir==='more'||t.dir==='slight-more').length;
   const less=trail.filter(t=>t.dir==='less'||t.dir==='slight-less').length;
@@ -744,7 +794,7 @@ function renderSummary(){
   wireDownloads(); wireNav();
 }
 function showIntro(){
-  history=[];trail=[];renderTrail();renderRail(null);
+  cursor=null; refresh(); renderTrail(); renderRail(null);
   stageEl.innerHTML=`
     <div class="card">
       <div class="stage">About this tool</div>
@@ -755,10 +805,20 @@ function showIntro(){
       <p class="help" style="margin-bottom:14px">Every question has an optional notes box for anything you want to record about your own case; the notes are shown back to you at the end. <b style="color:var(--ink)">No answers and no notes are collected</b> — nothing leaves your browser.</p>
       <div class="opts"><button class="opt" id="begin" style="justify-content:center;border-color:var(--accent);color:var(--accent);font-weight:600">Begin →</button></div>
     </div>`;
-  document.getElementById('begin').onclick=()=>{renderNode(BRANCHES.model.sections[0].qs[0].id);};
+  document.getElementById('begin').onclick=()=>{renderNode(START);};
 }
-function goBack(){ if(!history.length) return showIntro(); const prev=history.pop();trail.pop();renderTrail();renderNode(prev); }
-function reset(){notes={};showIntro();}
+/* Back and Forward move the cursor along the answered path. Neither
+   touches `answers`, so nothing is lost by looking around. */
+function goBack(){
+  const path=walk().path;
+  if(cursor==="END") return path.length?renderNode(path[path.length-1]):showIntro();
+  const i=path.indexOf(cursor);
+  if(i>0) return renderNode(path[i-1]);
+  if(i===0) return showIntro();
+  return path.length?renderNode(path[path.length-1]):showIntro();  /* first unanswered */
+}
+function goForward(){ const n=nextFrom(cursor); if(n) renderNode(n); }
+function reset(){ answers={}; notes={}; showIntro(); }
 
 /* ---------- overview ---------- */
 function optPill(o){
