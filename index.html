@@ -145,6 +145,43 @@
     border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer}
   #errbanner{display:none;background:var(--more-bg);color:var(--more);border:1px solid var(--more);
     border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:14px}
+  /* --- experiment: skip ("not applicable") --- */
+  .expbanner{background:#fff7e6;color:#8a5a00;border:1px solid #e8c87a;border-radius:10px;
+    padding:9px 14px;font-size:12.5px;font-weight:600;margin-bottom:16px}
+  .skiprow{margin-top:14px;display:flex;justify-content:flex-end}
+  button.skipbtn{font:inherit;font-size:12px;font-weight:500;color:var(--muted);background:none;
+    border:none;border-bottom:1px dashed var(--line);padding:2px 1px;cursor:pointer;transition:.14s}
+  button.skipbtn:hover{color:var(--ink);border-bottom-color:var(--muted)}
+  button.skipbtn.on{color:var(--branch);border-bottom-color:var(--branch);font-weight:600}
+  .skiphelp{font-size:12px;color:var(--muted);background:#fbfbfd;border:1px dashed var(--line);
+    border-radius:10px;padding:9px 12px;margin:14px 0 0}
+  .skiplist{margin:8px 0 0;display:flex;flex-direction:column;gap:8px}
+  .skiplist .si{border:1px solid var(--line2);border-radius:12px;padding:10px 14px;background:#fbfbfd;
+    font-size:13px;color:var(--muted)}
+  /* --- experiment: verdict layer (triggers + two-channel rule) --- */
+  .trigflag{margin-top:16px;background:var(--more-bg);border:1px solid var(--more);border-radius:12px;
+    padding:14px 16px}
+  .trigflag p{margin:0 0 12px;font-size:13.5px;color:var(--more);font-weight:500}
+  .trigflag .acts{display:flex;gap:10px;flex-wrap:wrap}
+  .trigflag .acts button{font:inherit;font-size:13px;font-weight:600;border-radius:9px;padding:8px 14px;
+    cursor:pointer;transition:.14s}
+  .trigflag .t-end{border:1px solid var(--more);background:var(--more);color:#fff}
+  .trigflag .t-end:hover{filter:brightness(.94)}
+  .trigflag .t-cont{border:1px solid var(--line);background:#fff;color:var(--ink)}
+  .trigflag .t-cont:hover{border-color:var(--muted)}
+  .verdict{border-radius:14px;padding:16px 18px;margin:0 0 20px;border:1px solid}
+  .verdict .vlabel{font-size:16px;font-weight:700;margin:0 0 8px}
+  .verdict.l1{background:var(--more-bg);border-color:var(--more)} .verdict.l1 .vlabel{color:var(--more)}
+  .verdict.l2{background:var(--slight-bg);border-color:var(--slight)} .verdict.l2 .vlabel{color:var(--slight)}
+  .verdict.l3{background:var(--less-bg);border-color:var(--less)} .verdict.l3 .vlabel{color:var(--less)}
+  .verdict .vwhy{font-size:13px;margin:0}
+  .verdict ul{margin:8px 0 0;padding-left:18px;font-size:13px}
+  .verdict li{margin-bottom:6px}
+  .verdict .vdisc{font-size:11.5px;color:var(--muted);margin:10px 0 0}
+  .mech .card{margin-bottom:14px}
+  .mech h3{font-size:15px;font-weight:700;margin:0 0 8px}
+  .mech p,.mech li{font-size:13.5px}
+  .mech ul{margin:6px 0;padding-left:20px}
 </style>
 </head>
 <body>
@@ -158,6 +195,7 @@
   <div class="views">
     <button id="v-walk" class="active">Walkthrough</button>
     <button id="v-all">All questions</button>
+    <button id="v-mech">Mechanism</button>
   </div>
   <div id="walkview">
     <div class="rail" id="rail"></div>
@@ -171,6 +209,7 @@
     </div>
   </div>
   <div id="allview" style="display:none"></div>
+  <div id="mechview" class="mech" style="display:none"></div>
 </div>
 <script>
 /* ============================================================
@@ -533,6 +572,7 @@ function buildNodes(){
         return out;
       };
       N[q.id]={stage:q.stage,branch:bid,q:q.q,help:q.help,def:def,multi:!!q.multi,
+        skipNext:q.unsureNext||def,  /* verdict layer: a skip leaves by the same door as "Unsure / can't tell" */
         options: q.multi ? q.options.map(o=>Object.assign({},o)) : withUnsure(q.options)};
     });
   }
@@ -550,6 +590,69 @@ const NODES=buildNodes();
   if(bad.length){
     const b=document.getElementById('errbanner');
     b.style.display='block'; b.textContent="Broken routing: "+bad.join(", ");
+  }
+})();
+
+/* ============================================================
+   The verdict layer.
+   Three levels, checked in this order:
+     1 — a trigger answer is active on the answered path
+     2 — no trigger, but a fraction channel trips (or too few readings seen)
+     3 — neither
+   ============================================================ */
+
+/* ---- LEVEL-1 TRIGGER MAPPING — PLACEHOLDER, EDIT HERE. ----
+   One entry per question that can trigger; `trigger` maps the exact
+   option label (must match the tree verbatim — checked at load) to the
+   one-line reason shown in the summary. Reasons are [placeholder]
+   Claude-drafted copy, to be rewritten. Add/remove entries freely. */
+const TRIGGERS=[
+  { id:"m_resp_comm", trigger:{
+      "Public story contradicts what insiders know":
+        "[placeholder] The company is actively misrepresenting the incident to the public." } },
+  { id:"m_ctrl_rl", trigger:{
+      "A law":"[placeholder] A legally required control mechanism was missing.",
+      "A company policy or commitment":"[placeholder] The missing control mechanism breached the company's own commitments." } },
+  { id:"m_mon_rl", trigger:{
+      "A law":"[placeholder] Legally required monitoring was missing.",
+      "A company policy or commitment":"[placeholder] The missing monitoring breached the company's own commitments." } },
+  { id:"m_learn_rl", trigger:{
+      "A law":"[placeholder] A legally required post-incident review was not carried out.",
+      "A company policy or commitment":"[placeholder] The skipped post-incident review breached the company's own commitments." } },
+  { id:"m_resp_rl", trigger:{
+      "A law":"[placeholder] The company's handling of the incident broke the law.",
+      "A company policy or commitment":"[placeholder] The company's handling of the incident breached its own policy or commitments." } }
+];
+
+/* ---- FRACTIONS — PLACEHOLDERS PENDING REAL-USER CALIBRATION, EDIT HERE. ----
+   Compared as integer cross-products, never as floats:
+     strong channel: strong * STRONG_DEN >= readings * STRONG_NUM   (strong >= 1/10 of readings)
+     pooled channel: pooled * POOL_DEN   >= readings * POOL_NUM     (pooled >= 1/3 of readings)
+   MIN_READINGS: below this many recorded readings, level 3 is unreachable
+   ("not enough seen to clear anything"). */
+const FRAC={STRONG_NUM:1, STRONG_DEN:10, POOL_NUM:1, POOL_DEN:3, MIN_READINGS:8};
+
+/* The researcher's draft wording — verbatim, provisional. */
+const VERDICT_LABEL={
+  1:"Very concerning — immediate escalation",
+  2:"Somewhat concerning — start collecting evidence",
+  3:"Not concerning — write down your red lines"
+};
+/* The researcher's draft wording — verbatim, provisional. */
+const TRIGGER_FLAG_TEXT="This seems very concerning. This in itself is probably enough reason to escalate. You can skip to the end here, or alternatively still complete the rest of the survey.";
+
+/* trigger-mapping integrity: every id and every label must exist in the tree */
+(function(){
+  const bad=[];
+  TRIGGERS.forEach(t=>{
+    const n=NODES[t.id];
+    if(!n){ bad.push("no node "+t.id); return; }
+    Object.keys(t.trigger).forEach(l=>{ if(!n.options.some(o=>o.label===l)) bad.push(t.id+' has no option "'+l+'"'); });
+  });
+  if(bad.length){
+    const b=document.getElementById('errbanner');
+    b.style.display='block';
+    b.textContent=(b.textContent?b.textContent+" · ":"")+"Trigger mapping doesn't match the tree: "+bad.join(", ");
   }
 })();
 
@@ -580,18 +683,38 @@ const ORDER={"more":4,"slight-more":3,"neutral":2,"less":1,"unsure":0};
    and come back if the route reaches them again.
    `notes` works the same way, and always did.                            */
 const START=BRANCHES.model.sections[0].qs[0].id;
-let answers={}, notes={}, trail=[], cursor=null;
+let answers={}, notes={}, skips={}, trail=[], cursor=null;
+/* verdict state:
+   trigLatch — the interstitial trigger flag fires ONCE per run; after the
+     user continues past it (or skips to the end), later trigger answers
+     commit silently. Deliberately NOT restored when a trigger is un-fired
+     by changing the answer; only Restart resets it.
+   flagAt — node id whose interstitial flag screen is currently showing, or
+     null. Display state only, and the screen is NOT a node: never on the
+     path, never in the trail or the .md, and it does not re-appear when
+     navigating back and forth over this point. The fired/un-fired status
+     itself is always derived from `answers` + the walked path, so changing
+     or skipping a trigger answer un-fires it automatically. */
+let trigLatch=false, flagAt=null;
+/* verdict layer: `skips` is a second store beside `answers`, keyed by node id.
+   A node is never in both — answering clears its skip, skipping clears its
+   answer. A skipped node records NO reading (not in the tally, not in any
+   denominator) and routes onward via node.skipNext, i.e. exactly where the
+   auto-added "Unsure / can't tell" option would have gone. */
 
 function answered(id){ return Object.prototype.hasOwnProperty.call(answers,id); }
+function isSkipped(id){ return Object.prototype.hasOwnProperty.call(skips,id); }
+function resolved(id){ return answered(id)||isSkipped(id); }
 function nextFrom(id){
+  if(isSkipped(id)) return NODES[id].skipNext;
   if(!answered(id)) return null;
   const node=NODES[id];
   return node.multi ? node.def : node.options[answers[id]].next;
 }
-/* walk from the first question along whatever has been answered */
+/* walk from the first question along whatever has been answered or skipped */
 function walk(){
   const path=[]; let id=START;
-  while(id && id!=="END" && answered(id) && !path.includes(id)){ path.push(id); id=nextFrom(id); }
+  while(id && id!=="END" && resolved(id) && !path.includes(id)){ path.push(id); id=nextFrom(id); }
   return {path, next:id};
 }
 function multiReading(node,idx){
@@ -604,6 +727,9 @@ function multiReading(node,idx){
 function refresh(){
   trail=walk().path.map(id=>{
     const node=NODES[id], a=answers[id], note=(notes[id]||'').trim();
+    if(isSkipped(id)){
+      return {id, stage:node.stage, q:node.q, answer:"Not applicable — skipped", dir:null, skipped:true, note};
+    }
     if(node.multi){
       const r=multiReading(node,a);
       return {id, stage:node.stage, q:node.q, answer:r.answer, dir:r.dir, note};
@@ -646,7 +772,7 @@ function tagFor(o){
 }
 function navHtml(){
   /* Forward is absent, not greyed, when there is nothing recorded ahead */
-  const fwd = cursor!=="END" && answered(cursor);
+  const fwd = cursor!=="END" && resolved(cursor);
   return `<div class="nav">
     <button id="back">← Back</button>
     ${fwd?`<button id="fwd">Forward →</button>`:''}
@@ -658,9 +784,66 @@ function wireNav(){
   const f=document.getElementById('fwd'); if(f) f.onclick=goForward;
   document.getElementById('restart').onclick=reset;
 }
+/* verdict layer: the skip control. Deliberately small and off to the side —
+   it is not an answer and must not read as one. */
+function skipHtml(id){
+  const on=isSkipped(id);
+  return `<div class="skiprow"><button type="button" class="skipbtn${on?' on':''}" id="skipbtn"
+    title="[placeholder] Skip = this question doesn't apply to my situation. Unsure = it applies but I can't tell.">${
+    on?'Skipped as not applicable — click to un-skip, or pick an answer':'Not applicable — skip'}</button></div>`;
+}
+/* verdict layer: the interstitial flag screen — commit first, warn second.
+   Shown at most once per run (trigLatch), AFTER a trigger answer has been
+   recorded and before the next question, so the warning can no longer bias
+   the answer it reacts to. Visibly not a question: no answer controls. Back
+   returns to the trigger question (normal selected-state behaviour, where
+   changing the answer un-fires the trigger); Continue proceeds along the
+   route the committed answer implies; Skip to the end jumps to the summary.
+   The screen is a one-time interruption, not a node — revisiting the spot
+   later never re-shows it, and the summary's fired-triggers list is the
+   lasting record. */
+function renderFlagScreen(id){
+  cursor=id; flagAt=id;
+  renderRail(NODES[id]);
+  stageEl.innerHTML=`
+    <div class="card">
+      <div class="stage">Before you continue</div>
+      <div class="trigflag" style="margin-top:0">
+        <p>${TRIGGER_FLAG_TEXT}</p>
+        <div class="acts">
+          <button type="button" class="t-end" id="trigEnd">Skip to the end</button>
+          <button type="button" class="t-cont" id="trigCont">Continue with the rest</button>
+        </div>
+      </div>
+      <div class="nav">
+        <button id="back">← Back</button>
+        <button id="restart">Restart</button>
+      </div>
+    </div>`;
+  document.getElementById('trigEnd').onclick=()=>renderNode("END");
+  document.getElementById('trigCont').onclick=()=>renderNode(nextFrom(id));
+  document.getElementById('back').onclick=goBack;
+  document.getElementById('restart').onclick=reset;
+  renderTrail();
+}
+function wireSkip(id){
+  const s=document.getElementById('skipbtn'); if(!s) return;
+  s.onclick=()=>{
+    if(isSkipped(id)){           /* un-skip: stay on the question, ready to answer */
+      delete skips[id];
+      refresh(); renderTrail(); renderNode(id);
+    }else{                       /* skip: clears any answer, records nothing, moves on */
+      delete answers[id];
+      skips[id]=true;
+      refresh(); renderTrail();
+      renderNode(NODES[id].skipNext);
+    }
+  };
+}
 
 function renderNode(id){
   cursor=id;
+  flagAt=null;   /* rendering any node dismisses the interstitial flag screen */
   if(id==="END") return renderSummary();
   const node=NODES[id];
   const prev=answered(id)?answers[id]:null;
@@ -678,14 +861,23 @@ function renderNode(id){
         <div class="opts" style="margin-top:12px">
           <button class="opt" id="msContinue" style="justify-content:center;border-color:var(--accent);color:var(--accent);font-weight:600">Continue →</button>
         </div>
+        ${skipHtml(id)}
         ${navHtml()}
       </div>`;
     document.getElementById('msContinue').onclick=()=>{
+      delete skips[id];   /* answering clears the skip state */
       answers[id]=[...stageEl.querySelectorAll('.chk input:checked')].map(c=>+c.dataset.i);
       refresh(); renderTrail();
+      /* verdict layer — commit first, warn second: ticking a box never fires the
+         flag; only committing the multi answer can, and only once per run */
+      if(!trigLatch && answers[id].some(i=>isTriggerChoice(id,node.options[i].label))){
+        trigLatch=true;
+        renderFlagScreen(id);
+        return;
+      }
       renderNode(node.def);
     };
-    wireNote(id); wireNav(); return;
+    wireNote(id); wireSkip(id); wireNav(); return;
   }
   const opts=node.options;
   stageEl.innerHTML=`
@@ -697,17 +889,26 @@ function renderNode(id){
       <div class="opts">
         ${opts.map((o,i)=>`<button class="opt${prev===i?' sel':''}" data-i="${i}"><span>${o.label}</span>${tagFor(o)}</button>`).join('')}
       </div>
+      ${skipHtml(id)}
       ${navHtml()}
     </div>`;
   stageEl.querySelectorAll('.opt').forEach(btn=>{
     btn.onclick=()=>{
       const i=+btn.dataset.i;
+      delete skips[id];   /* answering clears the skip state */
       answers[id]=i;
       refresh(); renderTrail();
+      /* verdict layer — commit first, warn second: the answer is recorded above,
+         exactly as normal; the flag is an interstitial before the next question */
+      if(!trigLatch && isTriggerChoice(id,opts[i].label)){
+        trigLatch=true;
+        renderFlagScreen(id);
+        return;
+      }
       renderNode(opts[i].next);
     };
   });
-  wireNote(id); wireNav();
+  wireNote(id); wireSkip(id); wireNav();
 }
 function renderTrail(){
   const shown = SHOW.trail ? trail.filter(t=>t.dir) : trail;
@@ -741,20 +942,96 @@ const COL={"more":"Concerning","slight-more":"Concerning","less":"Reassuring",
            "slight-less":"Reassuring","neutral":"Neutral","unsure":"Unsure"};
 const COLS=["Concerning","Reassuring","Neutral","Unsure"];
 function counts(){
-  const c={Concerning:0,Reassuring:0,Neutral:0,Unsure:0,uncounted:0};
-  trail.forEach(t=>{ t.dir?c[COL[t.dir]]++:c.uncounted++; });
+  const c={Concerning:0,Reassuring:0,Neutral:0,Unsure:0,uncounted:0,skipped:0};
+  trail.forEach(t=>{ if(t.skipped){c.skipped++;} else t.dir?c[COL[t.dir]]++:c.uncounted++; });
   return c;
+}
+/* ---------- verdict layer: verdict derivation ---------- */
+function isTriggerChoice(id,label){
+  const t=TRIGGERS.find(t=>t.id===id);
+  return !!(t && Object.prototype.hasOwnProperty.call(t.trigger,label));
+}
+/* Triggers active on the answered path — derived, like everything else.
+   An answer that falls off the path (rerouted around) stops counting;
+   changing or skipping the answer un-fires it. Multi-selects can fire
+   several entries at once (one per ticked trigger label). */
+function firedTriggers(){
+  const path=walk().path, out=[];
+  TRIGGERS.forEach(tr=>{
+    if(!path.includes(tr.id)||isSkipped(tr.id)||!answered(tr.id)) return;
+    const node=NODES[tr.id];
+    const chosen=node.multi ? answers[tr.id].map(i=>node.options[i].label)
+                            : [node.options[answers[tr.id]].label];
+    chosen.forEach(l=>{
+      if(Object.prototype.hasOwnProperty.call(tr.trigger,l))
+        out.push({id:tr.id,q:node.q,answer:l,reason:tr.trigger[l]});
+    });
+  });
+  return out;
+}
+/* The pure rule. Integer cross-products only — no floats anywhere.
+   Guards: reassuring readings never subtract (they only sit in the
+   denominator R); with fewer than MIN_READINGS readings, level 3 is
+   unreachable and the "insufficient" state (level 2, different wording)
+   is returned instead. */
+function classify(firedCount,strong,pooled,R){
+  if(firedCount>0) return {level:1,why:"trigger"};
+  const chanA=R>0 && strong*FRAC.STRONG_DEN >= R*FRAC.STRONG_NUM;
+  const chanB=R>0 && pooled*FRAC.POOL_DEN >= R*FRAC.POOL_NUM;
+  if(chanA||chanB) return {level:2,why:"channel",chanA,chanB};
+  if(R<FRAC.MIN_READINGS) return {level:2,why:"insufficient"};
+  return {level:3,why:"clear"};
+}
+function verdictInfo(){
+  const fired=firedTriggers();
+  const readings=trail.filter(t=>!t.skipped && t.dir);           /* skips excluded from numerator AND denominator */
+  const R=readings.length;
+  const strong=readings.filter(t=>t.dir==='more').length;        /* "more" only — NOT slight-more */
+  const pooled=readings.filter(t=>t.dir==='more'||t.dir==='slight-more'||t.dir==='unsure').length;
+  return Object.assign({fired,R,strong,pooled},classify(fired.length,strong,pooled,R));
+}
+const VERDICT_DISCLAIMER="[placeholder] The trigger mapping and both fractions are provisional, pending calibration with real users.";
+function verdictReasonParts(v){
+  if(v.level===1)
+    return {head:"One or more red-line answers fired:",
+      items:v.fired.map(f=>`${f.q} — "${f.answer}". ${f.reason}`)};
+  if(v.why==="channel"){
+    const items=[];
+    if(v.chanA) items.push(`${v.strong} of ${v.R} recorded readings are strong-concerning — at or above ${FRAC.STRONG_NUM} in ${FRAC.STRONG_DEN}.`);
+    if(v.chanB) items.push(`${v.pooled} of ${v.R} recorded readings are concerning (incl. slightly) or unsure — at or above ${FRAC.POOL_NUM} in ${FRAC.POOL_DEN}.`);
+    return {head:"No red-line answer fired, but:",items};
+  }
+  if(v.why==="insufficient")
+    return {head:`Only ${v.R} reading${v.R===1?'':'s'} recorded — fewer than ${FRAC.MIN_READINGS}. Not enough seen to clear anything.`,items:[]};
+  return {head:`No red-line answer fired. ${v.strong} of ${v.R} readings strong-concerning (below ${FRAC.STRONG_NUM} in ${FRAC.STRONG_DEN}); ${v.pooled} of ${v.R} concerning-or-unsure (below ${FRAC.POOL_NUM} in ${FRAC.POOL_DEN}).`,items:[]};
 }
 function asMarkdown(){
   const c=counts(); let out=`# How concerning is this signal? — your answers\n\n`;
   out+=`Scope: the model as actor — loss of control via internal deployment. Completed ${stamp()}.\n\n`;
   out+=`This file was written by your browser and never left it.\n\n`;
+  {
+    const v=verdictInfo(), r=verdictReasonParts(v);
+    out+=`## Verdict\n\n**${VERDICT_LABEL[v.level]}**\n\n${r.head}\n`;
+    r.items.forEach(x=>{ out+=`\n- ${x}`; });
+    if(r.items.length) out+=`\n`;
+    out+=`\n_${VERDICT_DISCLAIMER}_\n\n`;
+  }
   out+=`## Tally\n\n| Reading | Count |\n| --- | ---: |\n`;
   COLS.forEach(k=>{out+=`| ${k} | ${c[k]} |\n`;});
   if(c.uncounted) out+=`| Not counted (routing answers) | ${c.uncounted} |\n`;
   out+=`\n**The tally.** Every answer below carries a \`+1\` towards exactly one of the four columns, so you can recount them yourself. Follow-up questions make some paths longer than others. Unsure answers are counted apart on purpose: a pile of them says something about what you can't see from where you sit.\n`;
+  const skippedT=trail.filter(t=>t.skipped);
+  if(skippedT.length){
+    out+=`\n## Not applicable (skipped)\n\nThese questions were marked not applicable. They record no reading and are not in the tally or in any denominator.\n`;
+    skippedT.forEach(t=>{
+      out+=`\n- ${t.q}`;
+      if(t.note) out+=`\n\n  > ${t.note.replace(/\n/g,'\n  > ')}\n`;
+    });
+    out+=`\n`;
+  }
   let stage=null;
   trail.forEach(t=>{
+    if(t.skipped) return;  /* listed above, not among the answered */
     if(t.stage!==stage){stage=t.stage; out+=`\n## ${stage}\n`;}
     const mark=t.dir?`+1 ${COL[t.dir]}${/^slight/.test(t.dir)?' (slightly)':''}`:'not counted';
     out+=`\n**${t.q}**\n\n${t.answer}  \n\`${mark}\`\n`;
@@ -768,6 +1045,15 @@ function wireDownloads(){
     `how concerning is this signal ${stamp().replace(/[: ]/g,'-')}.md`,
     'text/markdown;charset=utf-8', asMarkdown());
 }
+function verdictBoxHtml(){
+  const v=verdictInfo(), r=verdictReasonParts(v);
+  return `<div class="verdict l${v.level}">
+      <p class="vlabel">${VERDICT_LABEL[v.level]}</p>
+      <p class="vwhy">${esc(r.head)}</p>
+      ${r.items.length?`<ul>${r.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+      <p class="vdisc">${esc(VERDICT_DISCLAIMER)}</p>
+    </div>`;
+}
 function renderSummary(){
   refresh(); renderTrail(); renderRail(null);
   const scored=trail.filter(t=>t.dir);
@@ -776,10 +1062,12 @@ function renderSummary(){
   const neutral=trail.filter(t=>t.dir==='neutral').length;
   const unsure=trail.filter(t=>t.dir==='unsure').length;
   const noted=trail.filter(t=>t.note);
+  const skippedT=trail.filter(t=>t.skipped);
   stageEl.innerHTML=`
     <div class="card summary">
       <div class="stage">Summary</div>
       <p class="q">Scope: the model as actor — internal deployment</p>
+      ${verdictBoxHtml()}
       <p class="lead">${scored.length} reading${scored.length===1?'':'s'} collected — here's how they split.</p>
       <div class="tally">
         <div class="tile more"><div class="n">${more}</div><div class="l">Concerning</div></div>
@@ -788,6 +1076,12 @@ function renderSummary(){
         <div class="tile neutral"><div class="n">${unsure}</div><div class="l">Unsure</div></div>
       </div>
       <div class="note"><b>The tally.</b> Every answer is tallied equally — follow-up questions make some paths longer than others. Unsure answers are counted apart on purpose: a pile of them says something about what you can't see from where you sit.</div>
+      ${skippedT.length?`
+      <div class="stage" style="margin-top:26px">Marked not applicable</div>
+      <p class="help" style="margin:0">[placeholder] These record no reading — they're outside the tally.</p>
+      <div class="skiplist">
+        ${skippedT.map(t=>`<div class="si">${esc(t.q)}</div>`).join('')}
+      </div>`:''}
       ${noted.length?`
       <div class="stage" style="margin-top:26px">Your notes</div>
       <div class="notelist">
@@ -803,7 +1097,7 @@ function renderSummary(){
   wireDownloads(); wireNav();
 }
 function showIntro(){
-  cursor=null; refresh(); renderTrail(); renderRail(null);
+  cursor=null; flagAt=null; refresh(); renderTrail(); renderRail(null);
   stageEl.innerHTML=`
     <div class="card">
       <div class="stage">About this tool</div>
@@ -812,6 +1106,7 @@ function showIntro(){
       <p class="help" style="margin-bottom:14px">This tool focuses on situations where a model deployed inside your company has done something concerning. These questions help you weigh how worrying it really is, all things considered.</p>
       <p class="help" style="margin-bottom:14px">The questions are grouped by <b style="color:var(--ink)">what the signal is about</b> — <b style="color:var(--ink)">the model</b>, its <b style="color:var(--ink)">affordances</b>, <b style="color:var(--ink)">the safeguards</b> around it, <b style="color:var(--ink)">the company's</b> conduct, and <b style="color:var(--ink)">what's at stake</b>. Use the <b style="color:var(--ink)">All questions</b> tab to see the whole structure.</p>
       <p class="help" style="margin-bottom:14px">Every question has an optional notes box for anything you want to record about your own case; the notes are shown back to you at the end. <b style="color:var(--ink)">No answers and no notes are collected</b> — nothing leaves your browser.</p>
+      <p class="skiphelp" style="margin:0 0 16px">[placeholder wording] Every question also has a small <b>"Not applicable — skip"</b> link. <b>Unsure</b> = the question applies but you can't tell. <b>Skip</b> = the question doesn't apply to your situation. Skipped questions record nothing and are listed separately at the end.</p>
       <div class="opts"><button class="opt" id="begin" style="justify-content:center;border-color:var(--accent);color:var(--accent);font-weight:600">Begin →</button></div>
     </div>`;
   document.getElementById('begin').onclick=()=>{renderNode(START);};
@@ -819,6 +1114,9 @@ function showIntro(){
 /* Back and Forward move the cursor along the answered path. Neither
    touches `answers`, so nothing is lost by looking around. */
 function goBack(){
+  /* verdict layer: from the interstitial flag screen, Back returns to the
+     trigger question itself (normal selected-state behaviour). */
+  if(flagAt){ const t=flagAt; flagAt=null; return renderNode(t); }
   const path=walk().path;
   if(cursor==="END") return path.length?renderNode(path[path.length-1]):showIntro();
   const i=path.indexOf(cursor);
@@ -827,7 +1125,7 @@ function goBack(){
   return path.length?renderNode(path[path.length-1]):showIntro();  /* first unanswered */
 }
 function goForward(){ const n=nextFrom(cursor); if(n) renderNode(n); }
-function reset(){ answers={}; notes={}; showIntro(); }
+function reset(){ answers={}; notes={}; skips={}; trigLatch=false; flagAt=null; showIntro(); }
 
 /* ---------- overview ---------- */
 function optPill(o){
@@ -854,15 +1152,76 @@ function renderAll(){
   document.getElementById('exp').onclick=()=>el.querySelectorAll('details').forEach(d=>d.open=true);
   document.getElementById('col').onclick=()=>el.querySelectorAll('details').forEach(d=>d.open=false);
 }
-const walkBtn=document.getElementById('v-walk'), allBtn=document.getElementById('v-all');
-const walkView=document.getElementById('walkview'), allView=document.getElementById('allview');
-walkBtn.onclick=()=>{walkBtn.classList.add('active');allBtn.classList.remove('active');walkView.style.display='';allView.style.display='none';};
-allBtn.onclick=()=>{allBtn.classList.add('active');walkBtn.classList.remove('active');walkView.style.display='none';allView.style.display='';};
+/* ---------- verdict layer: the Mechanism tab ----------
+   Plain-language documentation of the verdict layer. The trigger list and
+   every fraction below are rendered LIVE from TRIGGERS / FRAC, so editing
+   those structures updates this page too. All copy is placeholder. */
+function renderMech(){
+  const el=document.getElementById('mechview');
+  const frac=(n,d)=>`${n} in ${d}`;
+  const trigRows=TRIGGERS.map(t=>{
+    const n=NODES[t.id];
+    return `<div class="oq"><p class="oq-q">${esc(n.q)}</p><div class="oq-opts">${
+      Object.keys(t.trigger).map(l=>`<span class="pill more">${esc(l)}</span>`).join('')}</div></div>`;
+  }).join('');
+  el.innerHTML=`
+  <div class="card">
+    <h3>How the verdict is reached</h3>
+    <p class="help">[placeholder copy throughout — mechanics for review, wording to be rewritten]</p>
+    <p>At the end of a run the tool now states one of three verdicts, checked in this order:</p>
+    <ul>
+      <li><b>${esc(VERDICT_LABEL[1])}</b> — at least one trigger answer is active on your answered path.</li>
+      <li><b>${esc(VERDICT_LABEL[2])}</b> — no trigger, but one of two fraction channels trips (or too little has been seen to clear anything).</li>
+      <li><b>${esc(VERDICT_LABEL[3])}</b> — neither of the above, with at least ${FRAC.MIN_READINGS} readings recorded.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Level 1 — triggers</h3>
+    <p>These specific answers are treated as red lines: any one of them, on its own, is read as enough to escalate. The current mapping (provisional placeholder — edit <code>TRIGGERS</code> in the source):</p>
+    ${trigRows}
+    <p><b>Interstitial flag — committed first, warned second:</b> your answer is recorded exactly as normal; then, <i>after</i> it is committed (for multi-selects: only when you press Continue, never on a tick) and before the next question, a standalone flag screen appears — deliberately after the fact, so the warning cannot change what you were about to answer. It is not a question and shows no answer controls; it offers to skip straight to the end, or you can carry on. Back from it returns you to the question you just answered. The flag appears <b>once per run</b> and never re-appears when you navigate back over that point: if you continue past it, later trigger answers are collected silently and all of them are listed in the summary. Changing a trigger answer (or marking its question not applicable) un-fires it; if none remain, the verdict is no longer level 1.</p>
+  </div>
+  <div class="card">
+    <h3>Levels 2 and 3 — the two channels</h3>
+    <p>If no trigger fired, the recorded readings are compared against two thresholds. "Recorded readings" are answers that carry a reading — skipped questions and routing-only answers are excluded from both the numerator and the denominator.</p>
+    <ul>
+      <li><b>Strong channel:</b> strong-concerning readings ("more concerning", <i>not</i> "slightly") are at least <b>${frac(FRAC.STRONG_NUM,FRAC.STRONG_DEN)}</b> of recorded readings.</li>
+      <li><b>Pooled channel:</b> concerning readings (including slightly) plus unsure readings together are at least <b>${frac(FRAC.POOL_NUM,FRAC.POOL_DEN)}</b> of recorded readings.</li>
+    </ul>
+    <p>Either channel tripping gives <b>${esc(VERDICT_LABEL[2])}</b>; otherwise <b>${esc(VERDICT_LABEL[3])}</b>. Both fractions are placeholders pending calibration with real users, and are compared as whole-number cross-products — no decimals are computed or shown.</p>
+    <p><b>Guards:</b> with fewer than <b>${FRAC.MIN_READINGS}</b> recorded readings there is no level-3 verdict — too little has been seen to clear anything, so the tool stays at the level-2 action with different wording. Reassuring readings never subtract from anything; they only sit in the denominator.</p>
+    <p><b>What this layer never does:</b> no summing into a single score, no subtraction of reassuring answers, no weights, no displayed number-verdict. The tally stays a plain count.</p>
+  </div>
+  <div class="card">
+    <h3>Two worked examples (hypothetical)</h3>
+    <p><b>a) A trigger mid-run.</b> Someone ticks that a missing control mechanism breached "A company policy or commitment" and presses Continue. The answer is recorded, and before the next question a flag screen appears: it says this alone is probably enough reason to escalate, and offers "Skip to the end". They continue instead; later they also tick "A law" on the monitoring question — no second flag, but the summary lists both, and the verdict is <b>${esc(VERDICT_LABEL[1])}</b>.</p>
+    <p><b>b) No trigger, unsure-heavy.</b> A run records 12 readings: none strong-concerning (strong channel: 0 of 12 — not tripped), but 2 slightly-concerning and 3 unsure. Pooled, that is 5 of 12, and 5×${FRAC.POOL_DEN} ≥ 12×${FRAC.POOL_NUM}, so the pooled channel trips: <b>${esc(VERDICT_LABEL[2])}</b>.</p>
+  </div>
+  <div class="card">
+    <h3>Known blind spots</h3>
+    <ul>
+      <li>The fractions are uncalibrated — placeholders until real users have been observed.</li>
+      <li>The strong/slight labels are now load-bearing, but they were assigned when nothing hung on them — an audit of every "more" vs "slight-more" is pending.</li>
+      <li>Law-breaking by the <i>model's own conduct</i> has no question in the tree, so it cannot trigger — only safeguard-absence and company-handling breaches can.</li>
+      <li>If the tree grows, added questions dilute the strong channel's denominator — ${frac(FRAC.STRONG_NUM,FRAC.STRONG_DEN)} of a much larger tree is a harder bar.</li>
+    </ul>
+  </div>`;
+}
+const TABS=[['v-walk','walkview'],['v-all','allview'],['v-mech','mechview']];
+TABS.forEach(([b,v])=>{
+  document.getElementById(b).onclick=()=>{
+    TABS.forEach(([b2,v2])=>{
+      document.getElementById(b2).classList.toggle('active',b2===b);
+      document.getElementById(v2).style.display=(v2===v)?'':'none';
+    });
+  };
+});
 if(!SHOW.trail){
   document.querySelector('aside h2').textContent='Your answers so far';
   document.querySelector('aside .sub').textContent='Each answer, in order, with any note you added.';
 }
 renderAll();
+renderMech();
 showIntro();
 </script>
 </body>
