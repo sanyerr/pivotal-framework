@@ -609,19 +609,19 @@ const NODES=buildNodes();
 const TRIGGERS=[
   { id:"m_resp_comm", trigger:{
       "Public story contradicts what insiders know":
-        "[placeholder] The company is actively misrepresenting the incident to the public." } },
+        "The company is actively misrepresenting the incident to the public." } },
   { id:"m_ctrl_rl", trigger:{
-      "A law":"[placeholder] A legally required control mechanism was missing.",
-      "A company policy or commitment":"[placeholder] The missing control mechanism breached the company's own commitments." } },
+      "A law":"A legally required control mechanism was missing.",
+      "A company policy or commitment":"The missing control mechanism breached the company's own commitments." } },
   { id:"m_mon_rl", trigger:{
-      "A law":"[placeholder] Legally required monitoring was missing.",
-      "A company policy or commitment":"[placeholder] The missing monitoring breached the company's own commitments." } },
+      "A law":"Legally required monitoring was missing.",
+      "A company policy or commitment":"The missing monitoring breached the company's own commitments." } },
   { id:"m_learn_rl", trigger:{
-      "A law":"[placeholder] A legally required post-incident review was not carried out.",
-      "A company policy or commitment":"[placeholder] The skipped post-incident review breached the company's own commitments." } },
+      "A law":"A legally required post-incident review was not carried out.",
+      "A company policy or commitment":"The skipped post-incident review breached the company's own commitments." } },
   { id:"m_resp_rl", trigger:{
-      "A law":"[placeholder] The company's handling of the incident broke the law.",
-      "A company policy or commitment":"[placeholder] The company's handling of the incident breached its own policy or commitments." } }
+      "A law":"The company's handling of the incident broke the law.",
+      "A company policy or commitment":"The company's handling of the incident breached its own policy or commitments." } }
 ];
 
 /* ---- FRACTIONS — PLACEHOLDERS PENDING REAL-USER CALIBRATION, EDIT HERE. ----
@@ -789,7 +789,7 @@ function wireNav(){
 function skipHtml(id){
   const on=isSkipped(id);
   return `<div class="skiprow"><button type="button" class="skipbtn${on?' on':''}" id="skipbtn"
-    title="[placeholder] Skip = this question doesn't apply to my situation. Unsure = it applies but I can't tell.">${
+    title="Skip = this question doesn't apply to my situation. Unsure = it applies but I can't tell.">${
     on?'Skipped as not applicable — click to un-skip, or pick an answer':'Not applicable — skip'}</button></div>`;
 }
 /* verdict layer: the interstitial flag screen — commit first, warn second.
@@ -990,7 +990,7 @@ function verdictInfo(){
   const pooled=readings.filter(t=>t.dir==='more'||t.dir==='slight-more'||t.dir==='unsure').length;
   return Object.assign({fired,R,strong,pooled},classify(fired.length,strong,pooled,R));
 }
-const VERDICT_DISCLAIMER="[placeholder] The trigger mapping and both fractions are provisional, pending calibration with real users.";
+const VERDICT_DISCLAIMER="The trigger mapping and both fractions are provisional, pending calibration with real users.";
 function verdictReasonParts(v){
   if(v.level===1)
     return {head:"One or more red-line answers fired:",
@@ -1078,7 +1078,7 @@ function renderSummary(){
       <div class="note"><b>The tally.</b> Every answer is tallied equally — follow-up questions make some paths longer than others. Unsure answers are counted apart on purpose: a pile of them says something about what you can't see from where you sit.</div>
       ${skippedT.length?`
       <div class="stage" style="margin-top:26px">Marked not applicable</div>
-      <p class="help" style="margin:0">[placeholder] These record no reading — they're outside the tally.</p>
+      <p class="help" style="margin:0">These record no reading — they're outside the tally.</p>
       <div class="skiplist">
         ${skippedT.map(t=>`<div class="si">${esc(t.q)}</div>`).join('')}
       </div>`:''}
@@ -1106,7 +1106,7 @@ function showIntro(){
       <p class="help" style="margin-bottom:14px">This tool focuses on situations where a model deployed inside your company has done something concerning. These questions help you weigh how worrying it really is, all things considered.</p>
       <p class="help" style="margin-bottom:14px">The questions are grouped by <b style="color:var(--ink)">what the signal is about</b> — <b style="color:var(--ink)">the model</b>, its <b style="color:var(--ink)">affordances</b>, <b style="color:var(--ink)">the safeguards</b> around it, <b style="color:var(--ink)">the company's</b> conduct, and <b style="color:var(--ink)">what's at stake</b>. Use the <b style="color:var(--ink)">All questions</b> tab to see the whole structure.</p>
       <p class="help" style="margin-bottom:14px">Every question has an optional notes box for anything you want to record about your own case; the notes are shown back to you at the end. <b style="color:var(--ink)">No answers and no notes are collected</b> — nothing leaves your browser.</p>
-      <p class="skiphelp" style="margin:0 0 16px">[placeholder wording] Every question also has a small <b>"Not applicable — skip"</b> link. <b>Unsure</b> = the question applies but you can't tell. <b>Skip</b> = the question doesn't apply to your situation. Skipped questions record nothing and are listed separately at the end.</p>
+      <p class="skiphelp" style="margin:0 0 16px">Every question also has a small <b>"Not applicable — skip"</b> link. <b>Unsure</b> = the question applies but you can't tell. <b>Skip</b> = the question doesn't apply to your situation. Skipped questions record nothing and are listed separately at the end.</p>
       <div class="opts"><button class="opt" id="begin" style="justify-content:center;border-color:var(--accent);color:var(--accent);font-weight:600">Begin →</button></div>
     </div>`;
   document.getElementById('begin').onclick=()=>{renderNode(START);};
@@ -1167,7 +1167,6 @@ function renderMech(){
   el.innerHTML=`
   <div class="card">
     <h3>How the verdict is reached</h3>
-    <p class="help">[placeholder copy throughout — mechanics for review, wording to be rewritten]</p>
     <p>At the end of a run the tool now states one of three verdicts, checked in this order:</p>
     <ul>
       <li><b>${esc(VERDICT_LABEL[1])}</b> — at least one trigger answer is active on your answered path.</li>
@@ -1177,7 +1176,7 @@ function renderMech(){
   </div>
   <div class="card">
     <h3>Level 1 — triggers</h3>
-    <p>These specific answers are treated as red lines: any one of them, on its own, is read as enough to escalate. The current mapping (provisional placeholder — edit <code>TRIGGERS</code> in the source):</p>
+    <p>These specific answers are treated as red lines: any one of them, on its own, is read as enough to escalate. The current mapping (provisional):</p>
     ${trigRows}
     <p><b>Interstitial flag — committed first, warned second:</b> your answer is recorded exactly as normal; then, <i>after</i> it is committed (for multi-selects: only when you press Continue, never on a tick) and before the next question, a standalone flag screen appears — deliberately after the fact, so the warning cannot change what you were about to answer. It is not a question and shows no answer controls; it offers to skip straight to the end, or you can carry on. Back from it returns you to the question you just answered. The flag appears <b>once per run</b> and never re-appears when you navigate back over that point: if you continue past it, later trigger answers are collected silently and all of them are listed in the summary. Changing a trigger answer (or marking its question not applicable) un-fires it; if none remain, the verdict is no longer level 1.</p>
   </div>
