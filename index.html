@@ -787,17 +787,22 @@ function tagFor(o){
   return '';
 }
 function navHtml(){
-  /* Forward is absent, not greyed, when there is nothing recorded ahead */
+  /* Forward is absent, not greyed, when there is nothing recorded ahead.
+     Summary appears once the walkthrough is complete, so revisiting an
+     answer from the end screen never strands you a Forward-crawl away. */
   const fwd = cursor!=="END" && resolved(cursor);
+  const done = cursor!=="END" && walk().next==="END";
   return `<div class="nav">
     <button id="back">← Back</button>
     ${fwd?`<button id="fwd">Forward →</button>`:''}
+    ${done?`<button id="toEnd">Summary →</button>`:''}
     <button id="restart">Restart</button>
   </div>`;
 }
 function wireNav(){
   const b=document.getElementById('back'); if(b) b.onclick=goBack;
   const f=document.getElementById('fwd'); if(f) f.onclick=goForward;
+  const e=document.getElementById('toEnd'); if(e) e.onclick=()=>renderNode("END");
   document.getElementById('restart').onclick=reset;
 }
 /* verdict layer: the skip control. Deliberately small and off to the side —
