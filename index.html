@@ -502,6 +502,13 @@ const BRANCHES = {
         { id:"m_learn_inq",
           q:"Is open inquiry about the incident and the response allowed?",
           options:[{label:"Yes", dir:"less"},{label:"No — inquiry is discouraged", dir:"more"}]},
+        { id:"m_expertise",
+          q:"When something goes wrong, are the people who best understand the problem involved in deciding the response?",
+          options:[
+            {label:"Yes", dir:"less"},
+            {label:"No", dir:"more"},
+            {label:"I don't know who is deciding", dir:"unsure"}
+          ]},
         { id:"m_alarm",
           q:"Has anyone raised an alarm about this before?",
           options:[
