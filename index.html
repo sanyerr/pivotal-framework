@@ -627,7 +627,7 @@ const NODES=buildNodes();
 const TRIGGERS=[
   { id:"m_resp_comm", trigger:{
       "Public story contradicts what insiders know":
-        "The company is actively misrepresenting the incident to the public." } },
+        "The company is actively misrepresenting things to the public." } },
   { id:"m_ctrl_rl", trigger:{
       "A law":"A legally required control mechanism was missing.",
       "A company policy or commitment":"The missing control mechanism breached the company's own commitments." } },
@@ -642,7 +642,7 @@ const TRIGGERS=[
       "A company policy or commitment":"The company's handling of the incident breached its own policy or commitments." } },
   { id:"m_rd_cap", trigger:{
       "Yes — it could fully automate AI research":
-        "Company safety frameworks widely treat this capability level as critical — the level at which actions like halting development become justified." } }
+        "Company safety frameworks widely treat this capability level as critical, justifying actions such as halting development." } }
 ];
 
 /* ---- FRACTIONS — PLACEHOLDERS PENDING REAL-USER CALIBRATION, EDIT HERE. ----
@@ -1018,17 +1018,13 @@ function verdictInfo(){
 }
 function verdictReasonParts(v){
   if(v.level===1)
-    return {head:"One or more red-line answers fired:",
+    return {head:"These answers are each, on their own, probably enough reason to escalate:",
       items:v.fired.map(f=>`${f.q} — "${f.answer}". ${f.reason}`)};
-  if(v.why==="channel"){
-    const items=[];
-    if(v.chanA) items.push(`${v.strong} of ${v.R} recorded readings are strong-concerning — at or above ${FRAC.STRONG_NUM} in ${FRAC.STRONG_DEN}.`);
-    if(v.chanB) items.push(`${v.pooled} of ${v.R} recorded readings are concerning (incl. slightly) or unsure — at or above ${FRAC.POOL_NUM} in ${FRAC.POOL_DEN}.`);
-    return {head:"No red-line answer fired, but:",items};
-  }
+  if(v.why==="channel")
+    return {head:"A meaningful share of what you've seen reads concerning or unsure. Start collecting evidence now and reach out to experts to get more confidence in how worrying the information is, and to learn what your options and protections are.",items:[]};
   if(v.why==="insufficient")
-    return {head:`Only ${v.R} reading${v.R===1?'':'s'} recorded — fewer than ${FRAC.MIN_READINGS}. Not enough seen to clear anything.`,items:[]};
-  return {head:`No red-line answer fired. ${v.strong} of ${v.R} readings strong-concerning (below ${FRAC.STRONG_NUM} in ${FRAC.STRONG_DEN}); ${v.pooled} of ${v.R} concerning-or-unsure (below ${FRAC.POOL_NUM} in ${FRAC.POOL_DEN}).`,items:[]};
+    return {head:"There is too little information to make a strong judgement one way or another. Start collecting evidence now and reach out to experts to get more confidence in how worrying the information is, and to learn what your options and protections are.",items:[]};
+  return {head:"Little here reads concerning on its own. The useful thing to do now is to decide, in writing, what would change your mind — at what point would you definitely want to speak up?",items:[]};
 }
 function asMarkdown(){
   const c=counts(); let out=`# How concerning is this signal? — your answers\n\n`;
@@ -1039,13 +1035,13 @@ function asMarkdown(){
     r.items.forEach(x=>{ out+=`\n- ${x}`; });
     if(r.items.length) out+=`\n`;
   }
-  out+=`## Tally\n\n| Reading | Count |\n| --- | ---: |\n`;
+  out+=`## The counts\n\n| Reading | Count |\n| --- | ---: |\n`;
   COLS.forEach(k=>{out+=`| ${k} | ${c[k]} |\n`;});
   if(c.uncounted) out+=`| Not counted (routing answers) | ${c.uncounted} |\n`;
-  out+=`\n**The tally.** Every answer below carries a \`+1\` towards exactly one of the four columns, so you can recount them yourself. Follow-up questions make some paths longer than others. Unsure answers are counted apart on purpose: a pile of them says something about what you can't see from where you sit.\n`;
+  out+=`\n**How the counts work.** Every answer below carries a \`+1\` towards exactly one of the four columns, so you can recount them yourself. Follow-up questions make some paths longer than others. Unsure answers are counted separately on purpose: a pile of them says something about what you can't see from where you sit.\n`;
   const skippedT=trail.filter(t=>t.skipped);
   if(skippedT.length){
-    out+=`\n## Not applicable (skipped)\n\nThese questions were marked not applicable. They record no reading and are not in the tally or in any denominator.\n`;
+    out+=`\n## Not applicable (skipped)\n\nThese questions were marked not applicable. They record nothing and are not counted anywhere.\n`;
     skippedT.forEach(t=>{
       out+=`\n- ${t.q}`;
       if(t.note) out+=`\n\n  > ${t.note.replace(/\n/g,'\n  > ')}\n`;
@@ -1097,10 +1093,8 @@ function renderSummary(){
         <div class="tile neutral"><div class="n">${neutral}</div><div class="l">Neutral</div></div>
         <div class="tile neutral"><div class="n">${unsure}</div><div class="l">Unsure</div></div>
       </div>
-      <div class="note"><b>The tally.</b> Every answer is tallied equally — follow-up questions make some paths longer than others. Unsure answers are counted apart on purpose: a pile of them says something about what you can't see from where you sit.</div>
       ${skippedT.length?`
       <div class="stage" style="margin-top:26px">Marked not applicable</div>
-      <p class="help" style="margin:0">These record no reading — they're outside the tally.</p>
       <div class="skiplist">
         ${skippedT.map(t=>`<div class="si">${esc(t.q)}</div>`).join('')}
       </div>`:''}
@@ -1128,7 +1122,7 @@ function showIntro(){
       <p class="help" style="margin-bottom:14px">This tool focuses on situations where a model deployed inside your company has done something concerning. These questions help you weigh how worrying it really is, all things considered.</p>
       <p class="help" style="margin-bottom:14px">The questions look at the signal from five angles: the model, its affordances, the safeguards around it, the company's conduct, and what's at stake. Use the <b style="color:var(--ink)">All questions</b> tab to see the whole structure.</p>
       <p class="help" style="margin-bottom:14px">Every question has an optional notes box for anything you want to record about your own case; the notes are shown back to you at the end. <b style="color:var(--ink)">No answers and no notes are collected</b> — nothing leaves your browser.</p>
-      <p class="skiphelp" style="margin:0 0 16px">Every question also has a small <b>"Not applicable — skip"</b> link. <b>Unsure</b> = the question applies but you can't tell. <b>Skip</b> = the question doesn't apply to your situation. Skipped questions record nothing and are listed separately at the end.</p>
+      <p class="skiphelp" style="margin:0 0 16px">Every question also has a small <b>"Not applicable — skip"</b> link. <b>Unsure</b> = the question applies but you can't tell. <b>Skip</b> = the question doesn't apply to your situation.</p>
       <div class="opts"><button class="opt" id="begin" style="justify-content:center;border-color:var(--accent);color:var(--accent);font-weight:600">Begin →</button></div>
     </div>`;
   document.getElementById('begin').onclick=()=>{renderNode(START);};
