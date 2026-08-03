@@ -435,6 +435,15 @@ const BRANCHES = {
       ]},
 
       { name:"The company", qs:[
+        { id:"m_crit",
+          q:"Were there criteria for deciding whether the model could be deployed internally?",
+          options:[
+            {label:"Yes", tag:"→ followed?", tagClass:"plain", next:"m_crit_follow"},
+            {label:"No", dir:"more"}
+          ]},
+        { id:"m_crit_follow", cond:true,
+          q:"Were the criteria followed?",
+          options:[{label:"Yes", dir:"less"},{label:"No", dir:"more"}]},
         { id:"m_ident",
           q:"Was the possibility of this kind of behavior identified in the lab beforehand?",
           options:[
