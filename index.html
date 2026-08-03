@@ -329,8 +329,10 @@ const BRANCHES = {
           ]},
         { id:"m_rd_cap",
           q:"Is the model capable of autonomous AI R&D?",
+          help:"Autonomous AI R&D means the model doing AI research and development work by itself. Many company safety frameworks define this as a critical threshold, justifying actions such as halting development and hardened safeguards.",
           options:[
-            {label:"Yes", dir:"more"},
+            {label:"Yes — it could fully automate AI research", dir:"more"},
+            {label:"Yes — it's already being used to substantially accelerate AI R&D", dir:"more"},
             {label:"No", dir:"less"},
             {label:"It wasn't evaluated for this", dir:"more"}
           ]},
@@ -637,7 +639,10 @@ const TRIGGERS=[
       "A company policy or commitment":"The skipped post-incident review breached the company's own commitments." } },
   { id:"m_resp_rl", trigger:{
       "A law":"The company's handling of the incident broke the law.",
-      "A company policy or commitment":"The company's handling of the incident breached its own policy or commitments." } }
+      "A company policy or commitment":"The company's handling of the incident breached its own policy or commitments." } },
+  { id:"m_rd_cap", trigger:{
+      "Yes — it could fully automate AI research":
+        "Company safety frameworks widely treat this capability level as critical — the level at which actions like halting development become justified." } }
 ];
 
 /* ---- FRACTIONS — PLACEHOLDERS PENDING REAL-USER CALIBRATION, EDIT HERE. ----
