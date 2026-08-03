@@ -767,7 +767,7 @@ function noteHtml(id){
   return `<div class="notebox">
       <button type="button" class="noteToggle" id="noteToggle"${open?' style="display:none"':''}>＋ Add a note (optional)</button>
       <div class="noteWrap" id="noteWrap"${open?'':' hidden'}>
-        <label class="noteLbl" for="noteInput">Anything you want to record about this — context, detail, what you're unsure about. Shown back to you at the end. Nothing is stored or sent anywhere.</label>
+        <label class="noteLbl" for="noteInput">You can add notes here about the context or anything you're unsure about. Nothing is stored or sent anywhere.</label>
         <textarea id="noteInput" rows="3" placeholder="Optional">${esc(val)}</textarea>
       </div>
     </div>`;
@@ -1016,7 +1016,6 @@ function verdictInfo(){
   const pooled=readings.filter(t=>t.dir==='more'||t.dir==='slight-more'||t.dir==='unsure').length;
   return Object.assign({fired,R,strong,pooled},classify(fired.length,strong,pooled,R));
 }
-const VERDICT_DISCLAIMER="The trigger mapping and both fractions are provisional, pending calibration with real users.";
 function verdictReasonParts(v){
   if(v.level===1)
     return {head:"One or more red-line answers fired:",
@@ -1034,13 +1033,11 @@ function verdictReasonParts(v){
 function asMarkdown(){
   const c=counts(); let out=`# How concerning is this signal? — your answers\n\n`;
   out+=`Scope: the model as actor — loss of control via internal deployment. Completed ${stamp()}.\n\n`;
-  out+=`This file was written by your browser and never left it.\n\n`;
   {
     const v=verdictInfo(), r=verdictReasonParts(v);
     out+=`## Verdict\n\n**${VERDICT_LABEL[v.level]}**\n\n${r.head}\n`;
     r.items.forEach(x=>{ out+=`\n- ${x}`; });
     if(r.items.length) out+=`\n`;
-    out+=`\n_${VERDICT_DISCLAIMER}_\n\n`;
   }
   out+=`## Tally\n\n| Reading | Count |\n| --- | ---: |\n`;
   COLS.forEach(k=>{out+=`| ${k} | ${c[k]} |\n`;});
@@ -1077,7 +1074,6 @@ function verdictBoxHtml(){
       <p class="vlabel">${VERDICT_LABEL[v.level]}</p>
       <p class="vwhy">${esc(r.head)}</p>
       ${r.items.length?`<ul>${r.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
-      <p class="vdisc">${esc(VERDICT_DISCLAIMER)}</p>
     </div>`;
 }
 function renderSummary(){
@@ -1117,7 +1113,7 @@ function renderSummary(){
       <div class="dlrow">
         <button class="dl" id="dlmd">↓ Download your answers (.md)</button>
       </div>
-      <div class="note"><b>Nothing has been saved or sent.</b> Your answers and notes exist only in this browser tab and disappear when you close or restart it. The download is written by your own browser, on your machine — take a copy if you want to keep one.</div>
+      <div class="note"><b>Nothing has been saved or sent.</b> Your answers and notes exist only in this browser tab and disappear when you close or restart it. If you want to keep the results, download them using the button above.</div>
       ${navHtml()}
     </div>`;
   wireDownloads(); wireNav();
@@ -1128,9 +1124,9 @@ function showIntro(){
     <div class="card">
       <div class="stage">About this tool</div>
       <p class="q">How concerning is this signal?</p>
-      <p class="help" style="font-size:14.5px;margin-bottom:16px">A thinking aid for people inside a frontier AI company who have noticed something and want to work out <b style="color:var(--ink)">how worrying it actually is</b>.</p>
+      <p class="help" style="font-size:14.5px;margin-bottom:16px">A thinking aid for people inside a frontier AI company who have noticed something and want to understand <b style="color:var(--ink)">how worrying it actually is</b>.</p>
       <p class="help" style="margin-bottom:14px">This tool focuses on situations where a model deployed inside your company has done something concerning. These questions help you weigh how worrying it really is, all things considered.</p>
-      <p class="help" style="margin-bottom:14px">The questions are grouped by <b style="color:var(--ink)">what the signal is about</b> — <b style="color:var(--ink)">the model</b>, its <b style="color:var(--ink)">affordances</b>, <b style="color:var(--ink)">the safeguards</b> around it, <b style="color:var(--ink)">the company's</b> conduct, and <b style="color:var(--ink)">what's at stake</b>. Use the <b style="color:var(--ink)">All questions</b> tab to see the whole structure.</p>
+      <p class="help" style="margin-bottom:14px">The questions look at the signal from five angles: the model, its affordances, the safeguards around it, the company's conduct, and what's at stake. Use the <b style="color:var(--ink)">All questions</b> tab to see the whole structure.</p>
       <p class="help" style="margin-bottom:14px">Every question has an optional notes box for anything you want to record about your own case; the notes are shown back to you at the end. <b style="color:var(--ink)">No answers and no notes are collected</b> — nothing leaves your browser.</p>
       <p class="skiphelp" style="margin:0 0 16px">Every question also has a small <b>"Not applicable — skip"</b> link. <b>Unsure</b> = the question applies but you can't tell. <b>Skip</b> = the question doesn't apply to your situation. Skipped questions record nothing and are listed separately at the end.</p>
       <div class="opts"><button class="opt" id="begin" style="justify-content:center;border-color:var(--accent);color:var(--accent);font-weight:600">Begin →</button></div>
