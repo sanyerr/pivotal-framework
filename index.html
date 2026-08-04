@@ -1113,7 +1113,7 @@ function asMarkdown(){
   out+=`## The counts\n\n| Reading | Count | Weighted |\n| --- | ---: | ---: |\n`;
   COLS.forEach(k=>{out+=`| ${k} | ${c[k]} | ${wc[k]} |\n`;});
   if(c.uncounted) out+=`| Not counted (routing answers) | ${c.uncounted} | — |\n`;
-  out+=`\n**How the counts work.** Every answer below carries a \`+1\` — or \`+2\` where the question is in the heavier of the tool's two question tiers — towards exactly one of the four columns, so you can recount them yourself. Follow-up questions make some paths longer than others. Unsure answers are counted separately on purpose: a pile of them says something about what you can't see from where you sit.\n`;
+  out+=`\n**How the counts work.** Every answer below carries a \`+1\` — or \`+2\` where the question is in the heavier of the tool's two question tiers — towards exactly one of the four columns, so you can recount them yourself. Follow-up questions make some paths longer than others. Unsure answers are counted separately.\n`;
   const skippedT=trail.filter(t=>t.skipped);
   if(skippedT.length){
     out+=`\n## Not applicable (skipped)\n\nThese questions were marked not applicable. They record nothing and are not counted anywhere.\n`;
