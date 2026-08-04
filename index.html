@@ -1230,7 +1230,7 @@ function renderAll(){
   const el=document.getElementById('allview');
   let html=`<div class="ov-tools"><button id="exp">Expand all</button><button id="col">Collapse all</button></div>`;
   const b=BRANCHES.model;
-  html+=`<div class="ov-branch"><h3>The model as actor — loss of control via internal deployment</h3><p>Grouped by what the signal is about. Multi-select questions (marked) let one absence breach several requirements at once. Every non-multi question also carries an automatic "Unsure / can't tell" option.</p>`;
+  html+=`<div class="ov-branch"><h3>Loss of control via internal deployment</h3><p>The questions look at the signal from five angles: the model, its affordances, the safeguards around it, the company's conduct, and what's at stake.</p>`;
   b.sections.forEach(s=>{
     html+=`<details class="sec"><summary>${s.name}<span class="cnt">${s.qs.length} question${s.qs.length===1?'':'s'}</span></summary><div class="ov-body">`;
     s.qs.forEach(q=>{
