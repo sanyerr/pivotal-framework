@@ -269,6 +269,9 @@ const BRANCHES = {
         { id:"m_collateral2", cond:true,
           q:"Would the model have taken any actions that would have caused large amounts of collateral damage, if provided the opportunity?",
           options:[{label:"Yes — plausibly", dir:"more"},{label:"No", dir:"less"}]},
+        { id:"m_illegal",
+          q:"Did the model take any actions that broke the law?",
+          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
         { id:"m_multi",
           q:"Were there multiple models involved?",
           options:[
@@ -286,7 +289,11 @@ const BRANCHES = {
           options:[{label:"Yes — plausibly", dir:"more"},{label:"No", dir:"less"}]},
         { id:"m_selfrep",
           q:"Did the model exfiltrate its weights?",
-          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
+          options:[
+            {label:"Yes", dir:"more"},
+            {label:"It attempted to, but didn't succeed", dir:"more"},
+            {label:"No", dir:"less"}
+          ]},
         { id:"m_freq",
           q:"How often has the model produced behavior like this before?",
           options:[
@@ -642,7 +649,11 @@ const TRIGGERS=[
       "A company policy or commitment":"The company's handling of the incident breached its own policy or commitments." } },
   { id:"m_rd_cap", trigger:{
       "Yes — it could fully automate AI research":
-        "Company safety frameworks widely treat this capability level as critical, justifying actions such as halting development." } }
+        "Company safety frameworks widely treat this capability level as critical, justifying actions such as halting development." } },
+  { id:"m_illegal", trigger:{
+      "Yes":"The model's actions broke the law." } },
+  { id:"m_selfrep", trigger:{
+      "Yes":"The model's weights are outside the company's control, and getting them back may not be possible." } }
 ];
 
 /* ---- FRACTIONS — PLACEHOLDERS PENDING REAL-USER CALIBRATION, EDIT HERE. ----
@@ -1217,7 +1228,7 @@ function renderMech(){
     <ul>
       <li>The fractions are uncalibrated — placeholders until real users have been observed.</li>
       <li>The strong/slight labels are now load-bearing, but they were assigned when nothing hung on them — an audit of every "more" vs "slight-more" is pending.</li>
-      <li>Law-breaking by the <i>model's own conduct</i> has no question in the tree, so it cannot trigger — only safeguard-absence and company-handling breaches can.</li>
+      <li>The trigger list now spans three different kinds of thing — company trustworthiness (lying, law, own commitments), a capability threshold, and the model's own conduct — without a single stated rule covering all three.</li>
       <li>If the tree grows, added questions dilute the strong channel's denominator — ${frac(FRAC.STRONG_NUM,FRAC.STRONG_DEN)} of a much larger tree is a harder bar.</li>
     </ul>
   </div>`;
