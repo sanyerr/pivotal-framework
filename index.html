@@ -1353,7 +1353,7 @@ showIntro();
 <div id="fbPanel" role="dialog" aria-label="Send feedback">
   <h4>Feedback on this tool</h4>
   <textarea id="fbText" placeholder="What worked, what didn't, what's missing?"></textarea>
-  <p id="fbNote">Sent anonymously, and only when you press Send: we receive the text above, the question or page you're on, and a timestamp — never your answers or notes. Delivery runs through a Google form.</p>
+  <p id="fbNote">Sent anonymously, and only when you press Send: we receive the text above, the question or page you're on, and a timestamp — never your answers or notes. Delivery runs through a Google form; the request carries no cookies, so it can't be tied to any Google account you're signed into.</p>
   <div id="fbRow">
     <button id="fbSend" type="button">Send</button>
     <span id="fbDone">Thank you — sent.</span>
@@ -1389,7 +1389,7 @@ showIntro();
     const body=new URLSearchParams();
     body.append(ENTRY,v);
     body.append(ENTRY_CTX,viewingLine());  /* captured at send time */
-    fetch(FORM,{method:'POST',mode:'no-cors',
+    fetch(FORM,{method:'POST',mode:'no-cors',credentials:'omit',  /* never send cookies: the submission cannot be linked to a signed-in Google account */
       headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()})
       .catch(()=>{})  /* no-cors: the response is opaque whether it worked or not */
       .finally(()=>{ send.disabled=false; txt.value=''; done.style.display='inline'; });
