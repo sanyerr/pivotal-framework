@@ -1182,7 +1182,7 @@ function renderSummary(){
       <div class="dlrow">
         <button class="dl" id="dlmd">↓ Download your answers (.md)</button>
       </div>
-      <div class="note"><b>Nothing has been saved or sent.</b> Your answers and notes exist only in this browser tab and disappear when you close or restart it. If you want to keep the results, download them using the button above.</div>
+      <div class="note"><b>Nothing has been saved or sent.</b> Your answers and notes exist only in this browser tab and disappear when you close or restart it. If you want to keep the results, download them using the button above. (If you used the feedback button, only the text you typed there was sent.)</div>
       ${navHtml()}
     </div>`;
   wireDownloads(); wireNav();
@@ -1196,7 +1196,7 @@ function showIntro(){
       <p class="help" style="font-size:14.5px;margin-bottom:16px">A thinking aid for people inside a frontier AI company who have noticed something and want to understand <b style="color:var(--ink)">how worrying it actually is</b>.</p>
       <p class="help" style="margin-bottom:14px">This tool focuses on situations where a model deployed inside your company has done something concerning. These questions help you weigh how worrying it really is, all things considered.</p>
       <p class="help" style="margin-bottom:14px">The questions look at the signal from five angles: the model, its affordances, the safeguards around it, the company's conduct, and what's at stake. Use the <b style="color:var(--ink)">All questions</b> tab to see the whole structure.</p>
-      <p class="help" style="margin-bottom:14px">Every question has an optional notes box for anything you want to record about your own case; the notes are shown back to you at the end. <b style="color:var(--ink)">No answers and no notes are collected</b> — nothing leaves your browser.</p>
+      <p class="help" style="margin-bottom:14px">Every question has an optional notes box for anything you want to record about your own case; the notes are shown back to you at the end. <b style="color:var(--ink)">No answers and no notes are collected</b> — nothing leaves your browser. The feedback button is the one exception: pressing Send sends the text in the feedback box, and nothing else.</p>
       <p class="skiphelp" style="margin:0 0 16px">Every question also has a small <b>"Not applicable — skip"</b> link. <b>Unsure</b> = the question applies but you can't tell. <b>Skip</b> = the question doesn't apply to your situation.</p>
       <div class="opts"><button class="opt" id="begin" style="justify-content:center;border-color:var(--accent);color:var(--accent);font-weight:600">Begin →</button></div>
     </div>`;
@@ -1320,6 +1320,81 @@ if(!SHOW.trail){
 renderAll();
 renderMech();
 showIntro();
+</script>
+<!-- ============ FEEDBACK WIDGET (2026-08-04) ============
+     Posts two fields to the "How concerning is this signal? — feedback"
+     Google Form, only on an explicit Send: the typed text ("Feedback")
+     and the name of the current screen ("Context", filled by the tool
+     at send time and disclosed in the note under the box — Santeri's
+     2026-08-04 call, replacing the visible-in-textarea design). Nothing
+     else ever leaves the page. All widget copy is Claude placeholder
+     pending Santeri's wording. -->
+<style>
+  #fbBtn{position:fixed;right:18px;bottom:18px;z-index:60;font-family:var(--display);
+    background:var(--accent-deep);color:#fff;border:none;border-radius:999px;
+    padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:var(--shadow);}
+  #fbBtn:hover{background:var(--accent);}
+  #fbPanel{position:fixed;right:18px;bottom:70px;z-index:60;width:min(340px,calc(100vw - 36px));
+    background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+    padding:16px;display:none;}
+  #fbPanel h4{margin:0 0 8px;font-family:var(--display);color:var(--ink);font-size:15px;}
+  #fbText{width:100%;box-sizing:border-box;min-height:110px;resize:vertical;border:1px solid var(--line);
+    border-radius:8px;padding:8px 10px;font:13.5px/1.45 inherit;color:var(--ink);background:#fff;}
+  #fbText:focus{outline:none;border-color:var(--accent);}
+  #fbNote{font-size:11.5px;color:var(--muted);margin:8px 0 10px;line-height:1.45;}
+  #fbRow{display:flex;gap:8px;align-items:center;}
+  #fbSend{background:var(--accent-deep);color:#fff;border:none;border-radius:8px;
+    padding:8px 16px;font-size:13.5px;font-weight:600;cursor:pointer;}
+  #fbSend:disabled{opacity:.5;cursor:default;}
+  #fbClose{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;margin-left:auto;}
+  #fbDone{font-size:13px;color:var(--less);display:none;}
+</style>
+<button id="fbBtn" type="button">Feedback</button>
+<div id="fbPanel" role="dialog" aria-label="Send feedback">
+  <h4>Feedback on this tool</h4>
+  <textarea id="fbText" placeholder="What worked, what didn't, what's missing?"></textarea>
+  <p id="fbNote">Sent anonymously, and only when you press Send: we receive the text above, the question or page you're on, and a timestamp — never your answers or notes. Delivery runs through a Google form.</p>
+  <div id="fbRow">
+    <button id="fbSend" type="button">Send</button>
+    <span id="fbDone">Thank you — sent.</span>
+    <button id="fbClose" type="button">Close</button>
+  </div>
+</div>
+<script>
+(function(){
+  const FORM="https://docs.google.com/forms/d/e/1FAIpQLSeco1WErG1t2lG2RipHHMzjgd_exvZspz-5-PhxwqsjAqGTyw/formResponse";
+  const ENTRY="entry.1093598931";        /* "Feedback" — the visible box */
+  const ENTRY_CTX="entry.325142339";     /* "Context" — filled by the tool, disclosed in the note */
+  const btn=document.getElementById('fbBtn'),panel=document.getElementById('fbPanel'),
+        txt=document.getElementById('fbText'),send=document.getElementById('fbSend'),
+        done=document.getElementById('fbDone'),closeB=document.getElementById('fbClose');
+  function viewingLine(){
+    const all=document.getElementById('allview'),mech=document.getElementById('mechview');
+    if(all&&all.style.display!=='none') return 'the All questions tab';
+    if(mech&&mech.style.display!=='none') return 'the Mechanism tab';
+    if(cursor&&cursor!=='END'&&NODES[cursor]) return NODES[cursor].stage+' — "'+NODES[cursor].q+'"';
+    if(cursor==='END') return 'the summary';
+    return 'the start page';
+  }
+  btn.onclick=()=>{
+    const open=panel.style.display==='block';
+    panel.style.display=open?'none':'block';
+    if(!open){ done.style.display='none'; txt.focus(); }
+  };
+  closeB.onclick=()=>{panel.style.display='none';};
+  send.onclick=()=>{
+    const v=txt.value.trim();
+    if(!v) return;
+    send.disabled=true;
+    const body=new URLSearchParams();
+    body.append(ENTRY,v);
+    body.append(ENTRY_CTX,viewingLine());  /* captured at send time */
+    fetch(FORM,{method:'POST',mode:'no-cors',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()})
+      .catch(()=>{})  /* no-cors: the response is opaque whether it worked or not */
+      .finally(()=>{ send.disabled=false; txt.value=''; done.style.display='inline'; });
+  };
+})();
 </script>
 </body>
 </html>
