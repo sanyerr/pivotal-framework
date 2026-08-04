@@ -22,13 +22,15 @@
     --shadow:0 1px 2px rgba(35,28,87,.05), 0 8px 24px rgba(35,28,87,.07);
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);
+  body{margin:0;background:var(--bg);color:var(--ink);overflow-x:clip;
     font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
     font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
   ::selection{background:var(--lav2);color:var(--ink)}
   :focus-visible{outline:3px solid var(--peri);outline-offset:2px}
   .wrap{max-width:1060px;margin:0 auto;padding:30px 22px 70px}
-  header{background:var(--ink);border-radius:18px;padding:24px 28px 21px;margin-bottom:20px;
+  header{background:var(--ink);border-radius:0;
+    margin:-30px calc(50% - 50vw) 24px;
+    padding:28px max(22px, calc(50vw - 508px)) 25px;
     box-shadow:var(--shadow)}
   header h1{font-family:var(--display);font-size:23px;font-weight:700;letter-spacing:-.01em;
     margin:0 0 5px;color:#fff}
