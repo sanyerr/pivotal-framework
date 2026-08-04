@@ -676,6 +676,51 @@ const TRIGGERS=[
    ("not enough seen to clear anything"). */
 const FRAC={STRONG_NUM:1, STRONG_DEN:10, POOL_NUM:1, POOL_DEN:3, MIN_READINGS:8};
 
+/* ---- QUESTION TIERS (2026-08-04, Santeri's pairwise elicitation + rulings). ----
+   Below the trigger level, questions split into two tiers: HEAVY units
+   count double in both verdict channels, everything else counts once.
+   The weight rides on the FIRST recorded reading inside a heavy unit's
+   question tree — parent or follow-up, whichever grades first on the
+   answered path; every later reading in the same unit counts 1. So a
+   unit never earns its weight twice, and follow-up depth cannot compound
+   it. Trigger answers ignore weights entirely. WEIGHT is a placeholder
+   pending calibration against stress-test runs 2–5.
+   Membership: the elicited top band + high-middle — see the vault,
+   framework/evidence/Pairwise importance elicitation results.md. */
+const WEIGHT=2;
+const HEAVY=new Set(["m_nudge","m_deceive","m_collateral","m_illegal","m_selfrep",
+  "m_rd_cap","m_ara","m_rd_use","m_ctrl","m_monitored","m_resp_comm","m_resp_rl",
+  "m_sev_cf","m_grow"]);
+/* every question id → its top-level unit (follow-ups → their parent) */
+const UNIT_OF=(()=>{
+  const m={};
+  for(const bid in BRANCHES) BRANCHES[bid].sections.forEach(s=>{
+    let unit=null;
+    s.qs.forEach(q=>{ if(!q.cond) unit=q.id; m[q.id]=unit; });
+  });
+  return m;
+})();
+/* tier integrity: every HEAVY id must exist and be a top-level question */
+(function(){
+  const bad=[...HEAVY].filter(id=>!NODES[id]||UNIT_OF[id]!==id);
+  if(bad.length){
+    const b=document.getElementById('errbanner');
+    b.style.display='block';
+    b.textContent=(b.textContent?b.textContent+" · ":"")+"HEAVY tier doesn't match the tree: "+bad.join(", ");
+  }
+})();
+/* weight of each recorded reading on the current trail, keyed by question id */
+function readingWeightMap(){
+  const m={}, used=new Set();
+  trail.forEach(t=>{
+    if(t.skipped||!t.dir) return;
+    const u=UNIT_OF[t.id];
+    if(HEAVY.has(u)&&!used.has(u)){ used.add(u); m[t.id]=WEIGHT; }
+    else m[t.id]=1;
+  });
+  return m;
+}
+
 /* The researcher's draft wording — verbatim, provisional. */
 const VERDICT_LABEL={
   1:"Very concerning — immediate escalation",
@@ -1023,21 +1068,25 @@ function firedTriggers(){
    denominator R); with fewer than MIN_READINGS readings, level 3 is
    unreachable and the "insufficient" state (level 2, different wording)
    is returned instead. */
-function classify(firedCount,strong,pooled,R){
+function classify(firedCount,strongW,pooledW,W,R){
   if(firedCount>0) return {level:1,why:"trigger"};
-  const chanA=R>0 && strong*FRAC.STRONG_DEN >= R*FRAC.STRONG_NUM;
-  const chanB=R>0 && pooled*FRAC.POOL_DEN >= R*FRAC.POOL_NUM;
+  const chanA=W>0 && strongW*FRAC.STRONG_DEN >= W*FRAC.STRONG_NUM;
+  const chanB=W>0 && pooledW*FRAC.POOL_DEN >= W*FRAC.POOL_NUM;
   if(chanA||chanB) return {level:2,why:"channel",chanA,chanB};
-  if(R<FRAC.MIN_READINGS) return {level:2,why:"insufficient"};
+  if(R<FRAC.MIN_READINGS) return {level:2,why:"insufficient"};   /* guard stays a RAW count */
   return {level:3,why:"clear"};
 }
 function verdictInfo(){
   const fired=firedTriggers();
+  const wm=readingWeightMap();
   const readings=trail.filter(t=>!t.skipped && t.dir);           /* skips excluded from numerator AND denominator */
-  const R=readings.length;
-  const strong=readings.filter(t=>t.dir==='more').length;        /* "more" only — NOT slight-more */
-  const pooled=readings.filter(t=>t.dir==='more'||t.dir==='slight-more'||t.dir==='unsure').length;
-  return Object.assign({fired,R,strong,pooled},classify(fired.length,strong,pooled,R));
+  const R=readings.length;                                       /* raw reading count (MIN_READINGS guard) */
+  const W=readings.reduce((s,t)=>s+wm[t.id],0);                  /* weighted denominator */
+  const strongW=readings.filter(t=>t.dir==='more')               /* "more" only — NOT slight-more */
+    .reduce((s,t)=>s+wm[t.id],0);
+  const pooledW=readings.filter(t=>t.dir==='more'||t.dir==='slight-more'||t.dir==='unsure')
+    .reduce((s,t)=>s+wm[t.id],0);
+  return Object.assign({fired,R,W,strongW,pooledW},classify(fired.length,strongW,pooledW,W,R));
 }
 function verdictReasonParts(v){
   if(v.level===1)
@@ -1050,7 +1099,10 @@ function verdictReasonParts(v){
   return {head:"Little here reads concerning on its own. The useful thing to do now is to decide, in writing, what would change your mind — at what point would you definitely want to speak up?",items:[]};
 }
 function asMarkdown(){
-  const c=counts(); let out=`# How concerning is this signal? — your answers\n\n`;
+  const c=counts(), wm=readingWeightMap();
+  const wc={Concerning:0,Reassuring:0,Neutral:0,Unsure:0};
+  trail.forEach(t=>{ if(!t.skipped&&t.dir) wc[COL[t.dir]]+=wm[t.id]; });
+  let out=`# How concerning is this signal? — your answers\n\n`;
   out+=`Scope: the model as actor — loss of control via internal deployment. Completed ${stamp()}.\n\n`;
   {
     const v=verdictInfo(), r=verdictReasonParts(v);
@@ -1058,10 +1110,10 @@ function asMarkdown(){
     r.items.forEach(x=>{ out+=`\n- ${x}`; });
     if(r.items.length) out+=`\n`;
   }
-  out+=`## The counts\n\n| Reading | Count |\n| --- | ---: |\n`;
-  COLS.forEach(k=>{out+=`| ${k} | ${c[k]} |\n`;});
-  if(c.uncounted) out+=`| Not counted (routing answers) | ${c.uncounted} |\n`;
-  out+=`\n**How the counts work.** Every answer below carries a \`+1\` towards exactly one of the four columns, so you can recount them yourself. Follow-up questions make some paths longer than others. Unsure answers are counted separately on purpose: a pile of them says something about what you can't see from where you sit.\n`;
+  out+=`## The counts\n\n| Reading | Count | Weighted |\n| --- | ---: | ---: |\n`;
+  COLS.forEach(k=>{out+=`| ${k} | ${c[k]} | ${wc[k]} |\n`;});
+  if(c.uncounted) out+=`| Not counted (routing answers) | ${c.uncounted} | — |\n`;
+  out+=`\n**How the counts work.** Every answer below carries a \`+1\` — or \`+2\` where the question is in the heavier of the tool's two question tiers — towards exactly one of the four columns, so you can recount them yourself. Follow-up questions make some paths longer than others. Unsure answers are counted separately on purpose: a pile of them says something about what you can't see from where you sit.\n`;
   const skippedT=trail.filter(t=>t.skipped);
   if(skippedT.length){
     out+=`\n## Not applicable (skipped)\n\nThese questions were marked not applicable. They record nothing and are not counted anywhere.\n`;
@@ -1075,7 +1127,7 @@ function asMarkdown(){
   trail.forEach(t=>{
     if(t.skipped) return;  /* listed above, not among the answered */
     if(t.stage!==stage){stage=t.stage; out+=`\n## ${stage}\n`;}
-    const mark=t.dir?`+1 ${COL[t.dir]}${/^slight/.test(t.dir)?' (slightly)':''}`:'not counted';
+    const mark=t.dir?`+${wm[t.id]} ${COL[t.dir]}${/^slight/.test(t.dir)?' (slightly)':''}`:'not counted';
     out+=`\n**${t.q}**\n\n${t.answer}  \n\`${mark}\`\n`;
     if(t.note) out+=`\n> ${t.note.replace(/\n/g,'\n> ')}\n`;
   });
@@ -1221,19 +1273,26 @@ function renderMech(){
   </div>
   <div class="card">
     <h3>Levels 2 and 3 — the two channels</h3>
-    <p>If no trigger fired, the recorded readings are compared against two thresholds. "Recorded readings" are answers that carry a reading — skipped questions and routing-only answers are excluded from both the numerator and the denominator.</p>
+    <p>If no trigger fired, the recorded readings are compared against two thresholds. "Recorded readings" are answers that carry a reading — skipped questions and routing-only answers are excluded from both the numerator and the denominator. Readings are <b>weighted</b>: a question in the heavier of the two question tiers (see below) counts ${WEIGHT}, every other question counts 1, in numerator and denominator alike.</p>
     <ul>
-      <li><b>Strong channel:</b> strong-concerning readings ("more concerning", <i>not</i> "slightly") are at least <b>${frac(FRAC.STRONG_NUM,FRAC.STRONG_DEN)}</b> of recorded readings.</li>
-      <li><b>Pooled channel:</b> concerning readings (including slightly) plus unsure readings together are at least <b>${frac(FRAC.POOL_NUM,FRAC.POOL_DEN)}</b> of recorded readings.</li>
+      <li><b>Strong channel:</b> strong-concerning readings ("more concerning", <i>not</i> "slightly") are at least <b>${frac(FRAC.STRONG_NUM,FRAC.STRONG_DEN)}</b> of recorded readings, by weight.</li>
+      <li><b>Pooled channel:</b> concerning readings (including slightly) plus unsure readings together are at least <b>${frac(FRAC.POOL_NUM,FRAC.POOL_DEN)}</b> of recorded readings, by weight.</li>
     </ul>
     <p>Either channel tripping gives <b>${esc(VERDICT_LABEL[2])}</b>; otherwise <b>${esc(VERDICT_LABEL[3])}</b>. Both fractions are placeholders pending calibration with real users, and are compared as whole-number cross-products — no decimals are computed or shown.</p>
-    <p><b>Guards:</b> with fewer than <b>${FRAC.MIN_READINGS}</b> recorded readings there is no level-3 verdict — too little has been seen to clear anything, so the tool stays at the level-2 action with different wording. Reassuring readings never subtract from anything; they only sit in the denominator.</p>
-    <p><b>What this layer never does:</b> no summing into a single score, no subtraction of reassuring answers, no weights, no displayed number-verdict. The tally stays a plain count.</p>
+    <p><b>Guards:</b> with fewer than <b>${FRAC.MIN_READINGS}</b> recorded readings (raw count, not weighted) there is no level-3 verdict — too little has been seen to clear anything, so the tool stays at the level-2 action with different wording. Reassuring readings never subtract from anything; they only sit in the denominator.</p>
+    <p><b>What this layer never does:</b> no summing into a single score, no subtraction of reassuring answers, no displayed number-verdict. The tally stays a recountable count.</p>
+  </div>
+  <div class="card">
+    <h3>The two question tiers</h3>
+    <p>Below the trigger level, the questions split into two tiers. These questions are the heavier tier — each counts <b>double</b> in both channels:</p>
+    ${[...HEAVY].map(id=>`<div class="oq"><p class="oq-q">${esc(NODES[id].q)}</p></div>`).join('')}
+    <p>The double weight is carried by the <b>first</b> counted answer inside a heavy question's tree — the question itself, or its first counted follow-up when the question only routes. Every later answer in the same tree counts once, so a heavy question never earns its weight twice, and longer follow-up paths cannot compound it. Trigger answers ignore the tiers entirely — a red line is a red line regardless of weight.</p>
+    <p>Tier membership and the weight (${WEIGHT}×) are provisional, set from the researcher's pairwise-comparison elicitation of question importance (2026-08-04), pending calibration against further stress-test runs.</p>
   </div>
   <div class="card">
     <h3>Two worked examples (hypothetical)</h3>
     <p><b>a) A trigger mid-run.</b> Someone ticks that a missing control mechanism breached "A company policy or commitment" and presses Continue. The answer is recorded, and before the next question a flag screen appears: it says this alone is probably enough reason to escalate, and offers "Skip to the end". They continue instead; later they also tick "A law" on the monitoring question — no second flag, but the summary lists both, and the verdict is <b>${esc(VERDICT_LABEL[1])}</b>.</p>
-    <p><b>b) No trigger, unsure-heavy.</b> A run records 12 readings: none strong-concerning (strong channel: 0 of 12 — not tripped), but 2 slightly-concerning and 3 unsure. Pooled, that is 5 of 12, and 5×${FRAC.POOL_DEN} ≥ 12×${FRAC.POOL_NUM}, so the pooled channel trips: <b>${esc(VERDICT_LABEL[2])}</b>.</p>
+    <p><b>b) No trigger, unsure-heavy.</b> A run records 12 readings, all on lighter-tier questions so every reading counts once: none strong-concerning (strong channel: 0 of 12 — not tripped), but 2 slightly-concerning and 3 unsure. Pooled, that is 5 of 12, and 5×${FRAC.POOL_DEN} ≥ 12×${FRAC.POOL_NUM}, so the pooled channel trips: <b>${esc(VERDICT_LABEL[2])}</b>.</p>
   </div>
   <div class="card">
     <h3>Known blind spots</h3>
