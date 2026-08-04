@@ -6,52 +6,60 @@
 <title>How concerning is this signal?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#f5f6f8; --card:#ffffff; --ink:#1e2330; --muted:#727a89;
-    --line:#e8eaee; --line2:#eef0f3; --accent:#5566e6;
-    --more:#d6564d; --more-bg:#fdecea;
-    --less:#1f9c6d; --less-bg:#e7f6ef;
-    --slight:#c08a1e; --slight-bg:#fbf3e0;
-    --neutral:#8a91a0; --neutral-bg:#f1f2f5;
-    --branch:#8b5cf6; --branch-bg:#f2ecfe;
-    --shadow:0 1px 2px rgba(20,25,40,.04), 0 8px 24px rgba(20,25,40,.06);
+    /* AIWI palette — aiwi.org brand tokens */
+    --bg:#f4f1ed; --card:#ffffff; --ink:#231c57; --muted:#5f5a80;
+    --line:#ded9ea; --line2:#e9e5f1; --accent:#6a63e8;
+    --accent-deep:#34267b; --peri:#969aff; --lav:#f4ecff; --lav2:#e4e0ff;
+    --more:#b03a46; --more-bg:#fbe7e6;
+    --less:#0b6f6c; --less-bg:#dff4f2;
+    --slight:#8a5e0d; --slight-bg:#f8efdb;
+    --neutral:#625e7e; --neutral-bg:#edebf4;
+    --branch:#34267b; --branch-bg:#e4e0ff;
+    --display:'Inter Tight','Inter',system-ui,sans-serif;
+    --shadow:0 1px 2px rgba(35,28,87,.05), 0 8px 24px rgba(35,28,87,.07);
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
     font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
     font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:1060px;margin:0 auto;padding:34px 22px 70px}
-  header h1{font-size:21px;font-weight:700;letter-spacing:-.02em;margin:0 0 3px}
-  header h1 span{color:var(--muted);font-weight:500}
-  header p{margin:0 0 18px;color:var(--muted);font-size:13.5px;max-width:700px}
+  ::selection{background:var(--lav2);color:var(--ink)}
+  :focus-visible{outline:3px solid var(--peri);outline-offset:2px}
+  .wrap{max-width:1060px;margin:0 auto;padding:30px 22px 70px}
+  header{background:var(--ink);border-radius:18px;padding:24px 28px 21px;margin-bottom:20px;
+    box-shadow:var(--shadow)}
+  header h1{font-family:var(--display);font-size:23px;font-weight:700;letter-spacing:-.01em;
+    margin:0 0 5px;color:#fff}
+  header h1 span{color:#c1c3ff;font-weight:400}
+  header p{margin:0;color:var(--lav2);font-size:13.5px;max-width:700px}
   .views{display:flex;gap:8px;margin-bottom:20px}
-  .views button{font:inherit;font-size:13px;font-weight:600;padding:8px 16px;border-radius:10px;
+  .views button{font:inherit;font-size:13px;font-weight:600;padding:8px 18px;border-radius:999px;
     border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;transition:.14s}
-  .views button.active{background:var(--accent);border-color:var(--accent);color:#fff;
-    box-shadow:0 4px 10px rgba(85,102,230,.25)}
+  .views button.active{background:var(--ink);border-color:var(--ink);color:#fff;
+    box-shadow:0 4px 12px rgba(35,28,87,.22)}
   .layout{display:grid;grid-template-columns:1fr 330px;gap:24px;align-items:start}
   @media(max-width:840px){.layout{grid-template-columns:1fr}}
   .rail{display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap}
   .rail span{font-size:11px;font-weight:500;color:var(--muted);background:#fff;
     padding:4px 11px;border-radius:20px;border:1px solid var(--line)}
-  .rail span.active{color:#fff;background:var(--accent);border-color:var(--accent);
-    box-shadow:0 4px 10px rgba(85,102,230,.25)}
+  .rail span.active{color:#fff;background:var(--ink);border-color:var(--ink);
+    box-shadow:0 4px 10px rgba(35,28,87,.20)}
   .card{background:var(--card);border:1px solid var(--line);border-radius:18px;
     padding:28px 28px 24px;box-shadow:var(--shadow)}
   .stage{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);
     margin-bottom:12px;font-weight:600}
-  .q{font-size:20px;font-weight:600;letter-spacing:-.01em;margin:0 0 8px}
+  .q{font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:-.01em;margin:0 0 8px}
   .help{color:var(--muted);font-size:13.5px;margin:0 0 20px}
   .opts{display:flex;flex-direction:column;gap:11px}
   button.opt{text-align:left;background:#fff;color:var(--ink);border:1px solid var(--line);
     border-radius:12px;padding:14px 16px;font:inherit;cursor:pointer;transition:.14s;
     display:flex;justify-content:space-between;align-items:center;gap:14px}
-  button.opt:hover{border-color:var(--accent);box-shadow:0 4px 14px rgba(85,102,230,.12);transform:translateY(-1px)}
+  button.opt:hover{border-color:var(--peri);box-shadow:0 4px 14px rgba(35,28,87,.10);transform:translateY(-1px)}
   label.chk{display:flex;align-items:center;gap:11px;background:#fff;color:var(--ink);border:1px solid var(--line);
     border-radius:12px;padding:13px 16px;font:inherit;cursor:pointer;transition:.14s}
-  label.chk:hover{border-color:var(--accent)}
+  label.chk:hover{border-color:var(--peri)}
   label.chk input{width:16px;height:16px;accent-color:var(--accent);margin:0;flex:none}
   .tag{font-size:10.5px;padding:3px 9px;border-radius:7px;white-space:nowrap;font-weight:600}
   .tag.more{background:var(--more-bg);color:var(--more)}
@@ -64,11 +72,11 @@
     border:1px dashed var(--line);border-radius:10px;padding:7px 13px;cursor:pointer;transition:.14s}
   .noteToggle:hover{color:var(--accent);border-color:var(--accent)}
   .noteWrap .noteLbl{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
-  .noteWrap textarea{width:100%;font:inherit;font-size:13.5px;color:var(--ink);background:#fdfdfe;
+  .noteWrap textarea{width:100%;font:inherit;font-size:13.5px;color:var(--ink);background:#fdfcfa;
     border:1px solid var(--line);border-radius:12px;padding:11px 13px;resize:vertical;min-height:74px}
-  .noteWrap textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(85,102,230,.10)}
+  .noteWrap textarea:focus{outline:none;border-color:var(--peri);box-shadow:0 0 0 3px rgba(150,154,255,.25)}
   .notelist{margin:20px 0 0;display:flex;flex-direction:column;gap:12px}
-  .notelist .ni{border:1px solid var(--line2);border-radius:12px;padding:12px 14px;background:#fbfbfd}
+  .notelist .ni{border:1px solid var(--line2);border-radius:12px;padding:12px 14px;background:#f9f8fc}
   .notelist .ni .niq{font-size:12.5px;font-weight:600;color:var(--muted);margin:0 0 5px}
   .notelist .ni .nia{font-size:11.5px;color:var(--muted);margin:0 0 6px}
   .notelist .ni .nit{font-size:13.5px;white-space:pre-wrap;margin:0}
@@ -79,11 +87,11 @@
     border-radius:9px;padding:8px 14px;font:inherit;font-weight:500;cursor:pointer;transition:.14s}
   .nav button:hover:not(:disabled){color:var(--ink);border-color:var(--accent)}
   .nav button:disabled{opacity:.4;cursor:default}
-  button.opt.sel{border-color:var(--accent);background:#f3f4fe;box-shadow:inset 0 0 0 1px var(--accent)}
-  label.chk.sel{border-color:var(--accent);background:#f3f4fe}
+  button.opt.sel{border-color:var(--accent);background:var(--lav);box-shadow:inset 0 0 0 1px var(--accent)}
+  label.chk.sel{border-color:var(--accent);background:var(--lav)}
   .chip{cursor:pointer}
-  .chip:hover{border-color:var(--accent)}
-  .chip.cur{box-shadow:0 0 0 2px var(--accent)}
+  .chip:hover{border-color:var(--peri)}
+  .chip.cur{box-shadow:0 0 0 2px var(--peri)}
   aside{background:var(--card);border:1px solid var(--line);border-radius:18px;
     padding:20px 20px 22px;position:sticky;top:22px;box-shadow:var(--shadow)}
   aside h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);margin:0 0 4px;font-weight:600}
@@ -100,22 +108,23 @@
   .chip .cq{display:block;color:var(--muted);font-size:11.5px;line-height:1.4;margin-bottom:5px}
   .chip .ca{display:block;font-size:13px;font-weight:500}
   .dlrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:2px}
-  .dlrow .dl{font:inherit;font-size:13px;font-weight:600;padding:11px 18px;border-radius:11px;
-    border:1px solid var(--accent);background:#fff;color:var(--accent);cursor:pointer;transition:.14s}
-  .dlrow .dl:hover{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(85,102,230,.22)}
+  .dlrow .dl{font:inherit;font-size:13px;font-weight:600;padding:12px 20px;border-radius:999px;
+    border:1px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer;transition:.14s}
+  .dlrow .dl:hover{background:var(--accent-deep);border-color:var(--accent-deep);color:#fff;
+    box-shadow:0 4px 12px rgba(35,28,87,.25)}
   .summary .lead{font-size:15px;color:var(--muted);margin-bottom:16px}
   .tally{display:flex;gap:12px;margin:4px 0}
   .tile{flex:1;border-radius:14px;padding:16px 18px;border:1px solid var(--line2)}
-  .tile .n{font-size:30px;font-weight:700;line-height:1}
+  .tile .n{font-family:var(--display);font-size:30px;font-weight:700;line-height:1}
   .tile .l{font-size:12px;font-weight:600;margin-top:5px;letter-spacing:.02em}
   .tile.more{background:var(--more-bg)} .tile.more .n,.tile.more .l{color:var(--more)}
   .tile.less{background:var(--less-bg)} .tile.less .n,.tile.less .l{color:var(--less)}
   .tile.neutral{background:var(--neutral-bg)} .tile.neutral .n,.tile.neutral .l{color:var(--neutral)}
-  .note{background:#f8f9fb;border:1px dashed var(--line);border-radius:12px;
+  .note{background:#faf8f4;border:1px dashed var(--line);border-radius:12px;
     padding:15px 17px;color:var(--muted);font-size:13px;margin-top:22px}
   .note b{color:var(--ink)}
   .ov-branch{margin-bottom:26px}
-  .ov-branch>h3{font-size:15px;font-weight:700;margin:0 0 4px}
+  .ov-branch>h3{font-family:var(--display);font-size:15px;font-weight:700;margin:0 0 4px}
   .ov-branch>p{margin:0 0 12px;color:var(--muted);font-size:13px}
   details.sec{background:var(--card);border:1px solid var(--line);border-radius:14px;
     margin-bottom:10px;box-shadow:var(--shadow);overflow:hidden}
@@ -146,17 +155,17 @@
   #errbanner{display:none;background:var(--more-bg);color:var(--more);border:1px solid var(--more);
     border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:14px}
   /* --- experiment: skip ("not applicable") --- */
-  .expbanner{background:#fff7e6;color:#8a5a00;border:1px solid #e8c87a;border-radius:10px;
+  .expbanner{background:var(--slight-bg);color:var(--slight);border:1px solid #e3cf9c;border-radius:10px;
     padding:9px 14px;font-size:12.5px;font-weight:600;margin-bottom:16px}
   .skiprow{margin-top:14px;display:flex;justify-content:flex-end}
   button.skipbtn{font:inherit;font-size:12px;font-weight:500;color:var(--muted);background:none;
     border:none;border-bottom:1px dashed var(--line);padding:2px 1px;cursor:pointer;transition:.14s}
   button.skipbtn:hover{color:var(--ink);border-bottom-color:var(--muted)}
   button.skipbtn.on{color:var(--branch);border-bottom-color:var(--branch);font-weight:600}
-  .skiphelp{font-size:12px;color:var(--muted);background:#fbfbfd;border:1px dashed var(--line);
+  .skiphelp{font-size:12px;color:var(--muted);background:#f9f8fc;border:1px dashed var(--line);
     border-radius:10px;padding:9px 12px;margin:14px 0 0}
   .skiplist{margin:8px 0 0;display:flex;flex-direction:column;gap:8px}
-  .skiplist .si{border:1px solid var(--line2);border-radius:12px;padding:10px 14px;background:#fbfbfd;
+  .skiplist .si{border:1px solid var(--line2);border-radius:12px;padding:10px 14px;background:#f9f8fc;
     font-size:13px;color:var(--muted)}
   /* --- experiment: verdict layer (triggers + two-channel rule) --- */
   .trigflag{margin-top:16px;background:var(--more-bg);border:1px solid var(--more);border-radius:12px;
@@ -170,7 +179,7 @@
   .trigflag .t-cont{border:1px solid var(--line);background:#fff;color:var(--ink)}
   .trigflag .t-cont:hover{border-color:var(--muted)}
   .verdict{border-radius:14px;padding:16px 18px;margin:0 0 20px;border:1px solid}
-  .verdict .vlabel{font-size:16px;font-weight:700;margin:0 0 8px}
+  .verdict .vlabel{font-family:var(--display);font-size:16px;font-weight:700;margin:0 0 8px}
   .verdict.l1{background:var(--more-bg);border-color:var(--more)} .verdict.l1 .vlabel{color:var(--more)}
   .verdict.l2{background:var(--slight-bg);border-color:var(--slight)} .verdict.l2 .vlabel{color:var(--slight)}
   .verdict.l3{background:var(--less-bg);border-color:var(--less)} .verdict.l3 .vlabel{color:var(--less)}
@@ -179,9 +188,13 @@
   .verdict li{margin-bottom:6px}
   .verdict .vdisc{font-size:11.5px;color:var(--muted);margin:10px 0 0}
   .mech .card{margin-bottom:14px}
-  .mech h3{font-size:15px;font-weight:700;margin:0 0 8px}
+  .mech h3{font-family:var(--display);font-size:15px;font-weight:700;margin:0 0 8px}
   .mech p,.mech li{font-size:13.5px}
   .mech ul{margin:6px 0;padding-left:20px}
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
+    button.opt:hover{transform:none}
+  }
 </style>
 </head>
 <body>
