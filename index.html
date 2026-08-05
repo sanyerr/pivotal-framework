@@ -159,11 +159,15 @@
   /* --- experiment: skip ("not applicable") --- */
   .expbanner{background:var(--slight-bg);color:var(--slight);border:1px solid #e3cf9c;border-radius:10px;
     padding:9px 14px;font-size:12.5px;font-weight:600;margin-bottom:16px}
-  .skiprow{margin-top:14px;display:flex;justify-content:flex-end}
-  button.skipbtn{font:inherit;font-size:12px;font-weight:500;color:var(--muted);background:none;
-    border:none;border-bottom:1px dashed var(--line);padding:2px 1px;cursor:pointer;transition:.14s}
-  button.skipbtn:hover{color:var(--ink);border-bottom-color:var(--muted)}
-  button.skipbtn.on{color:var(--branch);border-bottom-color:var(--branch);font-weight:600}
+  /* skip: visible but visually not a peer — full width, divided off from
+     the answers, dashed and muted where answers are solid and inked
+     (2026-08-05, on user feedback: the old corner link went unfound) */
+  .skiprow{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
+  button.skipbtn{width:100%;text-align:left;font:inherit;font-size:13px;font-weight:500;
+    color:var(--muted);background:#f9f8fc;border:1px dashed var(--line);border-radius:12px;
+    padding:12px 16px;cursor:pointer;transition:.14s}
+  button.skipbtn:hover{color:var(--ink);border-color:var(--muted)}
+  button.skipbtn.on{color:var(--branch);border-color:var(--branch);background:var(--lav);font-weight:600}
   .skiphelp{font-size:12px;color:var(--muted);background:#f9f8fc;border:1px dashed var(--line);
     border-radius:10px;padding:9px 12px;margin:14px 0 0}
   .skiplist{margin:8px 0 0;display:flex;flex-direction:column;gap:8px}
@@ -878,8 +882,11 @@ function wireNav(){
   const e=document.getElementById('toEnd'); if(e) e.onclick=()=>renderNode("END");
   document.getElementById('restart').onclick=reset;
 }
-/* verdict layer: the skip control. Deliberately small and off to the side —
-   it is not an answer and must not read as one. */
+/* verdict layer: the skip control. A full-width row under the answers, set
+   off by a divider — in the flow where the eye is, without rendering as one
+   answer among the others (it is not an answer and must not read as one).
+   2026-08-05: promoted from a small corner link after tester feedback that
+   the link went unfound until the end of a run. */
 function skipHtml(id){
   const on=isSkipped(id);
   return `<div class="skiprow"><button type="button" class="skipbtn${on?' on':''}" id="skipbtn"
@@ -1197,7 +1204,7 @@ function showIntro(){
       <p class="help" style="margin-bottom:14px">This tool focuses on situations where a model deployed inside your company has done something concerning. These questions help you weigh how worrying it really is, all things considered.</p>
       <p class="help" style="margin-bottom:14px">The questions look at the signal from five angles: the model, its affordances, the safeguards around it, the company's conduct, and what's at stake. Use the <b style="color:var(--ink)">All questions</b> tab to see the whole structure.</p>
       <p class="help" style="margin-bottom:14px">Every question has an optional notes box for anything you want to record about your own case; the notes are shown back to you at the end. <b style="color:var(--ink)">No answers and no notes are collected</b> — nothing leaves your browser. The feedback button is the one exception: pressing Send sends the text in the feedback box, and nothing else.</p>
-      <p class="skiphelp" style="margin:0 0 16px">Every question also has a small <b>"Not applicable — skip"</b> link. <b>Unsure</b> = the question applies but you can't tell. <b>Skip</b> = the question doesn't apply to your situation.</p>
+      <p class="skiphelp" style="margin:0 0 16px">Every question also has a <b>"Not applicable — skip"</b> button. <b>Unsure</b> = the question applies but you can't tell. <b>Skip</b> = the question doesn't apply to your situation.</p>
       <div class="opts"><button class="opt" id="begin" style="justify-content:center;border-color:var(--accent);color:var(--accent);font-weight:600">Begin →</button></div>
     </div>`;
   document.getElementById('begin').onclick=()=>{renderNode(START);};
