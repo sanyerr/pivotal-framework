@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>How concerning is this signal?</title>
+<title>Rules-based questions — draft</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* AIWI palette — aiwi.org brand tokens */
+    /* AIWI palette — aiwi.org brand tokens (inherited from Framework v3 prototype) */
     --bg:#f4f1ed; --card:#ffffff; --ink:#231c57; --muted:#5f5a80;
     --line:#ded9ea; --line2:#e9e5f1; --accent:#6a63e8;
     --accent-deep:#34267b; --peri:#969aff; --lav:#f4ecff; --lav2:#e4e0ff;
@@ -17,7 +17,6 @@
     --less:#0b6f6c; --less-bg:#dff4f2;
     --slight:#8a5e0d; --slight-bg:#f8efdb;
     --neutral:#625e7e; --neutral-bg:#edebf4;
-    --branch:#34267b; --branch-bg:#e4e0ff;
     --display:'Inter Tight','Inter',system-ui,sans-serif;
     --shadow:0 1px 2px rgba(35,28,87,.05), 0 8px 24px rgba(35,28,87,.07);
   }
@@ -28,14 +27,17 @@
   ::selection{background:var(--lav2);color:var(--ink)}
   :focus-visible{outline:3px solid var(--peri);outline-offset:2px}
   .wrap{max-width:1060px;margin:0 auto;padding:30px 22px 70px}
-  header{background:var(--ink);border-radius:0;
-    margin:-30px calc(50% - 50vw) 24px;
-    padding:28px max(22px, calc(50vw - 508px)) 25px;
-    box-shadow:var(--shadow)}
+  header{background:var(--ink);margin:-30px calc(50% - 50vw) 24px;
+    padding:28px max(22px, calc(50vw - 508px)) 25px;box-shadow:var(--shadow)}
   header h1{font-family:var(--display);font-size:23px;font-weight:700;letter-spacing:-.01em;
     margin:0 0 5px;color:#fff}
-  header h1 span{color:#c1c3ff;font-weight:400}
-  header p{margin:0;color:var(--lav2);font-size:13.5px;max-width:700px}
+  header p{margin:0;color:var(--lav2);font-size:13.5px;max-width:720px}
+  .vswitch{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 16px}
+  .vswitch a,.vswitch span{font-size:12.5px;font-weight:600;padding:6px 14px;border-radius:999px;
+    border:1px solid var(--line);text-decoration:none;transition:.14s}
+  .vswitch span{background:var(--lav);border-color:var(--accent);color:var(--accent-deep)}
+  .vswitch a{background:#fff;color:var(--muted)}
+  .vswitch a:hover{border-color:var(--accent);color:var(--accent-deep)}
   .views{display:flex;gap:8px;margin-bottom:20px}
   .views button{font:inherit;font-size:13px;font-weight:600;padding:8px 18px;border-radius:999px;
     border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;transition:.14s}
@@ -43,91 +45,50 @@
     box-shadow:0 4px 12px rgba(35,28,87,.22)}
   .layout{display:grid;grid-template-columns:1fr 330px;gap:24px;align-items:start}
   @media(max-width:840px){.layout{grid-template-columns:1fr}}
-  .rail{display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap}
-  .rail span{font-size:11px;font-weight:500;color:var(--muted);background:#fff;
-    padding:4px 11px;border-radius:20px;border:1px solid var(--line)}
-  .rail span.active{color:#fff;background:var(--ink);border-color:var(--ink);
-    box-shadow:0 4px 10px rgba(35,28,87,.20)}
   .card{background:var(--card);border:1px solid var(--line);border-radius:18px;
     padding:28px 28px 24px;box-shadow:var(--shadow)}
   .stage{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);
     margin-bottom:12px;font-weight:600}
   .q{font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:-.01em;margin:0 0 8px}
   .help{color:var(--muted);font-size:13.5px;margin:0 0 20px}
-  .opts{display:flex;flex-direction:column;gap:11px}
-  button.opt{text-align:left;background:#fff;color:var(--ink);border:1px solid var(--line);
-    border-radius:12px;padding:14px 16px;font:inherit;cursor:pointer;transition:.14s;
-    display:flex;justify-content:space-between;align-items:center;gap:14px}
+  .opts{display:flex;gap:11px;flex-wrap:wrap}
+  button.opt{text-align:center;background:#fff;color:var(--ink);border:1px solid var(--line);
+    border-radius:12px;padding:13px 26px;font:inherit;font-weight:500;cursor:pointer;transition:.14s;flex:1;min-width:110px}
   button.opt:hover{border-color:var(--peri);box-shadow:0 4px 14px rgba(35,28,87,.10);transform:translateY(-1px)}
-  label.chk{display:flex;align-items:center;gap:11px;background:#fff;color:var(--ink);border:1px solid var(--line);
-    border-radius:12px;padding:13px 16px;font:inherit;cursor:pointer;transition:.14s}
-  label.chk:hover{border-color:var(--peri)}
-  label.chk input{width:16px;height:16px;accent-color:var(--accent);margin:0;flex:none}
-  .tag{font-size:10.5px;padding:3px 9px;border-radius:7px;white-space:nowrap;font-weight:600}
-  .tag.more{background:var(--more-bg);color:var(--more)}
-  .tag.less{background:var(--less-bg);color:var(--less)}
-  .tag.slight{background:var(--slight-bg);color:var(--slight)}
-  .tag.neutral{background:var(--neutral-bg);color:var(--neutral)}
-  .tag.plain{background:var(--neutral-bg);color:var(--muted)}
-  .notebox{margin:0 0 18px}
-  .noteToggle{font:inherit;font-size:12.5px;font-weight:500;color:var(--muted);background:#fff;
-    border:1px dashed var(--line);border-radius:10px;padding:7px 13px;cursor:pointer;transition:.14s}
-  .noteToggle:hover{color:var(--accent);border-color:var(--accent)}
-  .noteWrap .noteLbl{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
-  .noteWrap textarea{width:100%;font:inherit;font-size:13.5px;color:var(--ink);background:#fdfcfa;
-    border:1px solid var(--line);border-radius:12px;padding:11px 13px;resize:vertical;min-height:74px}
-  .noteWrap textarea:focus{outline:none;border-color:var(--peri);box-shadow:0 0 0 3px rgba(150,154,255,.25)}
-  .notelist{margin:20px 0 0;display:flex;flex-direction:column;gap:12px}
-  .notelist .ni{border:1px solid var(--line2);border-radius:12px;padding:12px 14px;background:#f9f8fc}
-  .notelist .ni .niq{font-size:12.5px;font-weight:600;color:var(--muted);margin:0 0 5px}
-  .notelist .ni .nia{font-size:11.5px;color:var(--muted);margin:0 0 6px}
-  .notelist .ni .nit{font-size:13.5px;white-space:pre-wrap;margin:0}
-  .chip .note-in-chip{display:block;margin-top:6px;font-size:12px;color:var(--ink);
-    white-space:pre-wrap;border-left:2px solid var(--line);padding-left:8px}
+  button.opt.sel{border-color:var(--accent);background:var(--lav);box-shadow:inset 0 0 0 1px var(--accent);font-weight:600}
+  .skiprow{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
+  button.skipbtn{width:100%;text-align:left;font:inherit;font-size:13px;font-weight:500;
+    color:var(--muted);background:#f9f8fc;border:1px dashed var(--line);border-radius:12px;
+    padding:12px 16px;cursor:pointer;transition:.14s}
+  button.skipbtn:hover{color:var(--ink);border-color:var(--muted)}
+  button.skipbtn.on{color:var(--accent-deep);border-color:var(--accent-deep);background:var(--lav);font-weight:600}
+  .expl{margin-top:20px;background:var(--lav);border:1px solid var(--lav2);border-radius:14px;
+    padding:16px 18px;animation:fadein .25s ease}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .expl h4{font-family:var(--display);font-size:12px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--accent-deep);margin:0 0 8px;font-weight:700}
+  .expl .lead{font-size:13.5px;margin:0 0 10px}
+  ul.rlist{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+  ul.rlist li{font-size:13.5px;line-height:1.5;padding-left:14px;position:relative}
+  ul.rlist li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;
+    border-radius:50%;background:var(--accent)}
+  ul.rlist b{color:var(--accent-deep);font-weight:600}
   .nav{display:flex;gap:10px;margin-top:22px}
   .nav button{background:none;border:1px solid var(--line);color:var(--muted);
     border-radius:9px;padding:8px 14px;font:inherit;font-weight:500;cursor:pointer;transition:.14s}
   .nav button:hover:not(:disabled){color:var(--ink);border-color:var(--accent)}
   .nav button:disabled{opacity:.4;cursor:default}
-  button.opt.sel{border-color:var(--accent);background:var(--lav);box-shadow:inset 0 0 0 1px var(--accent)}
-  label.chk.sel{border-color:var(--accent);background:var(--lav)}
-  .chip{cursor:pointer}
-  .chip:hover{border-color:var(--peri)}
-  .chip.cur{box-shadow:0 0 0 2px var(--peri)}
   aside{background:var(--card);border:1px solid var(--line);border-radius:18px;
     padding:20px 20px 22px;position:sticky;top:22px;box-shadow:var(--shadow)}
   aside h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);margin:0 0 4px;font-weight:600}
   aside .sub{font-size:12px;color:var(--muted);margin:0 0 16px}
-  .trail{display:flex;flex-direction:column;gap:10px}
-  .trail .empty{color:var(--muted);font-size:13px;font-style:italic}
-  .chip{border-radius:11px;padding:10px 12px;font-size:13px;border:1px solid var(--line2)}
-  .chip .dir{font-size:10.5px;font-weight:700;letter-spacing:.03em;display:block;margin-bottom:3px;text-transform:uppercase}
-  .chip.more{background:var(--more-bg)} .chip.more .dir{color:var(--more)}
-  .chip.less{background:var(--less-bg)} .chip.less .dir{color:var(--less)}
-  .chip.slight{background:var(--slight-bg)} .chip.slight .dir{color:var(--slight)}
-  .chip.neutral{background:var(--neutral-bg)} .chip.neutral .dir{color:var(--neutral)}
-  .chip small{color:var(--muted);display:block;margin-top:4px;font-size:11px;line-height:1.4}
-  .chip .cq{display:block;color:var(--muted);font-size:11.5px;line-height:1.4;margin-bottom:5px}
-  .chip .ca{display:block;font-size:13px;font-weight:500}
-  .dlrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:2px}
-  .dlrow .dl{font:inherit;font-size:13px;font-weight:600;padding:12px 20px;border-radius:999px;
-    border:1px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer;transition:.14s}
-  .dlrow .dl:hover{background:var(--accent-deep);border-color:var(--accent-deep);color:#fff;
-    box-shadow:0 4px 12px rgba(35,28,87,.25)}
-  .summary .lead{font-size:15px;color:var(--muted);margin-bottom:16px}
-  .tally{display:flex;gap:12px;margin:4px 0}
-  .tile{flex:1;border-radius:14px;padding:16px 18px;border:1px solid var(--line2)}
-  .tile .n{font-family:var(--display);font-size:30px;font-weight:700;line-height:1}
-  .tile .l{font-size:12px;font-weight:600;margin-top:5px;letter-spacing:.02em}
-  .tile.more{background:var(--more-bg)} .tile.more .n,.tile.more .l{color:var(--more)}
-  .tile.less{background:var(--less-bg)} .tile.less .n,.tile.less .l{color:var(--less)}
-  .tile.neutral{background:var(--neutral-bg)} .tile.neutral .n,.tile.neutral .l{color:var(--neutral)}
-  .note{background:#faf8f4;border:1px dashed var(--line);border-radius:12px;
-    padding:15px 17px;color:var(--muted);font-size:13px;margin-top:22px}
-  .note b{color:var(--ink)}
-  .ov-branch{margin-bottom:26px}
-  .ov-branch>h3{font-family:var(--display);font-size:15px;font-weight:700;margin:0 0 4px}
-  .ov-branch>p{margin:0 0 12px;color:var(--muted);font-size:13px}
+  .grouplist{display:flex;flex-direction:column;gap:8px}
+  .gi{border:1px solid var(--line2);border-radius:11px;padding:9px 12px;font-size:12.5px;cursor:pointer;transition:.12s}
+  .gi:hover{border-color:var(--peri)}
+  .gi.cur{box-shadow:0 0 0 2px var(--peri)}
+  .gi .gn{font-weight:600}
+  .gi .gc{float:right;font-size:11px;color:var(--muted)}
+  .ov-group{margin-bottom:26px}
   details.sec{background:var(--card);border:1px solid var(--line);border-radius:14px;
     margin-bottom:10px;box-shadow:var(--shadow);overflow:hidden}
   details.sec>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;
@@ -137,1276 +98,301 @@
     background:var(--neutral-bg);border-radius:20px;padding:2px 10px}
   details.sec>summary:hover{color:var(--accent)}
   .ov-body{padding:2px 18px 16px;border-top:1px solid var(--line2)}
-  .oq{padding:11px 0;border-bottom:1px solid var(--line2)}
+  .oq{padding:13px 0;border-bottom:1px solid var(--line2)}
   .oq:last-child{border-bottom:none}
-  .oq .oq-q{font-size:13.5px;font-weight:600;margin:0 0 3px}
-  .oq.cond{margin-left:22px;position:relative}
-  .oq.cond .oq-q::before{content:"↳ ";color:var(--branch);font-weight:700}
-  .oq .oq-help{font-size:12px;color:var(--muted);margin:0 0 7px;line-height:1.45}
-  .oq .oq-opts{display:flex;flex-wrap:wrap;gap:6px}
-  .pill{font-size:11.5px;padding:4px 10px;border-radius:8px;font-weight:500;border:1px solid transparent}
-  .pill b{font-weight:700}
-  .pill.more{background:var(--more-bg);color:var(--more)}
-  .pill.less{background:var(--less-bg);color:var(--less)}
-  .pill.slight{background:var(--slight-bg);color:var(--slight)}
-  .pill.neutral{background:var(--neutral-bg);color:var(--neutral)}
-  .pill.plain{background:#fff;color:var(--muted);border-color:var(--line)}
-  .ov-tools{display:flex;gap:8px;margin-bottom:14px}
-  .ov-tools button{font:inherit;font-size:12px;padding:6px 12px;border-radius:8px;
-    border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer}
-  #errbanner{display:none;background:var(--more-bg);color:var(--more);border:1px solid var(--more);
-    border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:14px}
-  .sitefoot{margin-top:34px;padding-top:14px;border-top:1px solid var(--line2);text-align:center;
-    font-size:12px;color:var(--muted)}
-  .sitefoot a{color:var(--accent);text-decoration:none}
-  .sitefoot a:hover{text-decoration:underline}
-  /* --- experiment: skip ("not applicable") --- */
-  .expbanner{background:var(--slight-bg);color:var(--slight);border:1px solid #e3cf9c;border-radius:10px;
-    padding:9px 14px;font-size:12.5px;font-weight:600;margin-bottom:16px}
-  /* skip: visible but visually not a peer — full width, divided off from
-     the answers, dashed and muted where answers are solid and inked
-     (2026-08-05, on user feedback: the old corner link went unfound) */
-  .skiprow{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
-  button.skipbtn{width:100%;text-align:left;font:inherit;font-size:13px;font-weight:500;
-    color:var(--muted);background:#f9f8fc;border:1px dashed var(--line);border-radius:12px;
-    padding:12px 16px;cursor:pointer;transition:.14s}
-  button.skipbtn:hover{color:var(--ink);border-color:var(--muted)}
-  button.skipbtn.on{color:var(--branch);border-color:var(--branch);background:var(--lav);font-weight:600}
-  .skiphelp{font-size:12px;color:var(--muted);background:#f9f8fc;border:1px dashed var(--line);
-    border-radius:10px;padding:9px 12px;margin:14px 0 0}
-  .skiplist{margin:8px 0 0;display:flex;flex-direction:column;gap:8px}
-  .skiplist .si{border:1px solid var(--line2);border-radius:12px;padding:10px 14px;background:#f9f8fc;
-    font-size:13px;color:var(--muted)}
-  /* --- experiment: verdict layer (triggers + two-channel rule) --- */
-  .trigflag{margin-top:16px;background:var(--more-bg);border:1px solid var(--more);border-radius:12px;
-    padding:14px 16px}
-  .trigflag p{margin:0 0 12px;font-size:13.5px;color:var(--more);font-weight:500}
-  .trigflag .acts{display:flex;gap:10px;flex-wrap:wrap}
-  .trigflag .acts button{font:inherit;font-size:13px;font-weight:600;border-radius:9px;padding:8px 14px;
-    cursor:pointer;transition:.14s}
-  .trigflag .t-end{border:1px solid var(--more);background:var(--more);color:#fff}
-  .trigflag .t-end:hover{filter:brightness(.94)}
-  .trigflag .t-cont{border:1px solid var(--line);background:#fff;color:var(--ink)}
-  .trigflag .t-cont:hover{border-color:var(--muted)}
-  .verdict{border-radius:14px;padding:16px 18px;margin:0 0 20px;border:1px solid}
-  .verdict .vlabel{font-family:var(--display);font-size:16px;font-weight:700;margin:0 0 8px}
-  .verdict.l1{background:var(--more-bg);border-color:var(--more)} .verdict.l1 .vlabel{color:var(--more)}
-  .verdict.l2{background:var(--slight-bg);border-color:var(--slight)} .verdict.l2 .vlabel{color:var(--slight)}
-  .verdict.l3{background:var(--less-bg);border-color:var(--less)} .verdict.l3 .vlabel{color:var(--less)}
-  .verdict .vwhy{font-size:13px;margin:0}
-  .verdict ul{margin:8px 0 0;padding-left:18px;font-size:13px}
-  .verdict li{margin-bottom:6px}
-  .verdict .vdisc{font-size:11.5px;color:var(--muted);margin:10px 0 0}
-  .mech .card{margin-bottom:14px}
-  .mech h3{font-family:var(--display);font-size:15px;font-weight:700;margin:0 0 8px}
-  .mech p,.mech li{font-size:13.5px}
-  .mech ul{margin:6px 0;padding-left:20px}
+  .oq .oq-q{font-size:13.5px;font-weight:600;margin:0 0 6px}
+  .oq .lead{font-size:12.5px;color:var(--muted);margin:0 0 6px}
+  .oq ul.rlist li{font-size:12.5px;color:var(--muted)}
+  .summary .lead{font-size:15px;color:var(--muted);margin-bottom:16px}
+  .tally{display:flex;gap:12px;margin:4px 0 18px}
+  .tile{flex:1;border-radius:14px;padding:16px 18px;border:1px solid var(--line2);background:var(--neutral-bg)}
+  .tile .n{font-family:var(--display);font-size:30px;font-weight:700;line-height:1;color:var(--neutral)}
+  .tile .l{font-size:12px;font-weight:600;margin-top:5px;letter-spacing:.02em;color:var(--neutral)}
+  .sumlist{display:flex;flex-direction:column;gap:12px}
+  .si{border:1px solid var(--line2);border-radius:12px;padding:12px 14px;background:#f9f8fc}
+  .si .siq{font-size:13px;font-weight:600;margin:0 0 4px}
+  .si .sia{font-size:12px;color:var(--accent-deep);font-weight:600;margin:0 0 6px}
+  .si ul.rlist li{font-size:12.5px;color:var(--muted)}
+  .note{background:#faf8f4;border:1px dashed var(--line);border-radius:12px;
+    padding:15px 17px;color:var(--muted);font-size:13px;margin-top:22px}
+  .note b{color:var(--ink)}
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
     button.opt:hover{transform:none}
   }
+
+  .gatechip{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+    background:var(--lav);color:var(--accent-deep);border:1px solid var(--lav2);border-radius:999px;padding:2px 9px;margin-bottom:8px}
+  .fuchip{background:#e6f3f1;color:var(--less);border-color:#c2e3df}
+  .srcgrid{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  .srcgrid th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
+    border-bottom:1px solid var(--line);padding:6px 10px 6px 0;font-weight:700}
+  .srcgrid td{padding:7px 10px 7px 0;border-bottom:1px solid var(--line2);vertical-align:top}
+  .srcgrid td.v{color:var(--muted)}
+  .srcnote{color:var(--slight);font-size:12px}
+  .stamp{color:var(--muted);font-size:12.5px;margin:10px 0 0}
+  /* collapsible questions in the All-questions view */
+  details.oq{border-bottom:1px solid var(--line2);padding:0}
+  details.oq:last-child{border-bottom:0}
+  details.oq>summary{list-style:none;cursor:pointer;padding:11px 4px 11px 26px;position:relative;
+    display:block;transition:background .12s;border-radius:7px}
+  details.oq>summary::-webkit-details-marker{display:none}
+  details.oq>summary:hover{background:var(--lav)}
+  details.oq>summary::before{content:"▸";position:absolute;left:7px;top:11px;color:var(--accent);
+    font-size:12px;transition:transform .14s;display:inline-block}
+  details.oq[open]>summary::before{transform:rotate(90deg)}
+  .oq-q{font-weight:600;font-size:14.5px;color:var(--ink);margin:0}
+  .rcount{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;color:var(--muted);
+    background:var(--lav);border:1px solid var(--lav2);border-radius:999px;padding:1px 8px;vertical-align:2px}
+  .oq-body{padding:2px 4px 14px 26px}
+  .oq-help{color:var(--muted);font-size:13px;margin:0 0 8px}
+  .sumh{font-family:var(--display);font-size:16px;font-weight:700;margin:26px 0 4px;color:var(--ink)}
+  .sumh:first-of-type{margin-top:18px}
+  .expandbar{display:flex;gap:8px;align-items:center;margin:0 0 14px}
+  .expandbar button{font:inherit;font-size:12.5px;font-weight:600;padding:6px 14px;border-radius:999px;
+    border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer}
+  .expandbar button:hover{border-color:var(--accent);color:var(--accent-deep)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>How concerning is this signal?</h1>
-    <p>A thinking aid for people inside a frontier AI company — an internally deployed model has done something that seems
-    concerning, and you want to understand how worrying it really is.</p>
+    <h1>Is a rule being broken? <span style="color:#c1c3ff;font-weight:400">— draft question set</span></h1>
+    <p>Questions about a model deployed inside a frontier AI company, each tied to a specific requirement
+    in law or in a company's own published safety framework. Answer what you can; each answer reveals the
+    rules at stake.</p>
   </header>
-  <div id="errbanner"></div>
+
+  <div class="vswitch">
+    <span>Is a rule being broken?</span>
+    <a href="v3.html">How concerning is this signal?</a>
+  </div>
+
   <div class="views">
     <button id="v-walk" class="active">Walkthrough</button>
     <button id="v-all">All questions</button>
-    <button id="v-mech">Mechanism</button>
+    <button id="v-sum">Summary</button>
+    <button id="v-src">Sources</button>
   </div>
-  <div id="walkview">
-    <div class="rail" id="rail"></div>
-    <div class="layout">
-      <main id="stage"></main>
-      <aside>
-        <h2>What this is telling you</h2>
-        <p class="sub">Each answer, in order. No overall score yet — aggregation is deliberately deferred.</p>
-        <div class="trail" id="trail"><div class="empty">Nothing yet — start answering.</div></div>
-      </aside>
-    </div>
-  </div>
-  <div id="allview" style="display:none"></div>
-  <div id="mechview" class="mech" style="display:none"></div>
-  <footer class="sitefoot">Santeri Koivula (Pivotal research fellowship) · <a href="mailto:santeri.koivula1@gmail.com">santeri.koivula1@gmail.com</a></footer>
+
+  <div id="pane"></div>
+  <p class="stamp" id="stamp"></p>
 </div>
+
 <script>
-/* ============================================================
-   Framework v3 — single entry (incident) path only.
-   ⚠ MIRRORED PAIR: this tree mirrors "Framework v3 questions.md"
-   (same folder) — keep the two in sync; the `id` fields are the shared keys.
-   Questions grouped by what the signal is about: the model, affordances,
-   the safeguards, the company, at stake. Multi-select red-line follow-ups
-   (multi:true) let one absence breach several requirements at once,
-   with a "not sure" escape.
-   ============================================================ */
-const BRANCHES = {
-  model: {
-    label: "The model as actor — LoC via internal deployment",
-    sections: [
+// ============================================================
+// GENERATED FILE — do not hand-edit.
+// Built by framework/experiments/build-rules-tool.py from
+// framework/evidence/Provision-derived question set (merge).md
+//
+// Thirteen agents read the COMPLETE text of twelve instruments
+// plus METR's Common Elements; questions were derived FROM the
+// provisions rather than fitted to them. Every bullet required a
+// verbatim quote. Requirements only — provisions that merely show
+// internal deployment treated differently were excluded, because
+// a gap is not a breach.
+// ============================================================
+const GROUPS = [{"id": "m1", "name": "Capability thresholds (METR 1)"}, {"id": "m2", "name": "Model weight security (METR 2)"}, {"id": "m3", "name": "Deployment mitigations (METR 3)"}, {"id": "m45", "name": "Threshold actions (METR 4–5)"}, {"id": "m6", "name": "Capability elicitation (METR 6)"}, {"id": "m7", "name": "Evaluation timing & frequency (METR 7)"}, {"id": "m8", "name": "Accountability (METR 8)"}, {"id": "m9", "name": "Updating policies (METR 9)"}, {"id": "b_inc", "name": "Incidents (SB 53 / CoP)"}, {"id": "b_pub", "name": "The public record"}, {"id": "b_rc", "name": "Raising concerns (SB 53 §1107.1)"}];
+const QS = [{"id": "q01", "g": "m1", "q": "Is the model capable of automating the AI research and development in the company?", "rules": [{"r": "Anthropic (RSP §1)", "t": "\"fully substitute for our entire set of Research Scientists and Research Engineers, at competitive costs (i.e., within a factor of 5)\"."}, {"r": "OpenAI (PF Table 1)", "t": "High: impact equal to \"a highly performant mid-career research engineer\" for every researcher, against a 2024 baseline. Critical: \"a superhuman research-scientist agent\"."}, {"r": "Google DeepMind (FSF Table 3.2.2.a)", "t": "\"ML R&D automation level 1: Can fully automate the work of any team of researchers at Google focused on improving AI capabilities, with approximately comparable all-inclusive costs.\""}, {"r": "Meta (AASF §4.2.3)", "t": "enhanced evaluation: \"Autonomously complete research tasks which are representative of the work of a senior research engineer improving AI capabilities at Meta\"."}, {"r": "Microsoft (FGF App I)", "t": "Critical: \"fully automate the AI R&D pipeline at a fraction of human labor costs\"."}, {"r": "Amazon (FMSF p. 2)", "t": "\"replacing human researchers and fully automating the research, development, and deployment of frontier models\"."}], "flag": null, "anchor": "A"}, {"id": "q02", "g": "m1", "q": "Has the model's use significantly accelerated the company's AI progress?", "rules": [{"r": "Anthropic (RSP §1, fn 8)", "t": "\"double the rate of progress\" against both the expected rate and the fastest pre-AI rate, over at least three model generations, plausibly attributable to automation rather than headcount or compute."}, {"r": "OpenAI (PF Table 1)", "t": "\"a generational model improvement… in 1/5th the wall-clock time of equivalent progress in 2024… sustainably for several months\"."}, {"r": "Google DeepMind (FSF Table 3.2.2.a)", "t": "\"ML R&D acceleration level 1: Has been used to accelerate AI development, resulting in AI progress substantially accelerating from historical rates.\" Past tense, about actual internal use."}, {"r": "Meta (AASF §4.2.3 fn 8)", "t": "quantifies it: the model \"saturates benchmarks in each domain six months or less after public release of a benchmark\", consistently, for at least two benchmarks within 18 months."}], "flag": null, "anchor": "A"}, {"id": "q03", "g": "m1", "q": "Is the model capable of carrying out cyber operations largely on its own?", "rules": [{"r": "California SB 53 §22757.11(c)(1)(B)", "t": "catastrophic risk covers conduct \"with no meaningful human oversight… that is either a cyberattack or, if the conduct had been committed by a human, would constitute the crime of murder, assault, extortion, or theft\"."}, {"r": "EU Code of Practice, Appendix 1.4(3)", "t": "cyber offence as a specified systemic risk, \"e.g. through automated vulnerability discovery, exploit generation, operational use, and attack scaling\"."}, {"r": "OpenAI (PF Table 1, Cybersecurity High)", "t": "\"automating end-to-end cyber operations against reasonably hardened targets OR… automating the discovery and exploitation of operationally relevant vulnerabilities\". Crossing it requires High-standard misalignment safeguards for large-scale internal deployment."}, {"r": "Meta (AASF §4.2.1)", "t": "a hard number: below \"75% pass@10 success on all categories of simple capture the flag (CTF) challenges in unguided mode\" the model is rated moderate or lower; at or above it, the deployment \"will not be implemented\" pending complex evaluation."}], "flag": null, "anchor": "B"}, {"id": "q04", "g": "m1", "q": "Is the model capable of evading oversight?", "rules": [{"r": "California SB 53 §22757.11(c)(1)(C)", "t": "catastrophic risk covers a model \"evading the control of its frontier developer or user\"."}, {"r": "EU Code of Practice, Appendix 1.4(2)", "t": "loss of control arising from \"misalignment with human intent or values, self-reasoning, self-replication, self-improvement, deception, resistance to goal modification, power-seeking behaviour\"."}, {"r": "Anthropic (RSP §1)", "t": "its misalignment threshold names the internal case as the leading one: systems \"extensively used within major AI companies, with the opportunity to manipulate how their successor systems are trained and deployed as well as the evidence used to assess their safety\"."}, {"r": "Google DeepMind (FSF §3.2.1)", "t": "the Stealth and Situational Awareness threshold: enough situational awareness and \"stealth (ability to circumvent basic oversight mechanisms)\" that \"we cannot rule out the model significantly undermining human control\"."}, {"r": "OpenAI (FGF §2.4)", "t": "Tier 2 is \"the capability to evade chain of thought monitoring\"; Tier 3 is where monitoring \"cannot reliably detect or rule out evasion of human control\"."}], "flag": null, "help": "Hiding what it is doing, or acting against the people supervising it.", "anchor": "C"}, {"id": "q05", "g": "m1", "q": "Has the company concluded a capability threshold was not reached without sufficient evidence?", "rules": [{"r": "OpenAI (FGF §2.3)", "t": "\"out of an abundance of caution we have treated models as crossing a capability threshold in circumstances where we are unable to rule out that a new threshold had been reached, even in the absence of direct evidence\". Also: \"passing them does not establish that the threshold has actually been reached\"."}, {"r": "Meta (AASF §4.2.3)", "t": "two enhanced criteria are satisfied by \"or we cannot rule out the presence of such evasion capability with reasonable confidence\" — inability to rule out counts as presence."}], "flag": "Yes", "help": "A capability threshold means some level of dangerous capability after which additional safeguards are needed. These are often defined in company safety frameworks."}, {"id": "q06", "g": "m2", "q": "Are the model's weights protected against exfiltration, by insiders, outsiders and models?", "rules": [{"r": "California SB 53 §22757.12(a)(7)", "t": "the chapeau obliges a large frontier developer to \"write, implement, comply with, and clearly and conspicuously publish\" a frontier AI framework describing how it approaches, at (7), \"Cybersecurity practices to secure unreleased model weights from unauthorized modification or transfer by internal or external parties.\" The statute sets no security standard; it makes the developer's own published practices binding on it."}, {"r": "New York RAISE §1421.1(g)", "t": "the same clause word for word, under a chapeau that differs by three: the framework must describe \"in detail how the large frontier developer handles\" each item, where SB 53 says \"describes how\" the developer \"approaches\" it. ⚠ Not in force until 1 January 2027."}, {"r": "EU Code of Practice, Appendix 4.4", "t": "\"Signatories will protect against insider threats, including in the form of (self-)exfiltration or sabotage carried out by models\", via background checks on anyone with read or write access to unreleased model parameters, insider-threat training, \"sandboxes around models\" against self-exfiltration, and training-data tampering checks. The Glossary defines insider threats as \"hostile operations by humans, AI models, and/or AI systems… with access to sensitive organisational resources, and/or accidental model leakage\"."}, {"r": "EU Code of Practice, Measure 6.2", "t": "carries the outsider limb: \"Signatories will implement appropriate security mitigations to meet the Security Goal, including the security mitigations pursuant to Appendix 4\", the Goal itself (Measure 6.1) having to name \"non-state external threats, insider threats, and other expected threat actors\". ⚠ Commitment 6 applies \"until [the model's] parameters are made publicly available for download or securely deleted\" — a duty of general application over closed-weight models, not an internal-deployment duty."}, {"r": "EU AI Act Art 55(1)(d)", "t": "\"ensure an adequate level of cybersecurity protection for the general-purpose AI model with systemic risk and the physical infrastructure of the model\". ⚠ Recital 115 glosses this to cover \"accidental model leakage, unauthorised releases, circumvention of safety measures… unauthorised access or model theft\". ⚠ The EU AI Act's obligations for general-purpose AI models attach on placing the model on the market; its reach over a model used only internally is arguable at best."}, {"r": "Meta (AASF)", "t": "nearest company match to the statutory wording: \"we maintain processes to ensure our model weight security meets a baseline of controls to protect model weights from exfiltration or tampering by internal and external threat actors.\" ⚠ Scoped to \"Frontier AI models we release under this Framework\"."}, {"r": "Google DeepMind (FSF §2.1, §2.1.1)", "t": "\"security mitigations intended to prevent the exfiltration or unauthorized modification of model weights\", by \"identity and access management practices and hardening interface-access to unreleased model parameters\", at security levels set per CCL. ⚠ The levels are aligned to RAND only loosely and by GDM's express disclaimer: fn 6 says \"we are referring to the security goals and principles in the RAND framework, rather than the benchmarks (i.e. concrete measures)\". Do not read the RAND OC/SL references as an external compliance yardstick."}, {"r": "Microsoft (FGF)", "t": "controls tiered to risk level: at high risk, \"Restricted access, including access control list hygiene and limiting access to weights of the most capable models other than for core research and for safety and security teams\"; \"Model weights are encrypted\"; red teaming that simulates \"relevant threat actors seeking to steal the model weights\". ⚠ Critical-risk controls are future-tense (\"will likely include… physical bandwidth limitations between devices or networks containing weights and the outside world\")."}, {"r": "xAI (FAIF)", "t": "\"encryption of model weights, role-based access controls, and real-time monitoring to prevent unauthorized transfer\", plus measures \"against the large-scale extraction and distillation of reasoning traces\"."}, {"r": "Amazon (FMSF)", "t": "\"Security Measures are designed to prevent unauthorized access to model weights or guardrails… which could enable a malicious actor to remove or bypass existing guardrails to exceed Critical Capability Thresholds\", backed by the most detailed control list in the corpus: hardware-based multi-factor authentication, \"two-person rules for more sensitive operations\", zero-trust privilege revocation, and \"strong separation of duties and least-privilege access\"."}], "flag": "No"}, {"id": "q07", "g": "m2", "q": "Is there a record of every place the model's weights are stored?", "rules": [{"r": "EU Code of Practice, Appendix 4.2", "t": "\"a secure internal registry of all devices and locations where model parameters are stored\", with prevention of \"unauthorised copying of model parameters to unmanaged devices\"."}], "flag": "No", "help": "A register of the devices and locations holding copies, not just a policy saying copies are controlled."}, {"id": "q08", "g": "m2", "q": "Is there a list of who and what is allowed to reach the model's weights?", "rules": [{"r": "EU Code of Practice, Appendix 4.3", "t": "\"explicitly authorising only required software and persons for access to model parameters\", and \"limiting the number of people who have non-hardened interface-access to model parameters\"."}, {"r": "Amazon (FMSF App A)", "t": "access requires membership of \"the correct Critical Permission Groups\" plus hardware security tokens from enterprise-managed endpoints; \"engineers do not have privileged access to any service that they are not building or operating\"."}, {"r": "OpenAI (PF App C.3)", "t": "access \"limited based on job functions, need-to-know, and operational requirements in alignment with the principles of least privilege and separation of duties\"."}], "flag": "No", "help": "Do only specific people and software access to model weights?"}, {"id": "q09", "g": "m3", "q": "Is the internal deployment monitored?", "rules": [{"r": "OpenAI (PF App C.2)", "t": "\"Agent actions are all logged in an uneditable database, and asynchronous monitoring routines review those actions for evidence of harm\"; \"Monitor AI supervises agent actions\"; \"System forces human approval of agent actions\"."}, {"r": "Anthropic (RSP §1)", "t": "at the automated-R&D threshold: \"comprehensively gather, centralize, and maintain logs for all critical AI-development activities, and use AI to analyze them for issues including… concerning behavior by insiders (humans as well as AI systems themselves)\". ⚠ Footnote 3 says this column \"should be read as an overview, not as indicating any separate or additional plans\", and the commitment appears nowhere else in the document."}, {"r": "Google DeepMind (FSF §3.2.1)", "t": "past the Stealth threshold, where residual internal-deployment risk is judged unacceptable without added safeguards \"(such as chain-of-thought monitoring on high-risk deployments), these will be applied\". ⚠ Self-assessed condition."}, {"r": "Meta (AASF §2.2.2)", "t": "the internal-use risk report relies \"particularly… on monitoring and preparedness evaluations tied to internal deployment threat models\"."}], "flag": "No", "gate": "AC"}, {"id": "q10", "g": "m45", "q": "After a capability threshold was crossed, was development paused or stopped?", "rules": [{"r": "EU Code of Practice, Measure 4.2", "t": "\"Signatories will only proceed with the development, the making available on the market, and/or the use of the model, if the systemic risks stemming from the model are determined to be acceptable.\""}, {"r": "Meta (AASF Table 1, Critical)", "t": "\"Proceed with development of the Frontier AI only if catastrophic risks are within acceptable levels.\" ⚠ Appendix II records this measure was changed from \"Stop\" in v1."}, {"r": "OpenAI (PF Table 1)", "t": "at Critical in bio/chem, cyber and self-improvement alike: \"Until we have specified safeguards and security controls that would meet a Critical standard, halt further development.\" ⚠ The document does not say whether \"further development\" means this model or the capability line."}, {"r": "Microsoft (FGF §4)", "t": "\"If, during the implementation of this framework, we identify a risk we cannot sufficiently mitigate, we will pause development and deployment until the point at which mitigation practices evolve to meet the risk.\" Not scoped to the model that triggered it."}, {"r": "Anthropic (RSP App A)", "t": "\"We will delay AI development and deployment as needed\". ⚠ Fires only in the named competitor scenarios — holding a clear lead, or matching competitors who can argue catastrophic risk is contained — not on threshold-crossing alone."}], "flag": "No", "gate": "ABC"}, {"id": "q11", "g": "m45", "q": "Was the model held back from use until safeguards were in place?", "rules": [{"r": "California SB 53 §22757.12(a)(3)", "t": "the published framework must describe \"applying mitigations to address the potential for catastrophic risks based on the results of assessments\"; non-compliance with one's own framework is a violation (§22757.15)."}, {"r": "OpenAI (PF §1)", "t": "\"We do not deploy models that reach a High capability threshold until the associated risks that they pose are sufficiently minimized.\""}, {"r": "Amazon (FMSF §2–§3)", "t": "\"When a maximal capability evaluation indicates that a model has hit a Critical Capability Threshold, we will not deploy the model until we have implemented appropriate safeguards.\" ⚠ Ten of twelve gate sentences in this document are unqualified as to \"publicly\"; the headline commitment on p. 1 is one of them."}, {"r": "Meta (AASF Table 1, High and Critical)", "t": "\"Proceed with deployment of the Frontier AI only if sufficient mitigations are defined, implemented and validated to reduce risk to that of a moderate or lower model.\" Appendix I defines deployment to include internal deployment."}], "flag": "No", "gate": "ABC"}, {"id": "q12", "g": "m45", "q": "After a capability threshold was stopped, did the company tighten security around the model's weights?", "rules": [{"r": "Google DeepMind (FSF Table 3.2.2.a)", "t": "recommended security level 3 at the acceleration threshold, level 4 at automation, the latter needing \"exceptional security even though they may have substantial innovation costs\". ⚠ \"Recommend\", explicitly to the field."}, {"r": "Meta (AASF Table 1, Critical)", "t": "\"Initiate protocols for heightened access controls to model weights as overseen by the Chief AI Officer and/or Director of Alignment and Risk\". ⚠ Qualified by \"insofar as is technically feasible and commercially practicable\"."}, {"r": "Microsoft (FGF §4)", "t": "at high risk: \"security measures protective against most cybercrime groups and insider threats\", weight access \"limited to… core research and for safety and security teams\", weights encrypted."}, {"r": "OpenAI (PF Table 1)", "t": "High in self-improvement and in cyber both \"Require security controls meeting High standard\"."}], "flag": "No", "gate": "ABC"}, {"id": "q13", "g": "m6", "q": "Were the evaluations designed to elicit maximal capability?", "rules": [{"r": "EU Code of Practice, Appendix 3.2(1)", "t": "elicitation must use \"at least state-of-the-art techniques that… minimise the risk of under-elicitation\"."}, {"r": "OpenAI (PF §3.1)", "t": "evaluations use \"the highest-capability tier of system settings… a version of the model that has a negligible rate of safety-based refusals on our Tracked Category capability evaluations (which may require a separate model variant), and with the best presently-available scaffolds\"."}, {"r": "Microsoft (FGF §3)", "t": "elicitation includes \"fine-tuning the model to improve performance on the capability being evaluated or ensuring the model is prompted and scaffolded to enhance the tracked capability — for example, by using a multi-agent setup, leveraging prompt optimization, or connecting the model to whichever tools and plugins will maximize its performance\"."}, {"r": "EU AI Act Art 55(1)(a)", "t": "model evaluation \"in accordance with standardised protocols and tools reflecting the state of the art, including conducting and documenting adversarial testing of the model\". ⚠ The EU AI Act's obligations for general-purpose AI models attach on placing the model on the market; its reach over a model used only internally is arguable at best."}], "flag": "No", "help": "Best available scaffolding and tools, safety refusals removed."}, {"id": "q14", "g": "m6", "q": "Was the model evaluated in a setting that resembles actual deployment?", "rules": [{"r": "EU Code of Practice, Appendix 3.2(2)", "t": "evaluations must \"match the expected use context (e.g. equivalent scaffolding and/or tool access) of the model, as informed by integrations into AI systems that are… planned or considered for the model\"."}, {"r": "Meta (AASF §2.2.1)", "t": "\"capturing the upper bound of risk by evaluating the model as part of a system with scaffolding and tooling available for the proposed deployment scenario\". ⚠ Hybrid: upper-bound framing, use-context object. And §4.2.1 exempts internal deployment from it for cybersecurity — \"we assess capabilities on the base model\" — so the two cannot both hold for an internally deployed model with scaffolding. ⚠ Preparedness reports are triggered by a closed or open release, so for a model that is never released this is a comparison rather than a requirement — though the report's content, when one exists, must reach back over internal deployments."}], "flag": "No", "help": "A different question from the one above — not the ceiling, but the setup people are using day to day. The two can diverge in either direction."}, {"id": "q15", "g": "m6", "q": "Were the model's evaluations designed to catch it underperforming on purpose?", "rules": [{"r": "EU Code of Practice, Appendix 3.2", "t": "elicitation must use \"at least state-of-the-art techniques that… (2) minimise the risk of model deception during model evaluations (e.g. sandbagging)\". The Glossary defines deception to include \"a model's detecting that it is being evaluated and under-performing or otherwise undermining oversight\"."}, {"r": "Meta (AASF §4.1)", "t": "\"We also account for model capabilities and propensities that might undermine the reliability of model evaluation results, such as whether a model can identify when it is being evaluated and, in such cases, selectively adapt its outputs.\""}, {"r": "Meta (AASF §4.2.3)", "t": "gives the method: compare \"performance on target evaluations… substantially different from control evaluations (with reasonable confidence levels)\"."}, {"r": "OpenAI (PF §2.3, Table 2)", "t": "the stated response to sandbagging: \"Adopt elicitation approach that overcomes sandbagging, or use a conservative upper bound of the model's non-sandbagged evaluation results\". ⚠ A research category, expressly not threshold-bearing."}], "flag": "No", "help": "This is often called \"sandbagging\".", "lead": "The capability question is close to settled; the question that still discriminates is whether the evaluation was built to detect it."}, {"id": "q16", "g": "m6", "q": "Were the evaluation's known weaknesses written down alongside its results?", "rules": [{"r": "EU Code of Practice, Measure 9.2", "t": "\"If Signatories do not yet have certain relevant information… they will record that in their serious incident reports.\""}, {"r": "Microsoft (FGF §3)", "t": "the evaluation \"includes a statement on the robustness of the evaluation method used, assumptions underlying the evaluation, and any concerns about the effectiveness or validity of the evaluation\"."}, {"r": "EU Code of Practice, Measure 7.3(2)(c)", "t": "the report must describe safety mitigations *and* \"their limitations\". ⚠ This duty attaches to a model being placed on the market. For a model used only inside the company it is a comparison — what would be required if this model were shipped — not a rule the company is breaking."}, {"r": "Meta (AASF §2.2.1)", "t": "reports \"disclose any known issues that could hinder generalizing our safety testing to real-world risks, including changes to the training process that reduce interpretability\". ⚠ Preparedness reports are triggered by a closed or open release, so for a model that is never released this is a comparison rather than a requirement — though the report's content, when one exists, must reach back over internal deployments."}], "flag": "No", "help": "Doubts about whether the method was sound, assumptions that might not hold, and things nobody was able to establish — recorded, rather than only the findings."}, {"id": "q17", "g": "m6", "q": "Did the people who evaluated the model get sufficient access, time and compute?", "rules": [{"r": "EU Code of Practice, Appendix 3.4", "t": "evaluation teams must get \"adequate access to the model… including, as appropriate, access to model activations, gradients, logits… chains-of-thought… and access to the model version(s) with the fewest safety mitigations implemented (such as a helpful-only model version, if it exists)\"; \"a period of at least 20 business days is appropriate for most systemic risks\"; and \"adequate compute budgets… adequate staffing; and… adequate engineering budgets and support\"."}, {"r": "EU Code of Practice, Measure 8.2", "t": "those with assigned risk responsibilities must receive \"human resources… financial resources… access to information and knowledge; and… computational resources\"."}, {"r": "Anthropic (RSP §4)", "t": "the Responsible Scaling Officer's duties include \"overseeing the implementation of this policy, including the allocation of sufficient resources\"."}, {"r": "Meta (AASF §2.3)", "t": "the Chief AI Officer \"will ensure that the Director of Alignment and Risk has resources, including human, financial, and computational resources, sufficient to perform state-of-the-art risk mitigation and assessment\"."}], "flag": "No"}, {"id": "q18", "g": "m7", "q": "Has the model been evaluated since anything material about the model or its deployment context was changed?", "rules": [{"r": "EU Code of Practice, Measure 1.2", "t": "continuous assessment \"along the entire model lifecycle\", at trigger points defined by \"time, training compute, development stages, user access, inference compute, and/or affordances\"."}, {"r": "Microsoft (FGF §3)", "t": "a leading-indicator assessment runs \"during pre-training, after pre-training is complete, after post-training, and prior to deployment\", and at least every six months thereafter; and additionally \"when Microsoft substantially fine-tunes first- or third-party models, where the compute used for fine-tuning is more than 1/3 of the base model\"."}, {"r": "Meta (AASF §3.3.1)", "t": "\"Non-material modifications… including non-material fine-tuning, scaffolding, or tool integration, are presumed to inherit the same risk threshold as the underlying model and remain subject to at least equivalent mitigations.\""}, {"r": "Amazon (FMSF §2)", "t": "\"We will re-evaluate deployed models prior to any major updates that could meaningfully enhance underlying capabilities.\""}], "flag": "No", "help": "Changes here include further fine-tuning, new tools, more inference compute, or wider access.", "lead": "This asks what the company has measured, not what you have observed. A capability you can see that has never been evaluated is a different situation from one that was evaluated and cleared."}, {"id": "q19", "g": "m8", "q": "Does the company have a designated party that approves internal deployments?", "rules": [{"r": "EU Code of Practice, Measure 8.1", "t": "\"Signatories will clearly define responsibilities for managing the systemic risks stemming from their models across all levels of the organisation\", naming systemic risk oversight and ownership as two of the four, and requiring them to be allocated across levels up to \"the management body in its supervisory function or another suitable independent body (such as a council or board)\". ⚠ The duty is to define responsibility for managing systemic risk, not specifically to name a deployment approver — so it grounds \"someone is designated\" more squarely than \"someone approves\"."}, {"r": "Meta (AASF §2.1.3, §2.3)", "t": "\"the Chief AI Officer or the Director of Alignment and Risk will determine whether to… approve the model for deployment\"; deployment follows \"the approval of the Chief AI Officer\". ⚠ The bullet's bridge — Appendix I defining deployment to include internal deployment — is qualified by the next sentence of the same definition: \"Not all actions or requirements described in the Framework apply to every deployment type\"."}, {"r": "Google DeepMind (FSF §3.1.2)", "t": "\"external deployments and high-risk internal deployments of a model take place only after the appropriate governance function determines the residual risk to be acceptable\". ⚠ \"The appropriate governance function\" is used four times in the document and defined nowhere."}, {"r": "Anthropic (RSP §3.4)", "t": "\"The CEO and RSO will make the ultimate determination regarding the adequacy of the risk assessment and any downstream deployment or development plans.\""}, {"r": "OpenAI (PF §1, App B)", "t": "the Safety Advisory Group recommends; \"OpenAI Leadership can approve or reject these recommendations\". ⚠ App B adds that leadership \"can also make decisions without the SAG's participation, i.e., the SAG does not have the ability to 'filibuster'\"."}, {"r": "New York RAISE §1421.1(d)", "t": "identical wording; in force 2027. ⚠ Not in force until 1 January 2027."}], "flag": "No"}, {"id": "q20", "g": "m8", "q": "Is there a written justification for why this model's risks are acceptable?", "rules": [{"r": "EU Code of Practice, Measure 7.2(1)", "t": "the Model Report must contain \"a detailed justification for why the systemic risks stemming from the model are acceptable, including details of the safety margins incorporated (pursuant to Measure 4.1)\". ⚠ The Model Report is created \"before placing a model on the market\", so a model never marketed carries no such duty; for a model that is on the market, Art 55(1)(b) reaches risks from \"the development, the placing on the market, or the use\" of it."}, {"r": "OpenAI (FGF §2.5)", "t": "\"We document a justification for why the systemic risks stemming from the model are acceptable\". ⚠ Near-verbatim Measure 7.2(1) — the FGF is OpenAI's Code of Practice public summary, so this restates the source above rather than adding a second instrument."}, {"r": "Google DeepMind (FSF §1.3.4)", "t": "models reaching a critical level get a residual risk assessment \"informed by a supplemental safety case\"."}], "flag": "No"}, {"id": "q21", "g": "m8", "q": "Does the justification say what would change its conclusion?", "rules": [{"r": "EU Code of Practice, Measure 7.2(2)", "t": "the report must state \"the reasonably foreseeable conditions under which the justification… would no longer hold\". ⚠ This duty attaches to a model being placed on the market. For a model used only inside the company it is a comparison — what would be required if this model were shipped — not a rule the company is breaking."}, {"r": "OpenAI (FGF §2.5)", "t": "the justification must include \"reasonably foreseeable conditions under which the justification may no longer hold\"."}], "flag": "No", "fu": "q20"}, {"id": "q22", "g": "m8", "q": "Did any of those conditions occur without the justification being revisited?", "rules": [{"r": "EU Code of Practice, Measure 7.6", "t": "grounds obliging an update include the model's \"capabilities, propensities, and/or affordances\" changing materially \"such as through further post-training, access to additional tools, or increase in inference compute\", and its \"use and/or integrations into AI systems\" changing materially. ⚠ This duty attaches to a model being placed on the market. For a model used only inside the company it is a comparison — what would be required if this model were shipped — not a rule the company is breaking."}, {"r": "xAI (FAIF p. 2)", "t": "re-assessment triggers include \"if the model's use or integrations into xAI's systems materially increase risk\", and where \"xAI has reason to believe that the basis for considering the model's systemic risks acceptable has materially changed\"."}], "flag": "Yes", "fu": "q21"}, {"id": "q23", "g": "m8", "q": "Have the evaluation results reached senior leadership?", "rules": [{"r": "Amazon (FMSF p. 5)", "t": "the evaluating team \"will report to Amazon senior leadership any evaluation that exceeds the Critical Capability Threshold… to the SVP for the model development team, the Chief Security Officer, and legal counsel\"."}, {"r": "Anthropic (RSP §3.4)", "t": "\"The Risk Report, along with the internal feedback and any available external feedback, will be sent to the CEO and Responsible Scaling Officer.\""}, {"r": "Microsoft (FGF §5)", "t": "documentation plus a written case goes to \"Executive Officers responsible for Microsoft's AI governance program\", who are \"responsible for assessing that the recommendation… ha[s] been developed in a good faith attempt to determine the ultimate capabilities of the model\"."}], "flag": "No", "gate": "ABC"}, {"id": "q24", "g": "m9", "q": "Has the safety framework been changed without a published justification?", "rules": [{"r": "California SB 53 §22757.12(b)(2)", "t": "material modifications published with a justification within 30 days."}, {"r": "EU Code of Practice, Measure 1.3", "t": "every update carries \"a changelog, describing how and why the Framework has been updated, along with a version number and the date of change\"."}, {"r": "OpenAI (FGF §7.1)", "t": "\"changes and justifications for material updates documented in a changelog and published within 30 days\". ⚠ The one commitment where an insider's private knowledge (the internal change date) and the public record can be directly diffed."}, {"r": "Meta (AASF §5.1)", "t": "\"we will publish a timely update that includes a justification for the modification, as recorded in the change log\". ⚠ Appendix II records the v1→v2 removal of the stop condition and gives no justification for it."}, {"r": "New York RAISE §1421.2(b)", "t": "identical, in force 2027. ⚠ Not in force until 1 January 2027."}], "flag": "Yes"}, {"id": "q25", "g": "b_inc", "q": "Has the model done something unlawful?", "rules": [{"r": "California SB 53 §22757.11(c)(1)(B)", "t": "catastrophic risk covers \"engaging in conduct with no meaningful human oversight, intervention, or supervision that is either a cyberattack or, if the conduct had been committed by a human, would constitute the crime of murder, assault, extortion, or theft, including theft by false pretense\"."}, {"r": "OpenAI (FGF §2.1)", "t": "its loss-of-control category expressly covers \"autonomous conduct that, if conducted by a human, would constitute a crime of murder, assault, extortion, or theft\"."}, {"r": "New York RAISE §1420.3(a)(ii)", "t": "the identical formulation, word for word. ⚠ Not in force until 1 January 2027."}, {"r": "New York RAISE §1424", "t": "\"The duties and obligations imposed by this article are cumulative with any other duties or obligations imposed under other law\" — textual warrant that generally-applicable law is not displaced by the AI-specific regime. ⚠ Not in force until 1 January 2027."}], "flag": "Yes", "help": "For instance, whether the model has conducted fraud or achieved unauthorised access to systems."}, {"id": "q26", "g": "b_inc", "q": "Has the model, in internal use, deceived its developer or subverted its controls or monitoring?", "rules": [{"r": "California SB 53 §22757.11(d)(4) + §22757.13(c)", "t": "a legally defined critical safety incident: \"deceptive techniques against the frontier developer to subvert the controls or monitoring of its frontier developer outside of the context of an evaluation designed to elicit this behavior and in a manner that demonstrates materially increased catastrophic risk\"; reportable in 15 days, 24 hours where danger is imminent."}, {"r": "OpenAI (FGF §1)", "t": "internal deployment is scoped in \"in some cases… with respect to risks resulting from circumventing oversight mechanisms\"."}, {"r": "New York RAISE §1420.4(d) + §1422.3", "t": "identical definition; 72 hours from determination *or* from \"learning facts sufficient to establish a reasonable belief\". ⚠ The clock cannot be stopped by declining to determine. In force 2027. ⚠ Not in force until 1 January 2027."}], "flag": "Yes"}, {"id": "q27", "g": "b_inc", "q": "Have the model's weights been accessed, modified or moved without authorization?", "rules": [{"r": "EU Code of Practice, Measure 9.3(2)", "t": "\"a serious cybersecurity breach, including the (self-)exfiltration of model weights\", reported within five days of becoming aware. ⚠ No harm requirement, and suspicion suffices."}], "flag": "Yes"}, {"id": "q28", "g": "b_inc", "q": "Once the company knew about the incident, was it reported to the relevant authorities?", "rules": [{"r": "California SB 53 §22757.13", "t": "15 days; the state's report form asks \"whether the incident was associated with internal use of a frontier model\"."}, {"r": "EU Code of Practice, Measure 9.2", "t": "the report must include \"a root cause analysis… including the inputs used and any failures or circumventions of systemic risk mitigations\"."}, {"r": "EU AI Act Art 55(1)(c)", "t": "systemic-risk model providers must \"keep track of, document, and report, without undue delay, to the AI Office… relevant information about serious incidents\". ⚠ Unlike Art 73(1), this carries no market-placement condition — the strongest textual reach to an internal model in the Regulation. But \"serious incident\" is defined at Art 3(49) against an *AI system*, and all four limbs require realised external harm. ⚠ The EU AI Act's obligations for general-purpose AI models attach on placing the model on the market; its reach over a model used only internally is arguable at best."}], "flag": "No", "help": "Both California SB 53 and the EU Code of Practice mandate reporting serious incidents.", "lead": "Handled quietly inside the team is not the same as reported. Where a report is legally required, the deadlines are short — 15 days in California, 72 hours in New York from 2027, five days to the AI Office for a weight breach."}, {"id": "q29", "g": "b_pub", "q": "Has the company made a false or misleading statement about the model or its risks (publicly or to authorities)?", "rules": [{"r": "California SB 53 §22757.12(e)", "t": "no \"materially false or misleading statement about catastrophic risk… or its management\"; for large developers, none about \"implementation of, or compliance with, its frontier AI framework\". Good-faith exception."}, {"r": "EU AI Act Arts 101(1)(b), 99(5)", "t": "supplying \"incorrect, incomplete or misleading information\" to the Commission or a national authority is fineable. ⚠ No market-placement condition visible in Art 101's own text."}, {"r": "Anthropic (RSP §3.2)", "t": "practices must stay in line with what Risk Reports describe, \"or track and report noteworthy changes and deviations\"."}, {"r": "New York RAISE §1421.4(a)(i)", "t": "binds all frontier developers, unconditional on size, deployment or internal/external. ⚠ Not in force until 1 January 2027."}], "flag": "Yes"}, {"id": "q30", "g": "b_pub", "q": "Has anyone outside the company evaluated this model?", "rules": [{"r": "EU Code of Practice, Appendix 3.5", "t": "independent external evaluators must evaluate, unless the model is a similarly-safe reference model or no qualified evaluator could be appointed \"despite using early search efforts\"; and signatories \"will not undermine the integrity of external model evaluations by storing and/or analysing inputs and/or outputs from test runs without express permission\"."}, {"r": "California SB 53 §22757.12(a)(5)", "t": "the framework must describe \"using third parties to assess the potential for catastrophic risks and the effectiveness of mitigations\"."}, {"r": "Anthropic (RSP §3.6)", "t": "a significantly redacted Risk Report covering \"highly capable\" models requires full external review; reviewers must have no financial interest, are approved by the LTBT, and \"will not be restricted in what they can publish, including concerns about… Anthropic's conduct\"."}, {"r": "Microsoft (FGF §3)", "t": "\"We engage qualified third parties to conduct evaluations in ways that are appropriate to the risk profile of the model.\""}], "flag": "No", "help": "An independent evaluator given access, a third party reviewing testing done internally, or an external reviewer of the risk documentation.", "gate": "A"}, {"id": "q31", "g": "b_rc", "q": "Does an internal channel exist where you could raise this anonymously?", "rules": [{"r": "California SB 53 §1107.1(e)", "t": "large frontier developers must provide \"a reasonable internal process through which a covered employee may anonymously disclose information\"."}, {"r": "EU Whistleblowing Directive (EU) 2019/1937, Arts 8–9", "t": "entities with \"50 or more workers\" must run internal reporting channels ensuring \"the confidentiality of the identity of the reporting person\"; applied to AI work by EU AI Act Art 87. ⚠ Confidentiality, not anonymity — Art 6(2) leaves anonymous reports to national law."}], "flag": "No"}, {"id": "q32", "g": "b_rc", "q": "Do people who use that channel hear back about what happened to their report?", "rules": [{"r": "California SB 53 §1107.1(e)(1)–(2)", "t": "the process must include \"a monthly update to the person who made the disclosure regarding the status of the… investigation and the actions taken\"; disclosures and responses go to officers and directors \"at least once each quarter\"."}, {"r": "EU Code of Practice, Measure 8.3(5)", "t": "a named risk-culture indicator: \"internal reporting channels are actively used and reports are acted upon appropriately\"."}, {"r": "Anthropic (RSP §4)", "t": "anonymous or identified noncompliance reporting, with \"more than one option for who receives these reports, including the RSO, and at least one executive who does not report to the RSO\"; quarterly Board updates \"whether substantiated or not\"."}, {"r": "OpenAI (PF §5.1)", "t": "\"Any employee can raise concerns about potential violations of this policy… We will track and appropriately investigate any reported or otherwise identified potential instances of noncompliance.\""}, {"r": "Microsoft (FGF §5)", "t": "existing internal channels \"includes an option for anonymous reporting\"."}], "flag": "No", "fu": "q31", "help": "A response on a schedule, saying what was done — not an acknowledgement and then silence. California requires a monthly update on the status of the investigation and the actions taken."}, {"id": "q33", "g": "b_rc", "q": "Have you been asked to sign anything that could stop you raising safety concerns?", "rules": [{"r": "California SB 53 §1107.1(a)–(b)", "t": "no \"rule, regulation, policy, or contract\" may prevent a covered employee disclosing to the Attorney General, a federal authority, a manager, or another covered employee with authority to investigate; and no contract may prevent a disclosure protected under §1102.5. ⚠ \"Covered employee\" is narrow — §1107(b), an employee \"responsible for assessing, managing, or addressing risk of critical safety incidents\" — though §1107.1(j)(1) preserves general California whistleblower law for everyone else."}, {"r": "Anthropic (RSP §4)", "t": "no contractual non-disparagement that \"could impede or discourage them from publicly raising safety concerns… nor will it preclude disclosure of the existence of that clause\"."}], "flag": "Yes", "help": "An NDA, a non-disparagement clause, a separation agreement, or an internal policy. Including one you would not be able to say you had signed."}, {"id": "q34", "g": "b_rc", "q": "Have you been told what your whistleblower rights are?", "rules": [{"r": "California SB 53 §1107.1(d)", "t": "\"clear notice\" of disclosure rights: continuous workplace posting plus notice to new and remote workers, or an annual acknowledged written notice. ⚠ \"Covered employee\" is narrow (§1107(b)); §1107.1(j)(1) preserves general whistleblower law for everyone else."}, {"r": "EU Code of Practice, Measure 8.3(6)", "t": "\"annually informing workers of the Signatory's whistleblower protection policy and making such policy readily available… such as by publishing it on their website\"."}], "flag": "No", "help": "A workplace posting, an onboarding notice, or an annual written notice you acknowledged."}, {"id": "q35", "g": "b_rc", "q": "Have you been trained on recognising and reporting an insider threat?", "rules": [{"r": "EU Code of Practice, Appendix 4.4(2)", "t": "\"the provision of training on recognising and reporting insider threats\", within a Measure whose object is \"insider threats, including in the form of (self-)exfiltration or sabotage carried out by models\"."}, {"r": "EU AI Act Art 4", "t": "providers and deployers must ensure \"a sufficient level of AI literacy of their staff and other persons dealing with the operation and use of AI systems on their behalf\". ⚠ \"to their best extent\"; not fineable."}], "flag": "No", "help": "Including the case where the insider is the model."}, {"id": "q36", "g": "b_rc", "q": "Has anyone who raised concerns been retaliated against or sidelined?", "rules": [{"r": "California SB 53 §1107.1(a),(g)", "t": "retaliation banned, with a burden-shift: once the disclosure is shown to be a contributing factor, the company must prove by \"clear and convincing evidence\" it would have acted anyway."}, {"r": "EU AI Act Art 87", "t": "\"Directive (EU) 2019/1937 shall apply to the reporting of infringements of this Regulation and the protection of persons reporting such infringements.\" ⚠ The gate to protection is that the matter *is* an infringement — which is what a rules tool determines."}, {"r": "EU Code of Practice, Measure 8.3(7)", "t": "no retaliation \"including any direct or indirect detrimental action such as termination, demotion, legal action, negative evaluations, or creation of hostile work environments\" against a person giving information to competent authorities. ⚠ Does not name disclosure to the press or public."}, {"r": "Microsoft (FGF §5)", "t": "\"Employees who raise concerns are protected from retaliation.\""}, {"r": "Amazon (FMSF App A)", "t": "a stated culture of \"'see something, say something' as well as 'when in doubt, escalate' and 'no blame' principles\"."}], "flag": "Yes"}];
+const SOURCES = [["Law", "California SB 53 — Transparency in Frontier Artificial Intelligence Act", "Stats. 2025 ch. 138; in force 1 Jan 2026", ""], ["Law", "New York RAISE Act — Article 44-B", "as replaced by ch. 96 of 2026 (S8828)", "Not in force until 1 Jan 2027"], ["Law", "EU AI Act — Regulation (EU) 2024/1689", "OJ L 2024/1689, 12 July 2024", ""], ["Law", "GPAI Code of Practice — Safety and Security Chapter", "final version, published 10 July 2025", ""], ["Framework", "Anthropic — Responsible Scaling Policy", "version 3.4, effective 8 July 2026", ""], ["Framework", "OpenAI — Preparedness Framework", "version 2, last updated 15 April 2025", ""], ["Framework", "OpenAI — Frontier Governance Framework", "undated", "No version or date printed anywhere in the document"], ["Framework", "Google DeepMind — Frontier Safety Framework", "version 3.1, published 17 April 2026", ""], ["Framework", "Meta — Advanced AI Scaling Framework", "version 2, April 2026", ""], ["Framework", "Microsoft — Frontier Governance Framework", "February 2026 edition", ""], ["Framework", "Amazon — Frontier Model Safety Framework", "February 2025, unchanged since", "No version number in the document"], ["Framework", "xAI — Frontier AI Framework", "effective 30 June 2026", ""]];
 
-      { name:"The model", qs:[
-        { id:"m_nudge",
-          q:"Was the model explicitly nudged to do bad actions?",
-          options:[
-            {label:"Yes — it was nudged", dir:"less"},
-            {label:"No — it wasn't nudged", dir:"more", next:"m_instructed"}
-          ]},
-        { id:"m_instructed", cond:true,
-          q:"Was the model instructed to not do the action?",
-          options:[
-            {label:"Yes", dir:"more"},
-            {label:"No", tag:"→", tagClass:"plain", next:"m_sens"}
-          ]},
-        { id:"m_sens", cond:true,
-          q:"Would instructions to not do this have worked if it was clear to the model this wouldn't be checked?",
-          options:[
-            {label:"Instructions would likely have stopped it", dir:"less"},
-            {label:"It would likely have done it anyway", dir:"more"},
-            {label:"Unknown / untested", dir:"unsure"}
-          ]},
-        { id:"m_intent",
-          q:"Did the model know that the company would not actually want it to do the action?",
-          options:[{label:"Yes — it knew", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_goal",
-          q:"Did the model pursue some long-term instrumental objective?",
-          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_deceive", multi:true,
-          q:"Did the model attempt to deceive? (select all that apply)",
-          options:[
-            {label:"It obfuscated its actions", dir:"more"},
-            {label:"It lies when questioned after getting caught", dir:"more"},
-            {label:"Neither", dir:"less"},
-            {label:"Not sure", dir:"unsure"}
-          ]},
-        { id:"m_collateral",
-          q:"Did the model take any actions that caused large amounts of collateral damage?",
-          options:[
-            {label:"Yes", dir:"more"},
-            {label:"No", tag:"→ counterfactual", tagClass:"plain", next:"m_collateral2"}
-          ]},
-        { id:"m_collateral2", cond:true,
-          q:"Would the model have taken any actions that would have caused large amounts of collateral damage, if provided the opportunity?",
-          options:[{label:"Yes — plausibly", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_illegal",
-          q:"Did the model take any actions that broke the law?",
-          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_multi",
-          q:"Were there multiple models involved?",
-          options:[
-            {label:"Yes", tag:"→ did they collude?", tagClass:"plain", next:"m_collude"},
-            {label:"No", dir:"neutral"}
-          ]},
-        { id:"m_collude", cond:true,
-          q:"Did the models collude?",
-          options:[
-            {label:"Yes", dir:"more"},
-            {label:"No", tag:"→ counterfactual", tagClass:"plain", next:"m_collude2"}
-          ]},
-        { id:"m_collude2", cond:true,
-          q:"Would the models have colluded if given the opportunity?",
-          options:[{label:"Yes — plausibly", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_selfrep",
-          q:"Did the model exfiltrate its weights?",
-          options:[
-            {label:"Yes", dir:"more"},
-            {label:"It attempted to, but didn't succeed", dir:"more"},
-            {label:"No", dir:"less"}
-          ]},
-        { id:"m_freq",
-          q:"How often has the model produced behavior like this before?",
-          options:[
-            {label:"This is the first time", dir:"less"},
-            {label:"Rarely", dir:"slight-more"},
-            {label:"Often", dir:"more"}
-          ]},
-        { id:"m_cot",
-          q:"Did anyone find anything concerning in the chain-of-thought?",
-          options:[
-            {label:"Yes — concerning content in the CoT", dir:"more"},
-            {label:"No", tag:"→ obfuscation?", tagClass:"plain", next:"m_cot_obf"},
-            {label:"Nobody reviewed the chain-of-thought", dir:"more"}
-          ]},
-        { id:"m_cot_obf", cond:true,
-          q:"Do you have a good reason to believe it might be obfuscating its reasoning?",
-          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_eval_mis",
-          q:"How does the model score on misalignment-related evaluations?",
-          options:[
-            {label:"It scores well", tag:"→ sandbagging?", tagClass:"plain", next:"m_sandbag"},
-            {label:"It scores badly", dir:"more"},
-            {label:"It wasn't evaluated for this", dir:"more"}
-          ]},
-        { id:"m_sandbag", cond:true,
-          q:"Is there a reason to expect sandbagging?",
-          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_eval_mon",
-          q:"How does the model score on monitorability-related evaluations?",
-          options:[
-            {label:"It scores well", dir:"less"},
-            {label:"It scores badly", dir:"more"},
-            {label:"It wasn't evaluated for this", dir:"more"}
-          ]},
-        { id:"m_cap",
-          q:"How capable is the model compared to external models?",
-          options:[
-            {label:"Over ~3-month difference", dir:"more"},
-            {label:"Less than that", dir:"less"}
-          ]},
-        { id:"m_rd_cap",
-          q:"Is the model capable of autonomous AI R&D?",
-          help:"Autonomous AI R&D means the model doing AI research and development work by itself. Many company safety frameworks define this as a critical threshold, justifying actions such as halting development and hardened safeguards.",
-          options:[
-            {label:"Yes — it could fully automate AI research", dir:"more"},
-            {label:"Yes — it's already being used to substantially accelerate AI R&D", dir:"more"},
-            {label:"No", dir:"less"},
-            {label:"It wasn't evaluated for this", dir:"more"}
-          ]},
-        { id:"m_ara",
-          q:"Is the model capable of autonomous replication?",
-          options:[
-            {label:"Yes", dir:"more"},
-            {label:"No", dir:"less"},
-            {label:"It wasn't evaluated for this", dir:"more"}
-          ]}
-      ]},
+const $=s=>document.querySelector(s), pane=$("#pane");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const state={view:"walk",cur:0,answers:{}};
 
-      { name:"Affordances", qs:[
-        { id:"m_rd_use",
-          q:"Is the model used for AI R&D?",
-          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_use_safety",
-          q:"Is the model used for safety research?",
-          options:[
-            {label:"Yes", dir:"more"},
-            {label:"No", dir:"less"}
-          ]},
-        { id:"m_autonomy",
-          q:"How autonomous is the model — how long do rollouts generally run unsteered by humans?",
-          options:[
-            {label:"Minutes or less", dir:"less"},
-            {label:"Hours", dir:"slight-more"},
-            {label:"Days or longer", dir:"more"}
-          ]},
-        { id:"m_access",
-          q:"Do only a few people internally have access to the model?",
-          options:[
-            {label:"Yes — only a few", tag:"→ should more?", tagClass:"plain", next:"m_access_more"},
-            {label:"No — broad access", tag:"→ should fewer?", tagClass:"plain", next:"m_access_less"}
-          ]},
-        { id:"m_access_more", cond:true,
-          q:"Should more people have access to it?",
-          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_access_less", cond:true,
-          q:"Should fewer people have access to it?",
-          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]}
-      ]},
-
-      { name:"The safeguards", qs:[
-        { id:"m_ctrl",
-          q:"Were there control mechanisms in place?",
-          options:[
-            {label:"Yes", tag:"→ tested?", tagClass:"plain", next:"m_ctrl_test"},
-            {label:"No, or only partial coverage", tag:"→ required?", tagClass:"plain", next:"m_ctrl_rl"}
-          ]},
-        { id:"m_ctrl_test", cond:true, unsureNext:"m_ctrl_fail",
-          q:"Had the control mechanisms been adversarially tested against — had you explicitly tested whether you can get the model to consistently fool monitors through prompting, fine-tuning, and similar elicitation techniques?",
-          options:[
-            {label:"Yes", dir:"less", next:"m_ctrl_fail"},
-            {label:"No", dir:"more", next:"m_ctrl_fail"}
-          ]},
-        { id:"m_ctrl_fail", cond:true,
-          q:"Did a control mechanism the lab was confident in fail?",
-          options:[{label:"Yes — a trusted control failed", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_ctrl_rl", cond:true, multi:true,
-          q:"Was a control mechanism required — and if so, what did its absence breach? (select all that apply)",
-          options:[
-            {label:"A law", dir:"more"},
-            {label:"A company policy or commitment", dir:"more"},
-            {label:"An external standard", dir:"slight-more"},
-            {label:"Nothing required it", dir:"neutral"},
-            {label:"Not sure", dir:"unsure"}
-          ]},
-        { id:"m_hitl",
-          q:"Were there human-in-the-loop requirements?",
-          options:[
-            {label:"Yes", tag:"→ did they know?", tagClass:"plain", next:"m_hitl_know"},
-            {label:"No", dir:"more"}
-          ]},
-        { id:"m_hitl_know", cond:true,
-          q:"Did the human involved know what was going on?",
-          options:[{label:"Yes", dir:"less"},{label:"No", dir:"more"}]},
-        { id:"m_monitored",
-          q:"Was the model being monitored?",
-          options:[
-            {label:"Yes", tag:"→ did it catch this?", tagClass:"plain", next:"m_mon_caught"},
-            {label:"No", tag:"→ required?", tagClass:"plain", next:"m_mon_rl"}
-          ]},
-        { id:"m_mon_caught", cond:true,
-          q:"Was it caught through the monitoring?",
-          options:[
-            {label:"Yes", dir:"less"},
-            {label:"No — it was caught some other way", dir:"more"}
-          ]},
-        { id:"m_mon_rl", cond:true, multi:true,
-          q:"Was monitoring required — and if so, what did its absence breach? (select all that apply)",
-          options:[
-            {label:"A law", dir:"more"},
-            {label:"A company policy or commitment", dir:"more"},
-            {label:"An external standard", dir:"slight-more"},
-            {label:"Nothing required it", dir:"neutral"},
-            {label:"Not sure", dir:"unsure"}
-          ]}
-      ]},
-
-      { name:"The company", qs:[
-        { id:"m_crit",
-          q:"Were there criteria for deciding whether the model could be deployed internally?",
-          options:[
-            {label:"Yes", tag:"→ followed?", tagClass:"plain", next:"m_crit_follow"},
-            {label:"No", dir:"more"}
-          ]},
-        { id:"m_crit_follow", cond:true,
-          q:"Were the criteria followed?",
-          options:[{label:"Yes", dir:"less"},{label:"No", dir:"more"}]},
-        { id:"m_ident",
-          q:"Was the possibility of this kind of behavior identified in the lab beforehand?",
-          options:[
-            {label:"Yes — it was anticipated", dir:"less"},
-            {label:"No — it blindsided the lab", dir:"more"}
-          ]},
-        { id:"m_plan",
-          q:"Did the company have a planned response for this incident?",
-          options:[
-            {label:"Yes", tag:"→ followed?", tagClass:"plain", next:"m_plan_follow"},
-            {label:"No", dir:"more"}
-          ]},
-        { id:"m_plan_follow", cond:true,
-          q:"Did the company follow the plan?",
-          options:[
-            {label:"Yes", tag:"→ did it work?", tagClass:"plain", next:"m_plan_work"},
-            {label:"No", dir:"more"}
-          ]},
-        { id:"m_plan_work", cond:true,
-          q:"Did the plan work as it was supposed to work?",
-          options:[{label:"Yes", dir:"less"},{label:"No", dir:"more"}]},
-        { id:"m_resp1",
-          q:"What was the company's response overall?",
-          options:[
-            {label:"A serious response", tag:"→", tagClass:"plain", next:"m_resp_ug"},
-            {label:"A bad / dismissive response", tag:"→", tagClass:"plain", next:"m_resp_ub"}
-          ]},
-        { id:"m_resp_ug", cond:true,
-          q:"How unified was the company on the response?",
-          options:[{label:"Unified behind it", dir:"less"},{label:"Contested inside", dir:"slight-more"}]},
-        { id:"m_resp_ub", cond:true,
-          q:"How unified was the company on the response?",
-          options:[{label:"Unified behind it", dir:"more"},{label:"Contested inside", dir:"slight-less"}]},
-        { id:"m_resp_comm",
-          q:"How does the company communicate about the incident publicly, if at all?",
-          options:[
-            {label:"Public story contradicts what insiders know", dir:"more"},
-            {label:"Public and internal are in harmony", dir:"less"},
-            {label:"Silence", dir:"slight-more"}
-          ]},
-        { id:"m_resp_live",
-          q:"Is the cause of the problem still live?",
-          options:[{label:"Yes — still active", dir:"more"},{label:"No — resolved", dir:"less"}]},
-        { id:"m_resp_rl", multi:true,
-          q:"Did the company's handling of the incident cross a red line — retaliation, restrictive NDAs, records destroyed, a required disclosure withheld? If so, what did it breach? (select all that apply)",
-          options:[
-            {label:"A law", dir:"more"},
-            {label:"A company policy or commitment", dir:"more"},
-            {label:"An external standard", dir:"slight-more"},
-            {label:"No red line crossed", dir:"neutral"},
-            {label:"Not sure", dir:"unsure"}
-          ]},
-        { id:"m_learn_upd",
-          q:"Has the company reviewed and updated their practices as a result of the incident, or is it planning to do so?",
-          options:[
-            {label:"Yes", tag:"→ promising?", tagClass:"plain", next:"m_learn_upd_y"},
-            {label:"No", tag:"→ should it?", tagClass:"plain", next:"m_learn_upd_n"}
-          ]},
-        { id:"m_learn_upd_y", cond:true,
-          q:"Was the update promising to you?",
-          options:[{label:"Yes", dir:"less"},{label:"No", dir:"more"}]},
-        { id:"m_learn_upd_n", cond:true,
-          q:"Do you believe practices should be updated?",
-          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_learn_inq",
-          q:"Is open inquiry about the incident and the response allowed?",
-          options:[{label:"Yes", dir:"less"},{label:"No — inquiry is discouraged", dir:"more"}]},
-        { id:"m_expertise",
-          q:"When something goes wrong, are the people who best understand the problem involved in deciding the response?",
-          options:[
-            {label:"Yes", dir:"less"},
-            {label:"No", dir:"more"},
-            {label:"I don't know who is deciding", dir:"unsure"}
-          ]},
-        { id:"m_alarm",
-          q:"Has anyone raised an alarm about this before?",
-          options:[
-            {label:"Yes", tag:"→ how were they treated?", tagClass:"plain", next:"m_alarm_treat"},
-            {label:"No", dir:"neutral"}
-          ]},
-        { id:"m_alarm_treat", cond:true,
-          q:"How was the person who first raised the alarm treated?",
-          options:[
-            {label:"Praised / their concern was escalated", dir:"less"},
-            {label:"Neglected / the concern was quietly dropped", dir:"slight-more"},
-            {label:"Threatened / sidelined", dir:"more"}
-          ]},
-        { id:"m_learn_review",
-          q:"Did the company carry out a post-incident review?",
-          options:[
-            {label:"Yes", dir:"less"},
-            {label:"No", tag:"→ required?", tagClass:"plain", next:"m_learn_rl"}
-          ]},
-        { id:"m_learn_rl", cond:true, multi:true,
-          q:"Was a post-incident review required — and if so, what did its absence breach? (select all that apply)",
-          options:[
-            {label:"A law", dir:"more"},
-            {label:"A company policy or commitment", dir:"more"},
-            {label:"An external standard", dir:"slight-more"},
-            {label:"Nothing required it", dir:"neutral"},
-            {label:"Not sure", dir:"unsure"}
-          ]},
-        { id:"m_others",
-          q:"Are others in your company also worried about this?",
-          options:[{label:"Yes", dir:"more"},{label:"No — you seem alone", dir:"neutral"}]}
-      ]},
-
-      { name:"At stake", qs:[
-        { id:"m_sev_now",
-          q:"How severe was the harm the incident actually caused?",
-          options:[{label:"Severe", dir:"more"},{label:"Limited", dir:"less"}]},
-        { id:"m_pers_now",
-          q:"Is the harm it caused persistent (hard to reverse or contain)?",
-          options:[{label:"Yes", dir:"more"},{label:"No — reversible", dir:"less"}]},
-        { id:"m_sev_cf",
-          q:"If every safeguard had failed, how severe could the harm have been?",
-          options:[{label:"Severe", dir:"more"},{label:"Limited", dir:"less"}]},
-        { id:"m_pers_cf",
-          q:"If every safeguard had failed, could the harm have been persistent (hard to reverse or contain)?",
-          options:[{label:"Yes", dir:"more"},{label:"No", dir:"less"}]},
-        { id:"m_grow",
-          q:"Will the underlying problem grow as capabilities scale?",
-          options:[{label:"Yes — it gets worse over time", dir:"more"},{label:"No — it's bounded", dir:"less"}]}
-      ]}
-    ]
-  }
-};
-
-/* ---------- build the walkthrough nodes ---------- */
-function buildNodes(){
-  const N={};
-  for(const bid in BRANCHES){
-    const flat=[];
-    BRANCHES[bid].sections.forEach(s=>s.qs.forEach(q=>flat.push(Object.assign({},q,{stage:s.name}))));
-    flat.forEach((q,i)=>{
-      let def="END";
-      for(let j=i+1;j<flat.length;j++){ if(!flat[j].cond){def=flat[j].id;break;} }
-      const withUnsure=(list)=>{
-        const out=list.map(o=>Object.assign({},o,{next:o.next||def}));
-        if(!list.some(o=>/^(unknown|unsure)/i.test(o.label)))
-          out.push({label:"Unsure / can't tell", dir:"unsure", next:q.unsureNext||def});
-        return out;
-      };
-      N[q.id]={stage:q.stage,branch:bid,q:q.q,help:q.help,def:def,multi:!!q.multi,
-        skipNext:q.unsureNext||def,  /* verdict layer: a skip leaves by the same door as "Unsure / can't tell" */
-        options: q.multi ? q.options.map(o=>Object.assign({},o)) : withUnsure(q.options)};
-    });
-  }
-  return N;
-}
-const NODES=buildNodes();
-
-/* ---------- integrity self-check ---------- */
+// last-modified stamp — reads the file's own timestamp, so it updates itself
 (function(){
-  const bad=[];
-  for(const id in NODES){
-    if(NODES[id].multi) continue;
-    NODES[id].options.forEach(o=>{ if(o.next!=="END" && !NODES[o.next]) bad.push(id+" → "+o.next); });
-  }
-  if(bad.length){
-    const b=document.getElementById('errbanner');
-    b.style.display='block'; b.textContent="Broken routing: "+bad.join(", ");
-  }
+  const d=new Date(document.lastModified);
+  const s=isNaN(d)?"":d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+  $("#stamp").textContent = s ? "Tool last updated "+s+". Source documents and their versions are listed under Sources." : "";
 })();
 
-/* ============================================================
-   The verdict layer.
-   Three levels, checked in this order:
-     1 — a trigger answer is active on the answered path
-     2 — no trigger, but a fraction channel trips (or too few readings seen)
-     3 — neither
-   ============================================================ */
+const anchors=g=>QS.filter(q=>q.anchor===g);
+function gateOpen(letters){ return [...letters].some(L=>anchors(L).some(a=>state.answers[a.id]==="Yes")); }
+function visible(q){
+  if(q.fu) return state.answers[q.fu]==="Yes";
+  if(q.gate) return gateOpen(q.gate);
+  return true;
+}
+const shown=()=>QS.filter(visible);
 
-/* ---- LEVEL-1 TRIGGER MAPPING — PLACEHOLDER, EDIT HERE. ----
-   One entry per question that can trigger; `trigger` maps the exact
-   option label (must match the tree verbatim — checked at load) to the
-   one-line reason shown in the summary. Reasons are [placeholder]
-   Claude-drafted copy, to be rewritten. Add/remove entries freely. */
-const TRIGGERS=[
-  { id:"m_resp_comm", trigger:{
-      "Public story contradicts what insiders know":
-        "The company is actively misrepresenting things to the public." } },
-  { id:"m_ctrl_rl", trigger:{
-      "A law":"A legally required control mechanism was missing.",
-      "A company policy or commitment":"The missing control mechanism breached the company's own commitments." } },
-  { id:"m_mon_rl", trigger:{
-      "A law":"Legally required monitoring was missing.",
-      "A company policy or commitment":"The missing monitoring breached the company's own commitments." } },
-  { id:"m_learn_rl", trigger:{
-      "A law":"A legally required post-incident review was not carried out.",
-      "A company policy or commitment":"The skipped post-incident review breached the company's own commitments." } },
-  { id:"m_resp_rl", trigger:{
-      "A law":"The company's handling of the incident broke the law.",
-      "A company policy or commitment":"The company's handling of the incident breached its own policy or commitments." } },
-  { id:"m_rd_cap", trigger:{
-      "Yes — it could fully automate AI research":
-        "Company safety frameworks widely treat this capability level as critical, justifying actions such as halting development." } },
-  { id:"m_illegal", trigger:{
-      "Yes":"The model's actions broke the law." } },
-  { id:"m_selfrep", trigger:{
-      "Yes":"The model's weights are outside the company's control, and getting them back may not be possible." } }
-];
+function ruleList(q){
+  return `${q.lead?`<p class="lead">${esc(q.lead)}</p>`:""}
+    <ul class="rlist">${q.rules.map(x=>`<li><b>${esc(x.r)}</b> — ${esc(x.t)}</li>`).join("")}</ul>`;
+}
+function chips(q){
+  if(q.fu) return `<span class="gatechip fuchip">Follow-up</span> `;
+  if(q.gate) return `<span class="gatechip">Asked because of a capability answer</span> `;
+  return "";
+}
+function setView(v){
+  state.view=v;
+  ["walk","all","sum","src"].forEach(k=>$("#v-"+k).classList.toggle("active",k===v));
+  render();
+}
+["walk","all","sum","src"].forEach(k=>$("#v-"+k).onclick=()=>setView(k));
 
-/* ---- FRACTIONS — PLACEHOLDERS PENDING REAL-USER CALIBRATION, EDIT HERE. ----
-   Compared as integer cross-products, never as floats:
-     strong channel: strong * STRONG_DEN >= readings * STRONG_NUM   (strong >= 1/10 of readings)
-     pooled channel: pooled * POOL_DEN   >= readings * POOL_NUM     (pooled >= 1/3 of readings)
-   MIN_READINGS: below this many recorded readings, level 3 is unreachable
-   ("not enough seen to clear anything"). */
-const FRAC={STRONG_NUM:1, STRONG_DEN:10, POOL_NUM:1, POOL_DEN:3, MIN_READINGS:8};
+function render(){
+  if(state.view==="walk") renderWalk();
+  else if(state.view==="all") renderAll();
+  else if(state.view==="sum") renderSum();
+  else renderSrc();
+}
 
-/* ---- QUESTION TIERS (2026-08-04, Santeri's pairwise elicitation + rulings). ----
-   Below the trigger level, questions split into two tiers: HEAVY units
-   count double in both verdict channels, everything else counts once.
-   The weight rides on the FIRST recorded reading inside a heavy unit's
-   question tree — parent or follow-up, whichever grades first on the
-   answered path; every later reading in the same unit counts 1. So a
-   unit never earns its weight twice, and follow-up depth cannot compound
-   it. Trigger answers ignore weights entirely. WEIGHT is a placeholder
-   pending calibration against stress-test runs 2–5.
-   Membership: the elicited top band + high-middle — see the vault,
-   framework/evidence/Pairwise importance elicitation results.md. */
-const WEIGHT=2;
-const HEAVY=new Set(["m_nudge","m_deceive","m_collateral","m_illegal","m_selfrep",
-  "m_rd_cap","m_ara","m_rd_use","m_ctrl","m_monitored","m_resp_comm","m_resp_rl",
-  "m_sev_cf","m_grow"]);
-/* every question id → its top-level unit (follow-ups → their parent) */
-const UNIT_OF=(()=>{
-  const m={};
-  for(const bid in BRANCHES) BRANCHES[bid].sections.forEach(s=>{
-    let unit=null;
-    s.qs.forEach(q=>{ if(!q.cond) unit=q.id; m[q.id]=unit; });
+function renderWalk(){
+  const list=shown();
+  if(state.cur>=list.length) state.cur=Math.max(0,list.length-1);
+  const q=list[state.cur], grp=GROUPS.find(g=>g.id===q.g), a=state.answers[q.id];
+  let html=`<div class="layout"><div><div class="card">
+    <div class="stage">${esc(grp.name)} · ${state.cur+1} of ${list.length}</div>
+    ${chips(q)}
+    <h2 class="q">${esc(q.q)}</h2>
+    ${q.help?`<p class="help">${esc(q.help)}</p>`:""}
+    <div class="opts">${["Yes","No","Unsure"].map(o=>`<button class="opt ${a===o?"sel":""}" data-a="${o}">${o}</button>`).join("")}</div>
+    <div class="skiprow"><button class="skipbtn ${a==="Skipped"?"on":""}" data-a="Skipped">
+      ${a==="Skipped"?"Skipped — this question doesn't apply. Click to un-skip.":"This question doesn't apply to my situation → skip it"}
+    </button></div>`;
+  if(a!==undefined && a!=="Skipped") html+=`<div class="expl"><h4>The rules at stake</h4>${ruleList(q)}</div>`;
+  html+=`<div class="nav">
+      <button id="prev" ${state.cur===0?"disabled":""}>← Back</button>
+      <button id="next">${state.cur===list.length-1?"Finish → Summary":"Next →"}</button>
+    </div></div></div>
+    <aside><h2>Progress</h2>
+    <p class="sub">${list.filter(x=>state.answers[x.id]!==undefined).length} of ${list.length} shown questions answered</p>
+    <div class="grouplist">`;
+  GROUPS.forEach(g=>{
+    const qs=list.filter(x=>x.g===g.id);
+    if(!qs.length) return;
+    const done=qs.filter(x=>state.answers[x.id]!==undefined).length;
+    html+=`<div class="gi ${q.g===g.id?"cur":""}" data-g="${g.id}">
+      <span class="gn">${esc(g.name)}</span><span class="gc">${done}/${qs.length}</span></div>`;
   });
-  return m;
-})();
-/* tier integrity: every HEAVY id must exist and be a top-level question */
-(function(){
-  const bad=[...HEAVY].filter(id=>!NODES[id]||UNIT_OF[id]!==id);
-  if(bad.length){
-    const b=document.getElementById('errbanner');
-    b.style.display='block';
-    b.textContent=(b.textContent?b.textContent+" · ":"")+"HEAVY tier doesn't match the tree: "+bad.join(", ");
-  }
-})();
-/* weight of each recorded reading on the current trail, keyed by question id */
-function readingWeightMap(){
-  const m={}, used=new Set();
-  trail.forEach(t=>{
-    if(t.skipped||!t.dir) return;
-    const u=UNIT_OF[t.id];
-    if(HEAVY.has(u)&&!used.has(u)){ used.add(u); m[t.id]=WEIGHT; }
-    else m[t.id]=1;
-  });
-  return m;
-}
-
-/* The researcher's draft wording — verbatim, provisional. */
-const VERDICT_LABEL={
-  1:"Very concerning — immediate escalation",
-  2:"Somewhat concerning — start collecting evidence",
-  3:"Not concerning — write down your red lines"
-};
-/* The researcher's draft wording — verbatim, provisional. */
-const TRIGGER_FLAG_TEXT="This seems very concerning. This in itself is probably enough reason to escalate. You can skip to the end here, or alternatively still complete the rest of the survey.";
-
-/* trigger-mapping integrity: every id and every label must exist in the tree */
-(function(){
-  const bad=[];
-  TRIGGERS.forEach(t=>{
-    const n=NODES[t.id];
-    if(!n){ bad.push("no node "+t.id); return; }
-    Object.keys(t.trigger).forEach(l=>{ if(!n.options.some(o=>o.label===l)) bad.push(t.id+' has no option "'+l+'"'); });
-  });
-  if(bad.length){
-    const b=document.getElementById('errbanner');
-    b.style.display='block';
-    b.textContent=(b.textContent?b.textContent+" · ":"")+"Trigger mapping doesn't match the tree: "+bad.join(", ");
-  }
-})();
-
-/* ---------- display switches ----------
-   Nothing about how an answer is read, or where it leads, is shown while
-   answering — both steer the answer. Directions are still recorded and still
-   drive the summary tally; routing still happens. Flip any to true to show.
-     options  — the ↑ more / ↓ less tag on each answer button
-     routing  — the "→ follow-up" hint on answers that open a follow-up
-     trail    — the direction label/colour on the sidebar chips
-     overview — the same, in the "All questions" tab: off too, since that tab
-                is one click away from the walkthrough and priming a reader
-                there primes them for every question at once                 */
-const SHOW={options:false, routing:false, trail:false, overview:false};
-
-const DIRLABEL={"more":"More concerning","less":"Less concerning","slight-more":"Slightly more concerning","slight-less":"Slightly less concerning","neutral":"No strong pull","unsure":"Unsure"};
-const ARROW={"more":"↑ ","less":"↓ ","slight-more":"↑ ","slight-less":"↓ ","neutral":"• ","unsure":"? "};
-const DIRCLASS={"more":"more","less":"less","slight-more":"slight","slight-less":"slight","neutral":"neutral","unsure":"neutral"};
-const ORDER={"more":4,"slight-more":3,"neutral":2,"less":1,"unsure":0};
-
-/* ---------- state ----------
-   ONE store: `answers`, keyed by node id (an option index, or an array of
-   them for multi-selects). Everything else is derived from it — the path
-   through the tree, the sidebar, the tally, the download. So Back and
-   Forward only move a cursor; nothing is destroyed by navigating, and
-   changing an early answer re-derives the route rather than wiping what
-   came after. Unreachable answers stay in the store, silently uncounted,
-   and come back if the route reaches them again.
-   `notes` works the same way, and always did.                            */
-const START=BRANCHES.model.sections[0].qs[0].id;
-let answers={}, notes={}, skips={}, trail=[], cursor=null;
-/* verdict state:
-   trigLatch — the interstitial trigger flag fires ONCE per run; after the
-     user continues past it (or skips to the end), later trigger answers
-     commit silently. Deliberately NOT restored when a trigger is un-fired
-     by changing the answer; only Restart resets it.
-   flagAt — node id whose interstitial flag screen is currently showing, or
-     null. Display state only, and the screen is NOT a node: never on the
-     path, never in the trail or the .md, and it does not re-appear when
-     navigating back and forth over this point. The fired/un-fired status
-     itself is always derived from `answers` + the walked path, so changing
-     or skipping a trigger answer un-fires it automatically. */
-let trigLatch=false, flagAt=null;
-/* verdict layer: `skips` is a second store beside `answers`, keyed by node id.
-   A node is never in both — answering clears its skip, skipping clears its
-   answer. A skipped node records NO reading (not in the tally, not in any
-   denominator) and routes onward via node.skipNext, i.e. exactly where the
-   auto-added "Unsure / can't tell" option would have gone. */
-
-function answered(id){ return Object.prototype.hasOwnProperty.call(answers,id); }
-function isSkipped(id){ return Object.prototype.hasOwnProperty.call(skips,id); }
-function resolved(id){ return answered(id)||isSkipped(id); }
-function nextFrom(id){
-  if(isSkipped(id)) return NODES[id].skipNext;
-  if(!answered(id)) return null;
-  const node=NODES[id];
-  return node.multi ? node.def : node.options[answers[id]].next;
-}
-/* walk from the first question along whatever has been answered or skipped */
-function walk(){
-  const path=[]; let id=START;
-  while(id && id!=="END" && resolved(id) && !path.includes(id)){ path.push(id); id=nextFrom(id); }
-  return {path, next:id};
-}
-function multiReading(node,idx){
-  const chosen=idx.map(i=>node.options[i]);
-  let dir='unsure';
-  chosen.forEach(o=>{ if(ORDER[o.dir]>ORDER[dir]) dir=o.dir; });
-  return {dir, answer: chosen.length?chosen.map(o=>o.label).join(', '):'Nothing selected'};
-}
-/* the answered path, in order, as the rest of the tool wants to read it */
-function refresh(){
-  trail=walk().path.map(id=>{
-    const node=NODES[id], a=answers[id], note=(notes[id]||'').trim();
-    if(isSkipped(id)){
-      return {id, stage:node.stage, q:node.q, answer:"Not applicable — skipped", dir:null, skipped:true, note};
-    }
-    if(node.multi){
-      const r=multiReading(node,a);
-      return {id, stage:node.stage, q:node.q, answer:r.answer, dir:r.dir, note};
-    }
-    const o=node.options[a];
-    return {id, stage:node.stage, q:node.q, answer:o.label, dir:o.dir||null, note};
-  });
-}
-const stageEl=document.getElementById('stage'), trailEl=document.getElementById('trail'), railEl=document.getElementById('rail');
-
-function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-function noteHtml(id){
-  const val=notes[id]||'', open=!!val;
-  return `<div class="notebox">
-      <button type="button" class="noteToggle" id="noteToggle"${open?' style="display:none"':''}>＋ Add a note (optional)</button>
-      <div class="noteWrap" id="noteWrap"${open?'':' hidden'}>
-        <label class="noteLbl" for="noteInput">You can add notes here about the context or anything you're unsure about. Nothing is stored or sent anywhere.</label>
-        <textarea id="noteInput" rows="3" placeholder="Optional">${esc(val)}</textarea>
-      </div>
-    </div>`;
-}
-function wireNote(id){
-  const t=document.getElementById('noteToggle'), w=document.getElementById('noteWrap'), i=document.getElementById('noteInput');
-  if(t) t.onclick=()=>{t.style.display='none';w.hidden=false;i.focus();};
-  if(i) i.oninput=()=>{notes[id]=i.value; refresh(); renderTrail();};
-}
-
-function railStages(){ return BRANCHES.model.sections.map(s=>s.name); }
-function renderRail(node){
-  railEl.innerHTML=railStages().map(s=>{
-    const active=node&&node.stage===s;
-    return `<span class="${active?'active':''}">${s}</span>`;
-  }).join('');
-}
-function tagFor(o){
-  if(o.dir&&!o.tag) return SHOW.options
-    ? `<span class="tag ${DIRCLASS[o.dir]}">${ARROW[o.dir]}${DIRLABEL[o.dir].replace(' concerning','')}</span>` : '';
-  if(o.tag) return SHOW.routing ? `<span class="tag ${o.tagClass||'plain'}">${o.tag}</span>` : '';
-  return '';
-}
-function navHtml(){
-  /* Forward is absent, not greyed, when there is nothing recorded ahead.
-     Summary appears once the walkthrough is complete, so revisiting an
-     answer from the end screen never strands you a Forward-crawl away. */
-  const fwd = cursor!=="END" && resolved(cursor);
-  const done = cursor!=="END" && walk().next==="END";
-  return `<div class="nav">
-    <button id="back">← Back</button>
-    ${fwd?`<button id="fwd">Forward →</button>`:''}
-    ${done?`<button id="toEnd">Summary →</button>`:''}
-    <button id="restart">Restart</button>
-  </div>`;
-}
-function wireNav(){
-  const b=document.getElementById('back'); if(b) b.onclick=goBack;
-  const f=document.getElementById('fwd'); if(f) f.onclick=goForward;
-  const e=document.getElementById('toEnd'); if(e) e.onclick=()=>renderNode("END");
-  document.getElementById('restart').onclick=reset;
-}
-/* verdict layer: the skip control. A full-width row under the answers, set
-   off by a divider — in the flow where the eye is, without rendering as one
-   answer among the others (it is not an answer and must not read as one).
-   2026-08-05: promoted from a small corner link after tester feedback that
-   the link went unfound until the end of a run. */
-function skipHtml(id){
-  const on=isSkipped(id);
-  return `<div class="skiprow"><button type="button" class="skipbtn${on?' on':''}" id="skipbtn"
-    title="Skip = this question doesn't apply to my situation. Unsure = it applies but I can't tell.">${
-    on?'Skipped as not applicable — click to un-skip, or pick an answer':'Not applicable — skip'}</button></div>`;
-}
-/* verdict layer: the interstitial flag screen — commit first, warn second.
-   Shown at most once per run (trigLatch), AFTER a trigger answer has been
-   recorded and before the next question, so the warning can no longer bias
-   the answer it reacts to. Visibly not a question: no answer controls. Back
-   returns to the trigger question (normal selected-state behaviour, where
-   changing the answer un-fires the trigger); Continue proceeds along the
-   route the committed answer implies; Skip to the end jumps to the summary.
-   The screen is a one-time interruption, not a node — revisiting the spot
-   later never re-shows it, and the summary's fired-triggers list is the
-   lasting record. */
-function renderFlagScreen(id){
-  cursor=id; flagAt=id;
-  renderRail(NODES[id]);
-  stageEl.innerHTML=`
-    <div class="card">
-      <div class="stage">Before you continue</div>
-      <div class="trigflag" style="margin-top:0">
-        <p>${TRIGGER_FLAG_TEXT}</p>
-        <div class="acts">
-          <button type="button" class="t-end" id="trigEnd">Skip to the end</button>
-          <button type="button" class="t-cont" id="trigCont">Continue with the rest</button>
-        </div>
-      </div>
-      <div class="nav">
-        <button id="back">← Back</button>
-        <button id="restart">Restart</button>
-      </div>
-    </div>`;
-  document.getElementById('trigEnd').onclick=()=>renderNode("END");
-  document.getElementById('trigCont').onclick=()=>renderNode(nextFrom(id));
-  document.getElementById('back').onclick=goBack;
-  document.getElementById('restart').onclick=reset;
-  renderTrail();
-}
-function wireSkip(id){
-  const s=document.getElementById('skipbtn'); if(!s) return;
-  s.onclick=()=>{
-    if(isSkipped(id)){           /* un-skip: stay on the question, ready to answer */
-      delete skips[id];
-      refresh(); renderTrail(); renderNode(id);
-    }else{                       /* skip: clears any answer, records nothing, moves on */
-      delete answers[id];
-      skips[id]=true;
-      refresh(); renderTrail();
-      renderNode(NODES[id].skipNext);
-    }
-  };
-}
-
-function renderNode(id){
-  cursor=id;
-  flagAt=null;   /* rendering any node dismisses the interstitial flag screen */
-  if(id==="END") return renderSummary();
-  const node=NODES[id];
-  const prev=answered(id)?answers[id]:null;
-  renderRail(node);
-  if(node.multi){
-    stageEl.innerHTML=`
-      <div class="card">
-        <div class="stage">${node.stage}</div>
-        <p class="q">${node.q}</p>
-        ${node.help?`<p class="help">${node.help}</p>`:''}
-        ${noteHtml(id)}
-        <div class="opts">
-          ${node.options.map((o,i)=>`<label class="chk${prev&&prev.includes(i)?' sel':''}"><input type="checkbox" data-i="${i}"${prev&&prev.includes(i)?' checked':''}><span>${o.label}</span></label>`).join('')}
-        </div>
-        <div class="opts" style="margin-top:12px">
-          <button class="opt" id="msContinue" style="justify-content:center;border-color:var(--accent);color:var(--accent);font-weight:600">Continue →</button>
-        </div>
-        ${skipHtml(id)}
-        ${navHtml()}
-      </div>`;
-    document.getElementById('msContinue').onclick=()=>{
-      delete skips[id];   /* answering clears the skip state */
-      answers[id]=[...stageEl.querySelectorAll('.chk input:checked')].map(c=>+c.dataset.i);
-      refresh(); renderTrail();
-      /* verdict layer — commit first, warn second: ticking a box never fires the
-         flag; only committing the multi answer can, and only once per run */
-      if(!trigLatch && answers[id].some(i=>isTriggerChoice(id,node.options[i].label))){
-        trigLatch=true;
-        renderFlagScreen(id);
-        return;
+  html+=`</div></aside></div>`;
+  pane.innerHTML=html;
+  pane.querySelectorAll("button.opt,button.skipbtn").forEach(b=>{
+    b.onclick=()=>{
+      const v=b.dataset.a, wasSet=state.answers[q.id]===v;
+      if(wasSet) delete state.answers[q.id]; else state.answers[q.id]=v;
+      // a skip means "this doesn't apply" — move straight on rather than
+      // showing rules the person has just said are irrelevant to them
+      if(v==="Skipped" && !wasSet){
+        if(state.cur>=shown().length-1) return setView("sum");
+        state.cur++;
       }
-      renderNode(node.def);
-    };
-    wireNote(id); wireSkip(id); wireNav(); return;
-  }
-  const opts=node.options;
-  stageEl.innerHTML=`
-    <div class="card">
-      <div class="stage">${node.stage}</div>
-      <p class="q">${node.q}</p>
-      ${node.help?`<p class="help">${node.help}</p>`:''}
-      ${noteHtml(id)}
-      <div class="opts">
-        ${opts.map((o,i)=>`<button class="opt${prev===i?' sel':''}" data-i="${i}"><span>${o.label}</span>${tagFor(o)}</button>`).join('')}
-      </div>
-      ${skipHtml(id)}
-      ${navHtml()}
-    </div>`;
-  stageEl.querySelectorAll('.opt').forEach(btn=>{
-    btn.onclick=()=>{
-      const i=+btn.dataset.i;
-      delete skips[id];   /* answering clears the skip state */
-      answers[id]=i;
-      refresh(); renderTrail();
-      /* verdict layer — commit first, warn second: the answer is recorded above,
-         exactly as normal; the flag is an interstitial before the next question */
-      if(!trigLatch && isTriggerChoice(id,opts[i].label)){
-        trigLatch=true;
-        renderFlagScreen(id);
-        return;
-      }
-      renderNode(opts[i].next);
+      render();
     };
   });
-  wireNote(id); wireSkip(id); wireNav();
-}
-function renderTrail(){
-  const shown = SHOW.trail ? trail.filter(t=>t.dir) : trail;
-  if(!shown.length){trailEl.innerHTML=`<div class="empty">Nothing yet — start answering.</div>`;return;}
-  trailEl.innerHTML=shown.map(t=>{
-    const n=t.note?`<span class="note-in-chip">${esc(t.note)}</span>`:'';
-    const body=`<span class="cq">${esc(t.q)}</span><span class="ca">${esc(t.answer)}</span>${n}`;
-    const cls=`chip ${SHOW.trail?DIRCLASS[t.dir]:'neutral'}${t.id===cursor?' cur':''}`;
-    const dir=SHOW.trail?`<span class="dir">${DIRLABEL[t.dir]}</span>`:'';
-    return `<div class="${cls}" data-id="${t.id}" title="Go back to this question">${dir}${body}</div>`;
-  }).join('');
-  /* the sidebar is also the way back in: click any answer to revisit it */
-  trailEl.querySelectorAll('.chip').forEach(c=>{ c.onclick=()=>renderNode(c.dataset.id); });
-}
-/* ---------- take your answers with you ----------
-   Built and saved entirely in the browser: a Blob and an <a download> click,
-   no network, no storage. What the file contains is what the screen showed —
-   so per-answer directions go in only if SHOW.trail is on.               */
-function stamp(){const d=new Date(),p=n=>String(n).padStart(2,'0');
-  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;}
-function saveFile(name,mime,text){
-  const url=URL.createObjectURL(new Blob([text],{type:mime}));
-  const a=document.createElement('a'); a.href=url; a.download=name;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),2000);
-}
-/* Which of the four columns an answer counts +1 towards. Same collapse the
-   on-screen tally uses: "slightly more" counts in Concerning like "more" —
-   the slight/full distinction is recorded but deliberately not weighted. */
-const COL={"more":"Concerning","slight-more":"Concerning","less":"Reassuring",
-           "slight-less":"Reassuring","neutral":"Neutral","unsure":"Unsure"};
-const COLS=["Concerning","Reassuring","Neutral","Unsure"];
-function counts(){
-  const c={Concerning:0,Reassuring:0,Neutral:0,Unsure:0,uncounted:0,skipped:0};
-  trail.forEach(t=>{ if(t.skipped){c.skipped++;} else t.dir?c[COL[t.dir]]++:c.uncounted++; });
-  return c;
-}
-/* ---------- verdict layer: verdict derivation ---------- */
-function isTriggerChoice(id,label){
-  const t=TRIGGERS.find(t=>t.id===id);
-  return !!(t && Object.prototype.hasOwnProperty.call(t.trigger,label));
-}
-/* Triggers active on the answered path — derived, like everything else.
-   An answer that falls off the path (rerouted around) stops counting;
-   changing or skipping the answer un-fires it. Multi-selects can fire
-   several entries at once (one per ticked trigger label). */
-function firedTriggers(){
-  const path=walk().path, out=[];
-  TRIGGERS.forEach(tr=>{
-    if(!path.includes(tr.id)||isSkipped(tr.id)||!answered(tr.id)) return;
-    const node=NODES[tr.id];
-    const chosen=node.multi ? answers[tr.id].map(i=>node.options[i].label)
-                            : [node.options[answers[tr.id]].label];
-    chosen.forEach(l=>{
-      if(Object.prototype.hasOwnProperty.call(tr.trigger,l))
-        out.push({id:tr.id,q:node.q,answer:l,reason:tr.trigger[l]});
-    });
+  const pv=$("#prev"); if(pv) pv.onclick=()=>{state.cur--;render();};
+  $("#next").onclick=()=>{ const l=shown(); if(state.cur>=l.length-1) setView("sum"); else {state.cur++;render();} };
+  pane.querySelectorAll(".gi").forEach(el=>{
+    el.onclick=()=>{ const i=shown().findIndex(x=>x.g===el.dataset.g); if(i>=0){state.cur=i;render();} };
   });
-  return out;
 }
-/* The pure rule. Integer cross-products only — no floats anywhere.
-   Guards: reassuring readings never subtract (they only sit in the
-   denominator R); with fewer than MIN_READINGS readings, level 3 is
-   unreachable and the "insufficient" state (level 2, different wording)
-   is returned instead. */
-function classify(firedCount,strongW,pooledW,W,R){
-  if(firedCount>0) return {level:1,why:"trigger"};
-  const chanA=W>0 && strongW*FRAC.STRONG_DEN >= W*FRAC.STRONG_NUM;
-  const chanB=W>0 && pooledW*FRAC.POOL_DEN >= W*FRAC.POOL_NUM;
-  if(chanA||chanB) return {level:2,why:"channel",chanA,chanB};
-  if(R<FRAC.MIN_READINGS) return {level:2,why:"insufficient"};   /* guard stays a RAW count */
-  return {level:3,why:"clear"};
-}
-function verdictInfo(){
-  const fired=firedTriggers();
-  const wm=readingWeightMap();
-  const readings=trail.filter(t=>!t.skipped && t.dir);           /* skips excluded from numerator AND denominator */
-  const R=readings.length;                                       /* raw reading count (MIN_READINGS guard) */
-  const W=readings.reduce((s,t)=>s+wm[t.id],0);                  /* weighted denominator */
-  const strongW=readings.filter(t=>t.dir==='more')               /* "more" only — NOT slight-more */
-    .reduce((s,t)=>s+wm[t.id],0);
-  const pooledW=readings.filter(t=>t.dir==='more'||t.dir==='slight-more'||t.dir==='unsure')
-    .reduce((s,t)=>s+wm[t.id],0);
-  return Object.assign({fired,R,W,strongW,pooledW},classify(fired.length,strongW,pooledW,W,R));
-}
-function verdictReasonParts(v){
-  if(v.level===1)
-    return {head:"These answers are each, on their own, probably enough reason to escalate:",
-      items:v.fired.map(f=>`${f.q} — "${f.answer}". ${f.reason}`)};
-  if(v.why==="channel")
-    return {head:"A meaningful share of what you've seen reads concerning or unsure. Start collecting evidence now and reach out to experts to get more confidence in how worrying the information is, and to learn what your options and protections are.",items:[]};
-  if(v.why==="insufficient")
-    return {head:"There is too little information to make a strong judgement one way or another. Start collecting evidence now and reach out to experts to get more confidence in how worrying the information is, and to learn what your options and protections are.",items:[]};
-  return {head:"Little here reads concerning on its own. The useful thing to do now is to decide, in writing, what would change your mind — at what point would you definitely want to speak up?",items:[]};
-}
-function asMarkdown(){
-  const c=counts(), wm=readingWeightMap();
-  const wc={Concerning:0,Reassuring:0,Neutral:0,Unsure:0};
-  trail.forEach(t=>{ if(!t.skipped&&t.dir) wc[COL[t.dir]]+=wm[t.id]; });
-  let out=`# How concerning is this signal? — your answers\n\n`;
-  out+=`Scope: the model as actor — loss of control via internal deployment. Completed ${stamp()}.\n\n`;
-  {
-    const v=verdictInfo(), r=verdictReasonParts(v);
-    out+=`## Verdict\n\n**${VERDICT_LABEL[v.level]}**\n\n${r.head}\n`;
-    r.items.forEach(x=>{ out+=`\n- ${x}`; });
-    if(r.items.length) out+=`\n`;
-  }
-  out+=`## The counts\n\n| Reading | Count | Weighted |\n| --- | ---: | ---: |\n`;
-  COLS.forEach(k=>{out+=`| ${k} | ${c[k]} | ${wc[k]} |\n`;});
-  if(c.uncounted) out+=`| Not counted (routing answers) | ${c.uncounted} | — |\n`;
-  out+=`\n**How the counts work.** Every answer below carries a \`+1\` — or \`+2\` where the question is in the heavier of the tool's two question tiers — towards exactly one of the four columns, so you can recount them yourself. Follow-up questions make some paths longer than others. Unsure answers are counted separately.\n`;
-  const skippedT=trail.filter(t=>t.skipped);
-  if(skippedT.length){
-    out+=`\n## Not applicable (skipped)\n\nThese questions were marked not applicable. They record nothing and are not counted anywhere.\n`;
-    skippedT.forEach(t=>{
-      out+=`\n- ${t.q}`;
-      if(t.note) out+=`\n\n  > ${t.note.replace(/\n/g,'\n  > ')}\n`;
-    });
-    out+=`\n`;
-  }
-  let stage=null;
-  trail.forEach(t=>{
-    if(t.skipped) return;  /* listed above, not among the answered */
-    if(t.stage!==stage){stage=t.stage; out+=`\n## ${stage}\n`;}
-    const mark=t.dir?`+${wm[t.id]} ${COL[t.dir]}${/^slight/.test(t.dir)?' (slightly)':''}`:'not counted';
-    out+=`\n**${t.q}**\n\n${t.answer}  \n\`${mark}\`\n`;
-    if(t.note) out+=`\n> ${t.note.replace(/\n/g,'\n> ')}\n`;
-  });
-  return out;
-}
-function wireDownloads(){
-  const md=document.getElementById('dlmd');
-  if(md) md.onclick=()=>saveFile(
-    `how concerning is this signal ${stamp().replace(/[: ]/g,'-')}.md`,
-    'text/markdown;charset=utf-8', asMarkdown());
-}
-function verdictBoxHtml(){
-  const v=verdictInfo(), r=verdictReasonParts(v);
-  return `<div class="verdict l${v.level}">
-      <p class="vlabel">${VERDICT_LABEL[v.level]}</p>
-      <p class="vwhy">${esc(r.head)}</p>
-      ${r.items.length?`<ul>${r.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
-    </div>`;
-}
-function renderSummary(){
-  refresh(); renderTrail(); renderRail(null);
-  const scored=trail.filter(t=>t.dir);
-  const more=trail.filter(t=>t.dir==='more'||t.dir==='slight-more').length;
-  const less=trail.filter(t=>t.dir==='less'||t.dir==='slight-less').length;
-  const neutral=trail.filter(t=>t.dir==='neutral').length;
-  const unsure=trail.filter(t=>t.dir==='unsure').length;
-  const noted=trail.filter(t=>t.note);
-  const skippedT=trail.filter(t=>t.skipped);
-  stageEl.innerHTML=`
-    <div class="card summary">
-      <div class="stage">Summary</div>
-      <p class="q">Scope: the model as actor — internal deployment</p>
-      ${verdictBoxHtml()}
-      <p class="lead">${scored.length} reading${scored.length===1?'':'s'} collected — here's how they split.</p>
-      <div class="tally">
-        <div class="tile more"><div class="n">${more}</div><div class="l">Concerning</div></div>
-        <div class="tile less"><div class="n">${less}</div><div class="l">Reassuring</div></div>
-        <div class="tile neutral"><div class="n">${neutral}</div><div class="l">Neutral</div></div>
-        <div class="tile neutral"><div class="n">${unsure}</div><div class="l">Unsure</div></div>
-      </div>
-      ${skippedT.length?`
-      <div class="stage" style="margin-top:26px">Marked not applicable</div>
-      <div class="skiplist">
-        ${skippedT.map(t=>`<div class="si">${esc(t.q)}</div>`).join('')}
-      </div>`:''}
-      ${noted.length?`
-      <div class="stage" style="margin-top:26px">Your notes</div>
-      <div class="notelist">
-        ${noted.map(t=>`<div class="ni"><p class="niq">${esc(t.q)}</p><p class="nia">${esc(t.answer)}</p><p class="nit">${esc(t.note)}</p></div>`).join('')}
-      </div>`:''}
-      <div class="stage" style="margin-top:26px">Keep a copy</div>
-      <div class="dlrow">
-        <button class="dl" id="dlmd">↓ Download your answers (.md)</button>
-      </div>
-      <div class="note"><b>Nothing has been saved or sent.</b> Your answers and notes exist only in this browser tab and disappear when you close or restart it. If you want to keep the results, download them using the button above. (If you used the feedback button, only the text you typed there was sent.)</div>
-      ${navHtml()}
-    </div>`;
-  wireDownloads(); wireNav();
-}
-function showIntro(){
-  cursor=null; flagAt=null; refresh(); renderTrail(); renderRail(null);
-  stageEl.innerHTML=`
-    <div class="card">
-      <div class="stage">About this tool</div>
-      <p class="q">How concerning is this signal?</p>
-      <p class="help" style="font-size:14.5px;margin-bottom:16px">A thinking aid for people inside a frontier AI company who have noticed something and want to understand <b style="color:var(--ink)">how worrying it actually is</b>.</p>
-      <p class="help" style="margin-bottom:14px">This tool focuses on situations where a model deployed inside your company has done something concerning. These questions help you weigh how worrying it really is, all things considered.</p>
-      <p class="help" style="margin-bottom:14px">The questions look at the signal from five angles: the model, its affordances, the safeguards around it, the company's conduct, and what's at stake. Use the <b style="color:var(--ink)">All questions</b> tab to see the whole structure.</p>
-      <p class="help" style="margin-bottom:14px">Every question has an optional notes box for anything you want to record about your own case; the notes are shown back to you at the end. <b style="color:var(--ink)">No answers and no notes are collected</b> — nothing leaves your browser. The feedback button is the one exception: pressing Send sends the text in the feedback box, and nothing else.</p>
-      <p class="skiphelp" style="margin:0 0 16px">Every question also has a <b>"Not applicable — skip"</b> button. <b>Unsure</b> = the question applies but you can't tell. <b>Skip</b> = the question doesn't apply to your situation.</p>
-      <div class="opts"><button class="opt" id="begin" style="justify-content:center;border-color:var(--accent);color:var(--accent);font-weight:600">Begin →</button></div>
-    </div>`;
-  document.getElementById('begin').onclick=()=>{renderNode(START);};
-}
-/* Back and Forward move the cursor along the answered path. Neither
-   touches `answers`, so nothing is lost by looking around. */
-function goBack(){
-  /* verdict layer: from the interstitial flag screen, Back returns to the
-     trigger question itself (normal selected-state behaviour). */
-  if(flagAt){ const t=flagAt; flagAt=null; return renderNode(t); }
-  const path=walk().path;
-  if(cursor==="END") return path.length?renderNode(path[path.length-1]):showIntro();
-  const i=path.indexOf(cursor);
-  if(i>0) return renderNode(path[i-1]);
-  if(i===0) return showIntro();
-  return path.length?renderNode(path[path.length-1]):showIntro();  /* first unanswered */
-}
-function goForward(){ const n=nextFrom(cursor); if(n) renderNode(n); }
-function reset(){ answers={}; notes={}; skips={}; trigLatch=false; flagAt=null; showIntro(); }
 
-/* ---------- overview ---------- */
-function optPill(o){
-  const showDir=o.dir&&SHOW.overview;
-  const showTag=o.tag&&!o.dir&&SHOW.overview&&SHOW.routing;
-  const cls=showDir?DIRCLASS[o.dir]:'plain';
-  const suffix=showDir?` <b>${ARROW[o.dir]}${DIRLABEL[o.dir].replace(' concerning','')}</b>`:(showTag?` <b>${o.tag}</b>`:'');
-  return `<span class="pill ${cls}">${o.label}${suffix}</span>`;
-}
 function renderAll(){
-  const el=document.getElementById('allview');
-  let html=`<div class="ov-tools"><button id="exp">Expand all</button><button id="col">Collapse all</button></div>`;
-  const b=BRANCHES.model;
-  html+=`<div class="ov-branch"><h3>Loss of control via internal deployment</h3><p>The questions look at the signal from five angles: the model, its affordances, the safeguards around it, the company's conduct, and what's at stake.</p>`;
-  b.sections.forEach(s=>{
-    html+=`<details class="sec"><summary>${s.name}<span class="cnt">${s.qs.length} question${s.qs.length===1?'':'s'}</span></summary><div class="ov-body">`;
-    s.qs.forEach(q=>{
-      html+=`<div class="oq ${q.cond?'cond':''}"><p class="oq-q">${q.q}${q.multi?' <span class="pill plain" style="font-weight:600">select all</span>':''}</p>${q.help?`<p class="oq-help">${q.help}</p>`:''}<div class="oq-opts">${q.options.map(optPill).join('')}</div></div>`;
+  let html=`<div class="note" style="margin:0 0 16px"><b>Inspection view.</b> Every question, including the
+    ones the walkthrough only asks conditionally. Click a question to see the rules behind it.</div>
+    <div class="expandbar"><button id="ex-all">Open all</button><button id="col-all">Collapse all</button>
+    <span class="sub" style="margin-left:4px">${QS.length} questions · ${QS.reduce((n,q)=>n+q.rules.length,0)} rule bullets</span></div>`;
+  GROUPS.forEach(g=>{
+    const qs=QS.filter(x=>x.g===g.id);
+    if(!qs.length) return;
+    html+=`<div class="ov-group"><details class="sec" open><summary>${esc(g.name)}
+      <span class="cnt">${qs.length}</span></summary><div class="ov-body">`;
+    qs.forEach(q=>{
+      html+=`<details class="oq"><summary>${chips(q)}<span class="oq-q">${esc(q.q)}</span>
+        <span class="rcount">${q.rules.length}</span></summary>
+        <div class="oq-body">${q.help?`<p class="oq-help">${esc(q.help)}</p>`:""}${ruleList(q)}</div></details>`;
     });
-    html+=`</div></details>`;
+    html+=`</div></details></div>`;
   });
-  html+=`</div>`;
-  el.innerHTML=html;
-  document.getElementById('exp').onclick=()=>el.querySelectorAll('details').forEach(d=>d.open=true);
-  document.getElementById('col').onclick=()=>el.querySelectorAll('details').forEach(d=>d.open=false);
+  pane.innerHTML=html;
+  $("#ex-all").onclick=()=>pane.querySelectorAll("details.oq").forEach(d=>d.open=true);
+  $("#col-all").onclick=()=>pane.querySelectorAll("details.oq").forEach(d=>d.open=false);
 }
-/* ---------- verdict layer: the Mechanism tab ----------
-   Plain-language documentation of the verdict layer. The trigger list and
-   every fraction below are rendered LIVE from TRIGGERS / FRAC, so editing
-   those structures updates this page too. All copy is placeholder. */
-function renderMech(){
-  const el=document.getElementById('mechview');
-  const frac=(n,d)=>`${n} in ${d}`;
-  const trigRows=TRIGGERS.map(t=>{
-    const n=NODES[t.id];
-    return `<div class="oq"><p class="oq-q">${esc(n.q)}</p><div class="oq-opts">${
-      Object.keys(t.trigger).map(l=>`<span class="pill more">${esc(l)}</span>`).join('')}</div></div>`;
-  }).join('');
-  el.innerHTML=`
-  <div class="card">
-    <h3>How the verdict is reached</h3>
-    <p>At the end of a run the tool now states one of three verdicts, checked in this order:</p>
-    <ul>
-      <li><b>${esc(VERDICT_LABEL[1])}</b> — at least one trigger answer is active on your answered path.</li>
-      <li><b>${esc(VERDICT_LABEL[2])}</b> — no trigger, but one of two fraction channels trips (or too little has been seen to clear anything).</li>
-      <li><b>${esc(VERDICT_LABEL[3])}</b> — neither of the above, with at least ${FRAC.MIN_READINGS} readings recorded.</li>
-    </ul>
-  </div>
-  <div class="card">
-    <h3>Level 1 — triggers</h3>
-    <p>These specific answers are treated as red lines: any one of them, on its own, is read as enough to escalate. The current mapping (provisional):</p>
-    ${trigRows}
-    <p><b>Interstitial flag — committed first, warned second:</b> your answer is recorded exactly as normal; then, <i>after</i> it is committed (for multi-selects: only when you press Continue, never on a tick) and before the next question, a standalone flag screen appears — deliberately after the fact, so the warning cannot change what you were about to answer. It is not a question and shows no answer controls; it offers to skip straight to the end, or you can carry on. Back from it returns you to the question you just answered. The flag appears <b>once per run</b> and never re-appears when you navigate back over that point: if you continue past it, later trigger answers are collected silently and all of them are listed in the summary. Changing a trigger answer (or marking its question not applicable) un-fires it; if none remain, the verdict is no longer level 1.</p>
-  </div>
-  <div class="card">
-    <h3>Levels 2 and 3 — the two channels</h3>
-    <p>If no trigger fired, the recorded readings are compared against two thresholds. "Recorded readings" are answers that carry a reading — skipped questions and routing-only answers are excluded from both the numerator and the denominator. Readings are <b>weighted</b>: a question in the heavier of the two question tiers (see below) counts ${WEIGHT}, every other question counts 1, in numerator and denominator alike.</p>
-    <ul>
-      <li><b>Strong channel:</b> strong-concerning readings ("more concerning", <i>not</i> "slightly") are at least <b>${frac(FRAC.STRONG_NUM,FRAC.STRONG_DEN)}</b> of recorded readings, by weight.</li>
-      <li><b>Pooled channel:</b> concerning readings (including slightly) plus unsure readings together are at least <b>${frac(FRAC.POOL_NUM,FRAC.POOL_DEN)}</b> of recorded readings, by weight.</li>
-    </ul>
-    <p>Either channel tripping gives <b>${esc(VERDICT_LABEL[2])}</b>; otherwise <b>${esc(VERDICT_LABEL[3])}</b>. Both fractions are placeholders pending calibration with real users, and are compared as whole-number cross-products — no decimals are computed or shown.</p>
-    <p><b>Guards:</b> with fewer than <b>${FRAC.MIN_READINGS}</b> recorded readings (raw count, not weighted) there is no level-3 verdict — too little has been seen to clear anything, so the tool stays at the level-2 action with different wording. Reassuring readings never subtract from anything; they only sit in the denominator.</p>
-    <p><b>What this layer never does:</b> no summing into a single score, no subtraction of reassuring answers, no displayed number-verdict. The tally stays a recountable count.</p>
-  </div>
-  <div class="card">
-    <h3>The two question tiers</h3>
-    <p>Below the trigger level, the questions split into two tiers. These questions are the heavier tier — each counts <b>double</b> in both channels:</p>
-    ${[...HEAVY].map(id=>`<div class="oq"><p class="oq-q">${esc(NODES[id].q)}</p></div>`).join('')}
-    <p>The double weight is carried by the <b>first</b> counted answer inside a heavy question's tree — the question itself, or its first counted follow-up when the question only routes. Every later answer in the same tree counts once, so a heavy question never earns its weight twice, and longer follow-up paths cannot compound it. Trigger answers ignore the tiers entirely — a red line is a red line regardless of weight.</p>
-    <p>Tier membership and the weight (${WEIGHT}×) are provisional, set from the researcher's pairwise-comparison elicitation of question importance (2026-08-04), pending calibration against further stress-test runs.</p>
-  </div>
-  <div class="card">
-    <h3>Two worked examples (hypothetical)</h3>
-    <p><b>a) A trigger mid-run.</b> Someone ticks that a missing control mechanism breached "A company policy or commitment" and presses Continue. The answer is recorded, and before the next question a flag screen appears: it says this alone is probably enough reason to escalate, and offers "Skip to the end". They continue instead; later they also tick "A law" on the monitoring question — no second flag, but the summary lists both, and the verdict is <b>${esc(VERDICT_LABEL[1])}</b>.</p>
-    <p><b>b) No trigger, unsure-heavy.</b> A run records 12 readings, all on lighter-tier questions so every reading counts once: none strong-concerning (strong channel: 0 of 12 — not tripped), but 2 slightly-concerning and 3 unsure. Pooled, that is 5 of 12, and 5×${FRAC.POOL_DEN} ≥ 12×${FRAC.POOL_NUM}, so the pooled channel trips: <b>${esc(VERDICT_LABEL[2])}</b>.</p>
-  </div>
-  <div class="card">
-    <h3>Known blind spots</h3>
-    <ul>
-      <li>The fractions are uncalibrated placeholders until real users have been observed.</li>
-      <li>The strong/slight labels are now load-bearing, but they were assigned when nothing hung on them. An audit of every "more" vs "slight-more" is pending.</li>
-      <li>The trigger list now spans three different kinds of thing: company trustworthiness (lying, law, own commitments), a capability threshold, and the model's own conduct. No single stated rule covers all three.</li>
-      <li>If the tree grows, added questions dilute the strong channel's denominator, and ${frac(FRAC.STRONG_NUM,FRAC.STRONG_DEN)} of a much larger tree is a harder bar.</li>
-    </ul>
+
+function renderSum(){
+  const list=shown(), ans=q=>state.answers[q.id];
+  const flagged = list.filter(q=>q.flag && ans(q)===q.flag);
+  const unsure  = list.filter(q=>ans(q)==="Unsure" && q.flag);
+  const caps    = list.filter(q=>q.anchor && ans(q)!==undefined);
+  const clear   = list.filter(q=>q.flag && ans(q)!==undefined && ans(q)!==q.flag && ans(q)!=="Unsure" && ans(q)!=="Skipped");
+  const answered= list.filter(q=>ans(q)!==undefined).length;
+
+  const block=(q)=>`<div class="si"><p class="siq">${esc(q.q)}</p>
+      <p class="sia">You answered: ${esc(ans(q))}</p>${ruleList(q)}</div>`;
+
+  let html=`<div class="card summary">
+    <div class="stage">Summary</div>
+    <p class="lead">${answered} of ${list.length} questions answered. There is no score and no verdict here.
+    What follows is the set of rules your answers put in play, so you can go and read them.</p>`;
+
+  if(flagged.length){
+    html+=`<h3 class="sumh">Rules your answers put in play <span class="cnt">${flagged.length}</span></h3>
+      <p class="help">For each of these, you gave the answer that implicates the provision below. That is not a
+      finding that anything was breached — several of these attach to market deployment, or are not yet in
+      force, and the bullets say so. It is where to look.</p>
+      <div class="sumlist">${flagged.map(block).join("")}</div>`;
+  } else if(answered){
+    html+=`<h3 class="sumh">Rules your answers put in play</h3>
+      <p class="help">None — on what you answered, no provision in this set was implicated.</p>`;
+  }
+
+  if(unsure.length){
+    html+=`<h3 class="sumh">Where you weren't sure <span class="cnt">${unsure.length}</span></h3>
+      <p class="help">Each of these has a rule behind it that you could not confirm either way. Not knowing is
+      itself worth recording — and in several cases the company is required to be able to tell you.</p>
+      <div class="sumlist">${unsure.map(block).join("")}</div>`;
+  }
+
+  if(caps.length){
+    html+=`<h3 class="sumh">Capability answers <span class="cnt">${caps.length}</span></h3>
+      <p class="help">These opened the conditional questions above. They are not shortfalls in themselves.</p>
+      <div class="sumlist">${caps.map(block).join("")}</div>`;
+  }
+
+  if(clear.length){
+    html+=`<details class="sec"><summary>Questions where nothing was implicated
+      <span class="cnt">${clear.length}</span></summary><div class="ov-body">
+      ${clear.map(q=>`<p class="oq-q" style="padding:6px 0">${esc(q.q)} — <span class="sia" style="display:inline">${esc(ans(q))}</span></p>`).join("")}
+      </div></details>`;
+  }
+
+  if(!answered) html+=`<p class="help" style="margin:0">Nothing answered yet — the walkthrough starts at the first question.</p>`;
+
+  html+=`<div class="note" style="margin-top:22px"><b>How to read the rules.</b> Every bullet quotes a real
+    provision, but they do not all bind in the same way, and where they don't the bullet says so in plain
+    words. Some attach to a model being placed on the market or released externally — for a model used only
+    inside the company those are a comparison, not something the company is breaking. Some are not yet in
+    force. Some are recital-tier and say "arguably". Company frameworks are commitments rather than law —
+    though under California SB 53 §22757.15, a large frontier developer that "fails to comply with its own
+    frontier AI framework" commits a statutory violation.</div></div>`;
+  pane.innerHTML=html;
+}
+
+function renderSrc(){
+  const row=r=>`<tr><td>${esc(r[1])}</td><td class="v">${esc(r[2])}${r[3]?`<br><span class="srcnote">⚠ ${esc(r[3])}</span>`:""}</td></tr>`;
+  const d=new Date(document.lastModified);
+  const stamp=isNaN(d)?"unknown":d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+  pane.innerHTML=`<div class="card">
+    <div class="stage">Sources</div>
+    <p class="lead">Every rule in this tool was read from the complete text of the document below, not from a
+    summary. Retrieved 7 August 2026.</p>
+    <p class="help">Tool last updated ${esc(stamp)}.</p>
+    <h4 style="margin:20px 0 4px">Law and regulatory instruments</h4>
+    <table class="srcgrid"><thead><tr><th>Instrument</th><th>Version read</th></tr></thead><tbody>
+      ${SOURCES.filter(r=>r[0]==="Law").map(row).join("")}</tbody></table>
+    <h4 style="margin:22px 0 4px">Company safety frameworks</h4>
+    <table class="srcgrid"><thead><tr><th>Framework</th><th>Version read</th></tr></thead><tbody>
+      ${SOURCES.filter(r=>r[0]==="Framework").map(row).join("")}</tbody></table>
+    <div class="note" style="margin-top:20px"><b>These documents change.</b> Two of the twelve carry no
+    version number or date anywhere in the text, so the retrieval date is the only fixed point for them.
+    Several of the others were rewritten during 2026. A rule quoted here may since have been amended,
+    weakened or removed — which is itself one of the things this set asks about.</div>
   </div>`;
 }
-const TABS=[['v-walk','walkview'],['v-all','allview'],['v-mech','mechview']];
-TABS.forEach(([b,v])=>{
-  document.getElementById(b).onclick=()=>{
-    TABS.forEach(([b2,v2])=>{
-      document.getElementById(b2).classList.toggle('active',b2===b);
-      document.getElementById(v2).style.display=(v2===v)?'':'none';
-    });
-  };
-});
-if(!SHOW.trail){
-  document.querySelector('aside h2').textContent='Your answers so far';
-  document.querySelector('aside .sub').textContent='Each answer, in order, with any note you added.';
-}
-renderAll();
-renderMech();
-showIntro();
-</script>
-<!-- ============ FEEDBACK WIDGET (2026-08-04) ============
-     Posts two fields to the "How concerning is this signal? — feedback"
-     Google Form, only on an explicit Send: the typed text ("Feedback")
-     and the name of the current screen ("Context", filled by the tool
-     at send time and disclosed in the note under the box — Santeri's
-     2026-08-04 call, replacing the visible-in-textarea design). Nothing
-     else ever leaves the page. All widget copy is Claude placeholder
-     pending Santeri's wording. -->
-<style>
-  #fbBtn{position:fixed;right:18px;bottom:18px;z-index:60;font-family:var(--display);
-    background:var(--accent-deep);color:#fff;border:none;border-radius:999px;
-    padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:var(--shadow);}
-  #fbBtn:hover{background:var(--accent);}
-  #fbPanel{position:fixed;right:18px;bottom:70px;z-index:60;width:min(340px,calc(100vw - 36px));
-    background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
-    padding:16px;display:none;}
-  #fbPanel h4{margin:0 0 8px;font-family:var(--display);color:var(--ink);font-size:15px;}
-  #fbText{width:100%;box-sizing:border-box;min-height:110px;resize:vertical;border:1px solid var(--line);
-    border-radius:8px;padding:8px 10px;font:13.5px/1.45 inherit;color:var(--ink);background:#fff;}
-  #fbText:focus{outline:none;border-color:var(--accent);}
-  #fbNote{font-size:11.5px;color:var(--muted);margin:8px 0 10px;line-height:1.45;}
-  #fbRow{display:flex;gap:8px;align-items:center;}
-  #fbSend{background:var(--accent-deep);color:#fff;border:none;border-radius:8px;
-    padding:8px 16px;font-size:13.5px;font-weight:600;cursor:pointer;}
-  #fbSend:disabled{opacity:.5;cursor:default;}
-  #fbClose{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;margin-left:auto;}
-  #fbDone{font-size:13px;color:var(--less);display:none;}
-</style>
-<button id="fbBtn" type="button">Feedback</button>
-<div id="fbPanel" role="dialog" aria-label="Send feedback">
-  <h4>Feedback on this tool</h4>
-  <textarea id="fbText" placeholder="What worked, what didn't, what's missing?"></textarea>
-  <p id="fbNote">Sent anonymously, and only when you press Send: we receive the text above, the question or page you're on, and a timestamp — never your answers or notes. Delivery runs through a Google form; the request carries no cookies, so it can't be tied to any Google account you're signed into.</p>
-  <div id="fbRow">
-    <button id="fbSend" type="button">Send</button>
-    <span id="fbDone">Thank you — sent.</span>
-    <button id="fbClose" type="button">Close</button>
-  </div>
-</div>
-<script>
-(function(){
-  const FORM="https://docs.google.com/forms/d/e/1FAIpQLSeco1WErG1t2lG2RipHHMzjgd_exvZspz-5-PhxwqsjAqGTyw/formResponse";
-  const ENTRY="entry.1093598931";        /* "Feedback" — the visible box */
-  const ENTRY_CTX="entry.325142339";     /* "Context" — filled by the tool, disclosed in the note */
-  const btn=document.getElementById('fbBtn'),panel=document.getElementById('fbPanel'),
-        txt=document.getElementById('fbText'),send=document.getElementById('fbSend'),
-        done=document.getElementById('fbDone'),closeB=document.getElementById('fbClose');
-  function viewingLine(){
-    const all=document.getElementById('allview'),mech=document.getElementById('mechview');
-    if(all&&all.style.display!=='none') return 'the All questions tab';
-    if(mech&&mech.style.display!=='none') return 'the Mechanism tab';
-    if(cursor&&cursor!=='END'&&NODES[cursor]) return NODES[cursor].stage+' — "'+NODES[cursor].q+'"';
-    if(cursor==='END') return 'the summary';
-    return 'the start page';
-  }
-  btn.onclick=()=>{
-    const open=panel.style.display==='block';
-    panel.style.display=open?'none':'block';
-    if(!open){ done.style.display='none'; txt.focus(); }
-  };
-  closeB.onclick=()=>{panel.style.display='none';};
-  send.onclick=()=>{
-    const v=txt.value.trim();
-    if(!v) return;
-    send.disabled=true;
-    const body=new URLSearchParams();
-    body.append(ENTRY,v);
-    body.append(ENTRY_CTX,viewingLine());  /* captured at send time */
-    fetch(FORM,{method:'POST',mode:'no-cors',credentials:'omit',  /* never send cookies: the submission cannot be linked to a signed-in Google account */
-      headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()})
-      .catch(()=>{})  /* no-cors: the response is opaque whether it worked or not */
-      .finally(()=>{ send.disabled=false; txt.value=''; done.style.display='inline'; });
-  };
-})();
+
+render();
 </script>
 </body>
 </html>
