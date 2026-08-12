@@ -401,5 +401,82 @@ function renderSrc(){
 
 render();
 </script>
+
+<!-- ============ FEEDBACK WIDGET ============
+     Ported from `Framework v3 prototype.html` (2026-08-04 design), pointing at the
+     same Google Form. Posts two fields, and only on an explicit Send: the typed text
+     ("Feedback") and the name of the current screen ("Context", prefixed with the tool
+     name so the two tools' responses stay separable in one sheet). Nothing else ever
+     leaves the page. All widget copy is Claude placeholder pending Santeri's wording. -->
+<style>
+  #fbBtn{position:fixed;right:18px;bottom:18px;z-index:60;font-family:var(--display);
+    background:var(--accent-deep);color:#fff;border:none;border-radius:999px;
+    padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:var(--shadow);}
+  #fbBtn:hover{background:var(--accent);}
+  #fbPanel{position:fixed;right:18px;bottom:70px;z-index:60;width:min(340px,calc(100vw - 36px));
+    background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+    padding:16px;display:none;}
+  #fbPanel h4{margin:0 0 8px;font-family:var(--display);color:var(--ink);font-size:15px;}
+  #fbText{width:100%;box-sizing:border-box;min-height:110px;resize:vertical;border:1px solid var(--line);
+    border-radius:8px;padding:8px 10px;font:13.5px/1.45 inherit;color:var(--ink);background:#fff;}
+  #fbText:focus{outline:none;border-color:var(--accent);}
+  #fbNote{font-size:11.5px;color:var(--muted);margin:8px 0 10px;line-height:1.45;}
+  #fbRow{display:flex;gap:8px;align-items:center;}
+  #fbSend{background:var(--accent-deep);color:#fff;border:none;border-radius:8px;
+    padding:8px 16px;font-size:13.5px;font-weight:600;cursor:pointer;}
+  #fbSend:disabled{opacity:.5;cursor:default;}
+  #fbClose{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;margin-left:auto;}
+  #fbDone{font-size:13px;color:var(--less);display:none;}
+</style>
+<button id="fbBtn" type="button">Feedback</button>
+<div id="fbPanel" role="dialog" aria-label="Send feedback">
+  <h4>Feedback on this tool</h4>
+  <textarea id="fbText" placeholder="What worked, what didn't, what's missing?"></textarea>
+  <p id="fbNote">Sent anonymously, and only when you press Send: we receive the text above, the question or page you're on, and a timestamp — never your answers or notes. Delivery runs through a Google form; the request carries no cookies, so it can't be tied to any Google account you're signed into.</p>
+  <div id="fbRow">
+    <button id="fbSend" type="button">Send</button>
+    <span id="fbDone">Thank you — sent.</span>
+    <button id="fbClose" type="button">Close</button>
+  </div>
+</div>
+<script>
+(function(){
+  const FORM="https://docs.google.com/forms/d/e/1FAIpQLSeco1WErG1t2lG2RipHHMzjgd_exvZspz-5-PhxwqsjAqGTyw/formResponse";
+  const ENTRY="entry.1093598931";        /* "Feedback" — the visible box */
+  const ENTRY_CTX="entry.325142339";     /* "Context" — filled by the tool, disclosed in the note */
+  const btn=document.getElementById('fbBtn'),panel=document.getElementById('fbPanel'),
+        txt=document.getElementById('fbText'),send=document.getElementById('fbSend'),
+        done=document.getElementById('fbDone'),closeB=document.getElementById('fbClose');
+  function viewingLine(){
+    let where='the start page';
+    if(state.view==="all") where='the All questions tab';
+    else if(state.view==="sum") where='the summary';
+    else if(state.view==="src") where='the Sources tab';
+    else {
+      const list=shown(), q=list[state.cur];
+      if(q){ const g=GROUPS.find(x=>x.id===q.g); where=(g?g.name+' — ':'')+'"'+q.q+'"'; }
+    }
+    return 'Rules tool · '+where;
+  }
+  btn.onclick=()=>{
+    const open=panel.style.display==='block';
+    panel.style.display=open?'none':'block';
+    if(!open){ done.style.display='none'; txt.focus(); }
+  };
+  closeB.onclick=()=>{panel.style.display='none';};
+  send.onclick=()=>{
+    const v=txt.value.trim();
+    if(!v) return;
+    send.disabled=true;
+    const body=new URLSearchParams();
+    body.append(ENTRY,v);
+    body.append(ENTRY_CTX,viewingLine());  /* captured at send time */
+    fetch(FORM,{method:'POST',mode:'no-cors',credentials:'omit',  /* never send cookies: the submission cannot be linked to a signed-in Google account */
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()})
+      .catch(()=>{})  /* no-cors: the response is opaque whether it worked or not */
+      .finally(()=>{ send.disabled=false; txt.value=''; done.style.display='inline'; });
+  };
+})();
+</script>
 </body>
 </html>
