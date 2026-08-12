@@ -379,13 +379,13 @@ function renderSrc(){
     <p class="lead">Every rule in this tool was read from the complete text of the document below, not from a
     summary. Retrieved 7 August 2026.</p>
     <p class="help">Tool last updated ${esc(stamp)}.</p>
-    <h4 style="margin:20px 0 4px">Law and regulatory instruments <span class="srcnote">— the rules</span></h4>
+    <h4 style="margin:20px 0 4px">Law and regulatory instruments</h4>
     <table class="srcgrid"><thead><tr><th>Instrument</th><th>Version read</th></tr></thead><tbody>
       ${SOURCES.filter(r=>r[0]==="Law").map(row).join("")}</tbody></table>
-    <h4 style="margin:22px 0 4px">Company safety frameworks <span class="srcnote">— the rules</span></h4>
+    <h4 style="margin:22px 0 4px">Company safety frameworks</h4>
     <table class="srcgrid"><thead><tr><th>Framework</th><th>Version read</th></tr></thead><tbody>
       ${SOURCES.filter(r=>r[0]==="Framework").map(row).join("")}</tbody></table>
-    <h4 style="margin:22px 0 4px">Categorization <span class="srcnote">— not a source of rules</span></h4>
+    <h4 style="margin:22px 0 4px">Categorization</h4>
     <table class="srcgrid"><thead><tr><th>Document</th><th>Version read</th></tr></thead><tbody>
       ${SOURCES.filter(r=>r[0]==="Taxonomy").map(row).join("")}</tbody></table>
     <p class="help" style="margin-top:6px">Groups 1–9 take their names and order from METR's nine common
