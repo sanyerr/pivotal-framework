@@ -216,8 +216,17 @@ function visible(q){
 }
 const shown=()=>QS.filter(visible);
 
+// Preamble shown above the bullets of the four capability-threshold gate questions
+// (q.anchor). Their bullets are threshold definitions, not duties that can be
+// departed from, so they get this framing and the header "The thresholds" instead
+// of "The rules at stake". Santeri's wording, 2026-08-13.
+const THRESHOLD_PREAMBLE = "If a capability threshold is crossed, more safety requirements come into play. "
+  + "The bullets below show the thresholds in different laws and/or safety frameworks. "
+  + "If these thresholds are crossed, additional questions will be shown later.";
+
 function ruleList(q){
-  return `${q.lead?`<p class="lead">${esc(q.lead)}</p>`:""}
+  return `${q.anchor?`<p class="lead">${esc(THRESHOLD_PREAMBLE)}</p>`:""}
+    ${q.lead?`<p class="lead">${esc(q.lead)}</p>`:""}
     <ul class="rlist">${q.rules.map(x=>`<li><b>${esc(x.r)}</b> — ${esc(x.t)}</li>`).join("")}</ul>`;
 }
 function chips(q){
@@ -252,7 +261,8 @@ function renderWalk(){
     <div class="skiprow"><button class="skipbtn ${a==="Skipped"?"on":""}" data-a="Skipped">
       ${a==="Skipped"?"Skipped — this question doesn't apply. Click to un-skip.":"This question doesn't apply to my situation → skip it"}
     </button></div>`;
-  if(a!==undefined && a!=="Skipped") html+=`<div class="expl"><h4>The rules at stake</h4>${ruleList(q)}</div>`;
+  if(a!==undefined && a!=="Skipped") html+=`<div class="expl">
+    <h4>${q.anchor?"The thresholds":"The rules at stake"}</h4>${ruleList(q)}</div>`;
   html+=`<div class="nav">
       <button id="prev" ${state.cur===0?"disabled":""}>← Back</button>
       <button id="next">${state.cur===list.length-1?"Finish → Summary":"Next →"}</button>
