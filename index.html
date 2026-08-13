@@ -121,7 +121,8 @@
     button.opt:hover{transform:none}
   }
 
-  .expl.pre{margin-bottom:16px}
+  /* shown before answering, so it must not re-animate on every re-render */
+  .expl.pre{animation:none;margin-top:6px;margin-bottom:18px}
   .howto ul{margin:8px 0 0;padding-left:20px}
   .howto li{margin:0 0 6px;line-height:1.5}
   .howto p{margin:8px 0 0}
