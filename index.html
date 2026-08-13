@@ -353,8 +353,8 @@ function renderSum(){
 
   let html=`<div class="card summary">
     <div class="stage">Summary</div>
-    <p class="lead">${answered} of ${list.length} questions answered. There is no score and no verdict here.
-    What follows is the set of rules your answers put in play, so you can go and read them.</p>`;
+    <p class="lead">${answered} of ${list.length} questions answered. Below, you can see which rules are
+    potentially violated in your situation.</p>`;
 
   if(flagged.length){
     html+=`<h3 class="sumh">Rules your answers put in play <span class="cnt">${flagged.length}</span></h3>
