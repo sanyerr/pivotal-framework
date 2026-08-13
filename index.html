@@ -234,11 +234,11 @@ const THRESHOLD_PREAMBLE = "If a capability threshold is crossed, more safety re
 function ruleList(q){
   const li=x=>`<li><b>${esc(x.r)}</b> — ${esc(x.t)}</li>`;
   const law=q.rules.filter(x=>x.k==="law"), fw=q.rules.filter(x=>x.k!=="law");
-  // Label the two kinds only where a question has both — otherwise the label is noise.
-  const body = (law.length && fw.length)
-    ? `<p class="rkind">In law</p><ul class="rlist">${law.map(li).join("")}</ul>
-       <p class="rkind">In company safety frameworks</p><ul class="rlist">${fw.map(li).join("")}</ul>`
-    : `<ul class="rlist">${q.rules.map(li).join("")}</ul>`;
+  // Both labels always shown when their kind is present, so a question grounded in only
+  // one of the two says so rather than leaving the reader to infer it.
+  const body =
+    (law.length?`<p class="rkind">In law</p><ul class="rlist">${law.map(li).join("")}</ul>`:"") +
+    (fw.length?`<p class="rkind">In company frameworks</p><ul class="rlist">${fw.map(li).join("")}</ul>`:"");
   return `${q.anchor?`<p class="lead">${esc(THRESHOLD_PREAMBLE)}</p>`:""}
     ${q.lead?`<p class="lead">${esc(q.lead)}</p>`:""}${body}`;
 }
