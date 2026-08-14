@@ -210,7 +210,7 @@ const state={view:"walk",cur:INTRO?-1:0,answers:{}};
 (function(){
   const d=new Date(document.lastModified);
   const s=isNaN(d)?"":d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
-  $("#stamp").textContent = s ? "Tool last updated "+s+". Source documents and their versions are listed under Sources." : "";
+  $("#stamp").textContent = s ? "Tool last updated "+s+"." : "";
 })();
 
 const anchors=g=>QS.filter(q=>q.anchor===g);
