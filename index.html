@@ -319,9 +319,7 @@ function renderWalk(){
 }
 
 function renderAll(){
-  let html=`<div class="note" style="margin:0 0 16px"><b>Inspection view.</b> Every question, including the
-    ones the walkthrough only asks conditionally. Click a question to see the rules behind it.</div>
-    <div class="expandbar"><button id="ex-all">Open all</button><button id="col-all">Collapse all</button>
+  let html=`<div class="expandbar"><button id="ex-all">Open all</button><button id="col-all">Collapse all</button>
     <span class="sub" style="margin-left:4px">${QS.length} questions · ${QS.reduce((n,q)=>n+q.rules.length,0)} rule bullets</span></div>`;
   GROUPS.forEach(g=>{
     const qs=QS.filter(x=>x.g===g.id);
