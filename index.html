@@ -329,9 +329,6 @@
     font-size:12px;transition:transform .14s;display:inline-block}
   details.oq[open]>summary::before{transform:rotate(90deg)}
   .oq-q{font-weight:600;font-size:16px;line-height:1.4;color:var(--ink);margin:0}
-  .rcount{display:inline-block;margin-left:var(--s1);font-size:11px;font-weight:600;
-    color:var(--accent-deep);background:var(--lav);border:1px solid var(--rule);
-    border-radius:var(--r);padding:1px 8px;vertical-align:2px;font-variant-numeric:tabular-nums}
   .oq-body{padding:var(--s1) var(--s1) var(--s3) 28px}
   .oq-help{color:var(--muted);font-size:14px;line-height:1.6;margin:0 0 var(--s2);max-width:66ch}
 
@@ -618,8 +615,7 @@ function renderAll(){
     html+=`<div class="ov-group"><details class="sec" open><summary>${esc(g.name)}
       <span class="cnt">${qs.length}</span></summary><div class="ov-body">`;
     qs.forEach(q=>{
-      html+=`<details class="oq"><summary>${chips(q)}<span class="oq-q">${esc(q.q)}</span>
-        <span class="rcount">${q.rules.length}</span></summary>
+      html+=`<details class="oq"><summary>${chips(q)}<span class="oq-q">${esc(q.q)}</span></summary>
         <div class="oq-body">${q.help?`<p class="oq-help">${esc(q.help)}</p>`:""}${ruleList(q)}</div></details>`;
     });
     html+=`</div></details></div>`;
