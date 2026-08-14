@@ -355,7 +355,7 @@ function renderSum(){
     potentially violated in your situation.</p>`;
 
   if(flagged.length){
-    html+=`<h3 class="sumh">Rules your answers put in play <span class="cnt">${flagged.length}</span></h3>
+    html+=`<h3 class="sumh">Rules your answers put in play</h3>
       <p class="help">For each of these, you gave the answer that implicates the provision below. That is not a
       finding that anything was breached — several of these attach to market deployment, or are not yet in
       force, and the bullets say so. It is where to look.</p>
@@ -366,14 +366,14 @@ function renderSum(){
   }
 
   if(unsure.length){
-    html+=`<h3 class="sumh">Where you weren't sure <span class="cnt">${unsure.length}</span></h3>
+    html+=`<h3 class="sumh">Where you weren't sure</h3>
       <p class="help">Each of these has a rule behind it that you could not confirm either way. Not knowing is
       itself worth recording — and in several cases the company is required to be able to tell you.</p>
       <div class="sumlist">${unsure.map(block).join("")}</div>`;
   }
 
   if(caps.length){
-    html+=`<h3 class="sumh">Capability answers <span class="cnt">${caps.length}</span></h3>
+    html+=`<h3 class="sumh">Capability answers</h3>
       <p class="help">These opened the conditional questions above. They are not shortfalls in themselves.</p>
       <div class="sumlist">${caps.map(block).join("")}</div>`;
   }
