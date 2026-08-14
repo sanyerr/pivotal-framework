@@ -356,9 +356,8 @@ function renderSum(){
 
   if(flagged.length){
     html+=`<h3 class="sumh">Rules your answers put in play</h3>
-      <p class="help">For each of these, you gave the answer that implicates the provision below. That is not a
-      finding that anything was breached — several of these attach to market deployment, or are not yet in
-      force, and the bullets say so. It is where to look.</p>
+      <p class="help">For each of these questions, you gave the answer that indicates that the rules listed
+      below it may have been violated.</p>
       <div class="sumlist">${flagged.map(block).join("")}</div>`;
   } else if(answered){
     html+=`<h3 class="sumh">Rules your answers put in play</h3>
