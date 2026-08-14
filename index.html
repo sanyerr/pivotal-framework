@@ -342,7 +342,7 @@ function renderSum(){
   const list=shown(), ans=q=>state.answers[q.id];
   const flagged = list.filter(q=>q.flag && ans(q)===q.flag);
   const unsure  = list.filter(q=>ans(q)==="Unsure" && q.flag);
-  const caps    = list.filter(q=>q.anchor && ans(q)!==undefined);
+  const caps    = list.filter(q=>q.anchor && ans(q)==="Yes");
   const clear   = list.filter(q=>q.flag && ans(q)!==undefined && ans(q)!==q.flag && ans(q)!=="Unsure" && ans(q)!=="Skipped");
   const answered= list.filter(q=>ans(q)!==undefined).length;
 
@@ -373,8 +373,8 @@ function renderSum(){
   }
 
   if(caps.length){
-    html+=`<h3 class="sumh">Capability answers</h3>
-      <p class="help">These opened the conditional questions above. They are not shortfalls in themselves.</p>
+    html+=`<h3 class="sumh">Capability thresholds crossed</h3>
+      <p class="help">These capability thresholds are crossed. Crossing them put further questions into play.</p>
       <div class="sumlist">${caps.map(block).join("")}</div>`;
   }
 
