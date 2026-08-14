@@ -6,187 +6,456 @@
 <title>Rules-based questions — draft</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  /* ────────────────────────────────────────────────────────────────────────
+     AIWI SKIN — "square and structural".
+     Every value below is either kept from the tool or taken from a file we
+     measured. Sources are cited inline as:
+       [theme]  = aiwi.org salient-dynamic-styles.css (their live WordPress theme)
+       [3rd]    = aiwi.org /third-opinion/ page CSS (hand-written, content-heavy)
+       [uaf]    = aiwi.org useanyfont declaration
+     ──────────────────────────────────────────────────────────────────────── */
   :root{
-    /* AIWI palette — aiwi.org brand tokens (inherited from Framework v3 prototype) */
-    --bg:#f4f1ed; --card:#ffffff; --ink:#231c57; --muted:#5f5a80;
-    --line:#ded9ea; --line2:#e9e5f1; --accent:#6a63e8;
-    --accent-deep:#34267b; --peri:#969aff; --lav:#f4ecff; --lav2:#e4e0ff;
+    /* GROUND. [3rd] body.page-id-5882, body.page-id-5999 {background:var(--bg-paper)}
+       where --bg-paper:#F9FBFE, and the same value is on header.site, section.meta-strip,
+       section.neutral, .sec-jump and .chip. This is AIWI's page.
+       #f4f1ed, which the first version of this study used as the ground, is DROPPED from
+       the file. It is AIWI's `extra-color-3` — toggle hovers, testimonial marks, button
+       fills, icon strokes — an accent they never put behind a page. It is not kept in a
+       reduced role either: this tool has no toggle, no pull-quote and no icon set, so
+       every place it could go would be an invented use, and a defined-but-unused token
+       is the exact fault this revision exists to fix. */
+    --paper:#F9FBFE;                    /* [3rd] --bg-paper — the ground */
+    --card:#ffffff;
+    --ink:#231c57; --muted:#5f5a80; --accent:#6a63e8; --accent-deep:#34267b;
+    --lav:#f4ecff;                      /* = #F4ECFF, AIWI's section-band fill */
+    --lav2:#e4e0ff;
+    /* The tool's four semantic pairs. --more/--neutral/--slight-bg have no live reference
+       today; they are the ONLY deliberate exception to "no unused tokens", because the
+       .tally tiles they belong to are styled below against the day the build emits them
+       again. Every other token in this block is referenced. */
     --more:#b03a46; --more-bg:#fbe7e6;
     --less:#0b6f6c; --less-bg:#dff4f2;
     --slight:#8a5e0d; --slight-bg:#f8efdb;
     --neutral:#625e7e; --neutral-bg:#edebf4;
-    --display:'Inter Tight','Inter',system-ui,sans-serif;
-    --shadow:0 1px 2px rgba(35,28,87,.05), 0 8px 24px rgba(35,28,87,.07);
+    /* Gone with the cream, all three unreferenced after the ramp below replaced them:
+       --line:#ded9ea, --line2:#e9e5f1, and --ink-10:rgba(35,28,87,.08). The last is the
+       clearest single symptom of the swap — .08 measures 1.17:1 on white and 1.16:1 on
+       paper, so every divider that used it had to move up a weight to stay visible. */
+
+    /* Ink ramp, copied verbatim from AIWI's own :root on /third-opinion/ [3rd].
+       On paper there is no fill step left to spend (white on #F9FBFE is 1.04:1), so
+       these three weights ARE the structure, and each has exactly one job:
+         --rule    static container edges  .card .views aside details.sec .tile #fbPanel
+         --ink-50  interactive borders      every button, the textarea  (≥3:1, see below)
+         --ink-20  dividers inside a surface
+       --rule is the one value here that is not AIWI's: their hairline is .16, which on
+       cream was assisted by a 1.13:1 fill step and on paper would be alone. Raised to
+       .22 — the smallest step that keeps a card edge legible at arm's length. */
+    --rule:rgba(35,28,87,.22);          /* [3rd] --ink-20, raised .16 -> .22 */
+    --ink-70:rgba(35,28,87,.72);        /* [3rd] */
+    --ink-50:rgba(35,28,87,.50);        /* [3rd] */
+    --ink-20:rgba(35,28,87,.16);        /* [3rd] — the hairline */
+
+    /* Type. One family. [uaf] forces Inter on h1–h6, body, p, li, a, strong, b, em,
+       so Inter Tight has no counterpart anywhere on aiwi.org. The variable name is
+       kept so every `var(--display)` reference downstream still resolves. */
+    --display:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    /* Frame. [theme] .container is max-width:1425px; padding:0 40px. */
+    --container:1425px; --gut:40px;
+
+    /* One spacing scale, replacing the ad-hoc 26/22/18/14/11px margins.
+       Steps track [theme]'s vertical rhythm of 48 / 64 / 100px paddings. */
+    --s1:8px; --s2:16px; --s3:24px; --s4:32px; --s5:48px; --s6:64px;
+
+    /* Radius. [theme] radii counted: 0px ×8, 2px ×8, 3px ×3, 10px ×3, 6px ×2, 15px ×1.
+       [3rd] .chip and .filter-bar are square; [3rd] .btn is 2px. Nothing is a pill. */
+    --r:2px;
+
+    /* Shadow is now used on exactly one thing: the floating feedback widget,
+       which genuinely sits above the page. Value is AIWI's own card shadow [3rd].
+       Every in-flow surface below is separated by a hairline and by space instead. */
+    --shadow:0 2px 14px rgba(35,28,87,.08);
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);overflow-x:clip;
-    font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-    font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  body{margin:0;background:var(--paper);color:var(--ink);overflow-x:clip;
+    font-family:var(--display);
+    /* [theme] body{font-size:16px;line-height:28px} at every breakpoint = 1.75 */
+    font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased}
+  b,strong{font-weight:600}   /* nothing in this skin reaches 700 */
   ::selection{background:var(--lav2);color:var(--ink)}
-  :focus-visible{outline:3px solid var(--peri);outline-offset:2px}
-  .wrap{max-width:1060px;margin:0 auto;padding:30px 22px 70px}
-  header{background:var(--ink);margin:-30px calc(50% - 50vw) 24px;
-    padding:28px max(22px, calc(50vw - 508px)) 25px;box-shadow:var(--shadow)}
-  header h1{font-family:var(--display);font-size:23px;font-weight:700;letter-spacing:-.01em;
-    margin:0 0 5px;color:#fff}
-  header p{margin:0;color:var(--lav2);font-size:13.5px;max-width:720px}
-  .views{display:flex;gap:8px;margin-bottom:20px}
-  .views button{font:inherit;font-size:13px;font-weight:600;padding:8px 18px;border-radius:999px;
-    border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;transition:.14s}
-  .views button.active{background:var(--ink);border-color:var(--ink);color:#fff;
-    box-shadow:0 4px 12px rgba(35,28,87,.22)}
-  .layout{display:grid;grid-template-columns:1fr 330px;gap:24px;align-items:start}
-  @media(max-width:840px){.layout{grid-template-columns:1fr}}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;
-    padding:28px 28px 24px;box-shadow:var(--shadow)}
-  .stage{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);
-    margin-bottom:12px;font-weight:600}
-  .q{font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:-.01em;margin:0 0 8px}
-  .help{color:var(--muted);font-size:13.5px;margin:0 0 20px}
-  .opts{display:flex;gap:11px;flex-wrap:wrap}
-  button.opt{text-align:center;background:#fff;color:var(--ink);border:1px solid var(--line);
-    border-radius:12px;padding:13px 26px;font:inherit;font-weight:500;cursor:pointer;transition:.14s;flex:1;min-width:110px}
-  button.opt:hover{border-color:var(--peri);box-shadow:0 4px 14px rgba(35,28,87,.10);transform:translateY(-1px)}
-  button.opt.sel{border-color:var(--accent);background:var(--lav);box-shadow:inset 0 0 0 1px var(--accent);font-weight:600}
-  .skiprow{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
-  button.skipbtn{width:100%;text-align:left;font:inherit;font-size:13px;font-weight:500;
-    color:var(--muted);background:#f9f8fc;border:1px dashed var(--line);border-radius:12px;
-    padding:12px 16px;cursor:pointer;transition:.14s}
-  button.skipbtn:hover{color:var(--ink);border-color:var(--muted)}
-  button.skipbtn.on{color:var(--accent-deep);border-color:var(--accent-deep);background:var(--lav);font-weight:600}
-  .expl{margin-top:20px;background:var(--lav);border:1px solid var(--lav2);border-radius:14px;
-    padding:16px 18px;animation:fadein .25s ease}
+  /* Was --peri #969aff. On cream that ring measured 2.23:1 and on paper 2.42:1 — it
+     failed WCAG 2.4.11's 3:1 for a focus indicator on both grounds, and moving to the
+     lighter paper made it worse rather than better. --accent #6a63e8 is already in the
+     palette and clears it: 4.44:1 on paper, 4.60:1 on a white card, 3.32:1 against the
+     ink header band. --peri had no other reference left, so the token is deleted rather
+     than left sitting in :root unused — which is how #F9FBFE got missed the first time. */
+  :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .wrap{max-width:var(--container);margin:0 auto;padding:var(--gut) var(--gut) 96px}
+
+  /* ── Header band ───────────────────────────────────────────────────────── */
+  /* Full-bleed ink band; inner text aligns to the 1345px content column
+     (1425 − 2×40). 672px ≈ half of that. */
+  /* Band is AIWI's --lav-100 #E4E0FF with ink type, not the dark ink band (Santeri's
+     call, 2026-08-14). Ink on it measures 11.4:1, --ink-70 8.2:1. A hairline replaces
+     the tonal step the dark band gave, since a pale band on pale paper needs an edge. */
+  header{background:#E4E0FF;margin:calc(-1 * var(--gut)) calc(50% - 50vw) var(--s5);
+    border-bottom:1px solid rgba(35,28,87,.16);
+    padding:var(--s6) max(var(--gut), calc(50vw - 672px)) var(--s5)}
+  /* [theme] body h1{font-family:Inter;font-size:65px;line-height:67px;font-weight:400}
+     — large, light, near-neutral tracking. This is the single biggest change. */
+  header h1{font-family:var(--display);font-size:clamp(28px,3.4vw,42px);font-weight:400;
+    letter-spacing:-.02em;line-height:1.12;margin:0 0 var(--s2);color:var(--ink)}
+  header p{margin:0;color:rgba(35,28,87,.72);font-size:16px;line-height:1.6;max-width:690px}
+  /* The "— draft question set" subtitle is styled inline in the markup (#c1c3ff), which
+     was tuned for the dark band and measures 1.31:1 on the pale one. Overridden here
+     rather than in the markup, so the CSS-only property of this study is preserved. */
+  header h1 span{color:rgba(35,28,87,.72)!important}
+    /* 690px is AIWI's own body measure — max-width:690px appears 16× in aiwi.html. */
+
+  /* ── Tab row ───────────────────────────────────────────────────────────── */
+  /* [3rd] .filter-bar{padding:14px 18px;background:#fff;border:1px solid var(--ink-20)}.
+     This is the load-bearing precedent for the whole study: AIWI themselves put a WHITE
+     box on the #F9FBFE ground and separate it with nothing but a hairline. A white card
+     on their paper is not a mistake to be designed around — it is their own pattern. */
+  .views{display:flex;gap:var(--s1);flex-wrap:wrap;align-items:center;
+    padding:12px 16px;background:var(--card);border:1px solid var(--rule);margin-bottom:var(--s4)}
+  /* [3rd] .chip{font-size:13px;padding:6px 12px;min-height:36px;background:var(--bg-paper);
+     border:1px solid var(--ink-20)} · :hover{background:var(--lav-50)}
+     · .active{background:var(--ink);color:#fff;border-color:var(--ink)}
+     Kept, except the border: at .16 a chip boundary measures 1.37:1, and a control has to
+     reach 3:1 (WCAG 1.4.11). --ink-50 does, at 3.15:1. This is the one place the study
+     knowingly departs from a measured AIWI value, and it departs upward. */
+  .views button{font:inherit;font-size:13px;font-weight:500;letter-spacing:.01em;
+    padding:7px 16px;min-height:36px;border-radius:var(--r);
+    border:1px solid var(--ink-50);background:var(--paper);color:var(--ink);
+    cursor:pointer;transition:background .12s ease,border-color .12s ease}
+  .views button:hover{background:var(--lav)}
+  .views button.active{background:var(--ink);border-color:var(--ink);color:var(--card);font-weight:600}
+
+  /* ── Two-column walkthrough ────────────────────────────────────────────── */
+  /* The grid the whole page lines up on: at the 1425px container the content column
+     is 1345px, which this splits 901 + 64 + 380. The tab bar, the header text, every
+     card and the sidebar's right edge all land on those same two rules. */
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;
+    gap:var(--s6);align-items:start}
+  @media(max-width:1080px){.layout{grid-template-columns:1fr;gap:var(--s4)}}
+
+  /* ── Surfaces ──────────────────────────────────────────────────────────── */
+  /* THE CARD, ON THEIR PAPER. White fill on #F9FBFE is a 1.04:1 step — i.e. none. The
+     card is therefore held by its rule and by 48px of internal space, not by its fill.
+     The number that decided this: on the old cream ground the step was 1.13:1, which is
+     also none. The fill was never separating the card; with the shadow already gone in
+     this study, the hairline was doing all of it. So the swap costs the card almost
+     nothing, and the white is kept because it is what [3rd] .filter-bar does. */
+  .card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);
+    padding:var(--s5) var(--s5) var(--s4)}
+  /* Surfaces run the full width of the container so every edge lines up; the READING
+     MEASURE is capped inside them instead. That split — wide frame, narrow measure —
+     is AIWI's own: their .wrap is 1200–1425px while .sec-head inside it is
+     max-width:720px and left-aligned, and their body copy blocks are 690px.
+     The three sidebar-less views (intro, summary, sources) and the All-questions list
+     therefore sit on the SAME column the walkthrough card occupies — derived from the
+     grid above rather than restated, so the two can never drift apart. */
+  #pane>.card,#pane>.expandbar,#pane>.ov-group{max-width:calc(100% - 380px - var(--s6))}
+  @media(max-width:1080px){#pane>.card,#pane>.expandbar,#pane>.ov-group{max-width:none}}
+
+  /* ── Eyebrow / label system ────────────────────────────────────────────── */
+  /* [3rd] .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+     font-weight:600;color:var(--purple-deep)} with .eyebrow::before{content:"";
+     width:6px;height:6px;background:var(--purple)} — a square, not a dot. */
+  .stage{display:flex;align-items:flex-start;gap:var(--s1);
+    font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;
+    color:var(--accent-deep);margin-bottom:var(--s3);line-height:1.4}
+  .stage::before{content:"";width:6px;height:6px;background:var(--accent);
+    display:inline-block;flex:none;margin-top:.45em}   /* stays on the first line when the eyebrow wraps */
+  /* [3rd] .filter-bar .label{font-size:11px;letter-spacing:.16em;uppercase;600} */
+  .rkind{font-family:var(--display);font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;font-weight:600;color:var(--ink-70);
+    /* was --lav2, which against the --lav band it now sits on measures 1.11:1 — no rule
+       at all. --ink-20 is the divider weight and reads at 1.36:1 on the band. */
+    margin:var(--s3) 0 12px;padding-top:14px;border-top:1px solid var(--ink-20)}
+  .rkind:first-child{margin-top:0;padding-top:0;border-top:0}
+
+  /* ── Question ──────────────────────────────────────────────────────────── */
+  /* [3rd] .sec-head h2{font-weight:600;font-size:clamp(26px,3vw,34px);
+     line-height:1.1;letter-spacing:-.02em}. 600 is as heavy as this skin goes. */
+  .q{font-family:var(--display);font-size:clamp(21px,2.1vw,28px);font-weight:600;
+    line-height:1.2;letter-spacing:-.02em;margin:0 0 12px;max-width:32ch}
+  .help{color:var(--muted);font-size:15px;line-height:1.65;margin:0 0 var(--s4);max-width:66ch}
+
+  /* ── Answer buttons ────────────────────────────────────────────────────── */
+  /* AIWI run TWO control tiers and the swap makes the distinction load-bearing, so the
+     tool now uses both rather than putting everything on .chip:
+       .chip → 1px, paper fill, small — the tabs and the expand bar, navigation.
+       .btn  → 1.5px border, [3rd] .secondary being `background:#fff;border-color:var(--ink)`
+               — the primary control. These four buttons are the one thing the whole
+               instrument turns on, so they take .btn.
+     Border is --ink-50 rather than full ink: 3.15:1 on white, 3.13:1 on paper, both over
+     WCAG 1.4.11, without four full-ink rectangles fighting the question above them.
+     The selected state is [3rd]'s .primary: ink fill, white text at 15.27:1. Note what the
+     swap did here — paper-on-cream used to give the unselected button its own quiet fill;
+     on paper that step is 1.04:1, so the fill is now decorative and the 1.5px rule is the
+     button. Hover moves the border to full ink (peri, the old hover border, was retired
+     with the focus ring). */
+  .opts{display:flex;gap:var(--s1);flex-wrap:wrap}
+  button.opt{text-align:center;background:var(--paper);color:var(--ink);
+    border:1.5px solid var(--ink-50);border-radius:var(--r);
+    padding:14px 24px;min-height:52px;font:inherit;font-size:16px;font-weight:500;
+    cursor:pointer;transition:background .12s ease,border-color .12s ease;
+    flex:1;min-width:120px}
+  button.opt:hover{background:var(--lav);border-color:var(--ink)}
+  button.opt.sel{background:var(--ink);border-color:var(--ink);color:var(--card);font-weight:600}
+  button.opt.sel:hover{background:var(--accent-deep);border-color:var(--accent-deep)}
+  @media(max-width:520px){button.opt{flex:1 1 100%}}
+
+  /* ── Skip row ──────────────────────────────────────────────────────────── */
+  /* The dashed hairline is kept: it carries meaning (a lesser, optional control),
+     and AIWI uses a dashed rule themselves — [3rd] .filter-bar has an
+     outline:1.5px dashed rgba(35,28,87,0.18) variant. Squared and re-toned only. */
+  .skiprow{margin-top:var(--s3);padding-top:var(--s3);border-top:1px solid var(--ink-20)}
+  button.skipbtn{width:100%;text-align:left;font:inherit;font-size:14px;font-weight:500;
+    color:var(--muted);background:var(--paper);border:1.5px dashed var(--ink-50);
+    border-radius:var(--r);padding:14px 18px;min-height:48px;cursor:pointer;
+    transition:background .12s ease,border-color .12s ease,color .12s ease}
+  button.skipbtn:hover{color:var(--ink);border-color:var(--ink);background:var(--lav)}
+  button.skipbtn.on{color:var(--accent-deep);border-color:var(--accent-deep);
+    background:var(--lav);font-weight:600}
+
+  /* ── Rules panel ───────────────────────────────────────────────────────── */
+  /* THE BAND. #F4ECFF is what AIWI actually use to separate a region, and with the fill
+     step between white and paper gone it is the only fill signal the page has left. So
+     the rules panel is now a band rather than a slightly-tinted box, and every block that
+     carries rule bullets (.expl here, .si in the summary, .note) uses the same one — one
+     fill, one meaning. Border moved --lav2 -> --rule: --lav2 against --lav measured
+     1.11:1, i.e. the band had no visible edge at all. --rule gives it 1.55:1. */
+  .expl{margin-top:var(--s4);background:var(--lav);border:1px solid var(--rule);
+    border-radius:var(--r);padding:var(--s3) var(--s4);animation:fadein .25s ease}
   @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-  .expl h4{font-family:var(--display);font-size:12px;letter-spacing:.07em;text-transform:uppercase;
-    color:var(--accent-deep);margin:0 0 8px;font-weight:700}
-  .expl .lead{font-size:13.5px;margin:0 0 10px}
-  ul.rlist{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:9px}
-  ul.rlist li{font-size:13.5px;line-height:1.5;padding-left:14px;position:relative}
-  ul.rlist li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;
-    border-radius:50%;background:var(--accent)}
+  .expl h4{font-family:var(--display);font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--accent-deep);margin:0 0 var(--s2);font-weight:600}
+  /* `.lead` is emitted by ruleList() in four different parents, so it is styled once
+     here and only the summary's own top line overrides it (see .summary>.lead). */
+  .lead{font-size:15px;line-height:1.65;margin:0 0 var(--s2);max-width:66ch}
+  /* shown before answering, so it must not re-animate on every re-render */
+  .expl.pre{animation:none;margin-top:var(--s1);margin-bottom:var(--s3)}
+
+  ul.rlist{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:14px}
+  ul.rlist li{font-size:15px;line-height:1.6;padding-left:18px;position:relative;max-width:70ch}
+  /* Square marker, matching [3rd] .eyebrow::before — AIWI has no round bullets. */
+  ul.rlist li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;
+    border-radius:0;background:var(--accent)}
   ul.rlist b{color:var(--accent-deep);font-weight:600}
-  .nav{display:flex;gap:10px;margin-top:22px}
-  .nav button{background:none;border:1px solid var(--line);color:var(--muted);
-    border-radius:9px;padding:8px 14px;font:inherit;font-weight:500;cursor:pointer;transition:.14s}
-  .nav button:hover:not(:disabled){color:var(--ink);border-color:var(--accent)}
-  .nav button:disabled{opacity:.4;cursor:default}
-  aside{background:var(--card);border:1px solid var(--line);border-radius:18px;
-    padding:20px 20px 22px;position:sticky;top:22px;box-shadow:var(--shadow)}
-  aside h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);margin:0 0 4px;font-weight:600}
-  aside .sub{font-size:12px;color:var(--muted);margin:0 0 16px}
-  .grouplist{display:flex;flex-direction:column;gap:8px}
-  .gi{border:1px solid var(--line2);border-radius:11px;padding:9px 12px;font-size:12.5px;cursor:pointer;transition:.12s}
-  .gi:hover{border-color:var(--peri)}
-  .gi.cur{box-shadow:0 0 0 2px var(--peri)}
-  .gi .gn{font-weight:600}
-  .gi .gc{float:right;font-size:11px;color:var(--muted)}
-  .ov-group{margin-bottom:26px}
-  details.sec{background:var(--card);border:1px solid var(--line);border-radius:14px;
-    margin-bottom:10px;box-shadow:var(--shadow);overflow:hidden}
+
+  /* ── Chips on a question ───────────────────────────────────────────────── */
+  .gatechip{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.14em;
+    text-transform:uppercase;background:var(--lav);color:var(--accent-deep);
+    border:1px solid var(--rule);border-radius:var(--r);padding:4px 10px;
+    margin-bottom:12px;line-height:1.5}
+  .fuchip{background:var(--less-bg);color:var(--less);border-color:#c2e3df}
+  /* inline in the All-questions summary line, where a bottom margin would open the leading */
+  details.oq>summary .gatechip{margin-bottom:0;margin-right:2px}
+
+  /* ── Prev / next ───────────────────────────────────────────────────────── */
+  /* [3rd] .btn{font-weight:500;font-size:14px;padding:11px 20px;border:1.5px solid;
+     border-radius:2px} · .secondary{background:#fff;border-color:var(--ink)}
+     · .primary{background:var(--ink);color:#fff} · .primary:hover{--purple-deep} */
+  .nav{display:flex;gap:var(--s1);margin-top:var(--s5)}
+  .nav button{background:var(--card);border:1.5px solid var(--ink);color:var(--ink);
+    border-radius:var(--r);padding:11px 20px;font:inherit;font-size:14px;font-weight:500;
+    min-height:44px;cursor:pointer;transition:background .12s ease,border-color .12s ease}
+  .nav button:hover:not(:disabled){background:var(--lav)}
+  .nav button#next{background:var(--ink);color:var(--card);border-color:var(--ink)}
+  .nav button#next:hover{background:var(--accent-deep);border-color:var(--accent-deep)}
+  /* disabled at .35 opacity over a white card leaves the border at ~1.2:1, which is the
+     correct reading — 1.4.11 exempts disabled controls — but --ink-20 on top of that was
+     doubly faint. --ink-50 keeps the button findable while still reading as inert. */
+  .nav button:disabled{opacity:.35;cursor:default;border-color:var(--ink-50);color:var(--muted)}
+
+  /* ── Sidebar ───────────────────────────────────────────────────────────── */
+  aside{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);
+    padding:var(--s4) var(--s3);position:sticky;top:var(--s4)}
+  aside h2{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-70);
+    margin:0 0 6px;font-weight:600}
+  aside .sub{font-size:14px;color:var(--muted);margin:0 0 var(--s3);line-height:1.5}
+  .grouplist{display:flex;flex-direction:column;gap:0}
+  /* Rows on a shared rule rather than eight floating boxes: one hairline between
+     each, the container's own border closing the set. */
+  .gi{border:1px solid transparent;border-bottom:1px solid var(--ink-20);
+    border-radius:0;padding:12px 12px;font-size:14px;cursor:pointer;line-height:1.4;
+    transition:background .12s ease}
+  .gi:last-child{border-bottom:1px solid transparent}
+  .gi:hover{background:var(--lav)}
+  /* [theme] uses an inset box-shadow as a border-equivalent for active states
+     (box-shadow:inset 0 0 0 2px #231c57 on #fp-nav active dots). */
+  .gi.cur{background:var(--lav);box-shadow:inset 2px 0 0 var(--accent);border-bottom-color:var(--lav2)}
+  .gi .gn{font-weight:500}
+  .gi.cur .gn{font-weight:600}
+  .gi .gc{float:right;font-size:12px;color:var(--ink-70);font-variant-numeric:tabular-nums}
+
+  /* ── All-questions view ────────────────────────────────────────────────── */
+  .expandbar{display:flex;gap:var(--s1);align-items:center;margin:0 0 var(--s3);flex-wrap:wrap}
+  /* These chips sit on the bare ground, not inside a white bar — so a paper fill is
+     paper-on-paper and the border is literally all there is. --ink-50, per .views button. */
+  .expandbar button{font:inherit;font-size:13px;font-weight:500;padding:7px 14px;
+    min-height:36px;border-radius:var(--r);border:1px solid var(--ink-50);
+    background:var(--paper);color:var(--ink);cursor:pointer;transition:background .12s ease}
+  .expandbar button:hover{background:var(--lav)}
+  .expandbar .sub{font-size:13px;color:var(--muted)}
+
+  .ov-group{margin-bottom:var(--s4)}
+  details.sec{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);
+    margin-bottom:var(--s2);overflow:hidden}
   details.sec>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;
-    align-items:center;padding:14px 18px;font-weight:600;font-size:14px}
+    align-items:center;gap:var(--s2);padding:16px var(--s3);font-weight:600;font-size:15px;
+    transition:background .12s ease}
   details.sec>summary::-webkit-details-marker{display:none}
-  details.sec>summary .cnt{font-size:11px;font-weight:600;color:var(--muted);
-    background:var(--neutral-bg);border-radius:20px;padding:2px 10px}
-  details.sec>summary:hover{color:var(--accent)}
-  .ov-body{padding:2px 18px 16px;border-top:1px solid var(--line2)}
-  .oq{padding:13px 0;border-bottom:1px solid var(--line2)}
+  details.sec>summary:hover{background:var(--lav)}
+  details.sec>summary .cnt{font-size:11px;font-weight:600;color:var(--accent-deep);
+    background:var(--lav);border:1px solid var(--rule);border-radius:var(--r);
+    padding:2px 9px;flex:none;font-variant-numeric:tabular-nums}
+  .ov-body{padding:var(--s1) var(--s3) var(--s3);border-top:1px solid var(--ink-20)}
+
+  .oq{padding:14px 0;border-bottom:1px solid var(--ink-20)}
   .oq:last-child{border-bottom:none}
-  .oq .oq-q{font-size:13.5px;font-weight:600;margin:0 0 6px}
-  .oq .lead{font-size:12.5px;color:var(--muted);margin:0 0 6px}
-  .oq ul.rlist li{font-size:12.5px;color:var(--muted)}
-  .summary .lead{font-size:15px;color:var(--muted);margin-bottom:16px}
-  .tally{display:flex;gap:12px;margin:4px 0 18px}
-  .tile{flex:1;border-radius:14px;padding:16px 18px;border:1px solid var(--line2);background:var(--neutral-bg)}
-  .tile .n{font-family:var(--display);font-size:30px;font-weight:700;line-height:1;color:var(--neutral)}
-  .tile .l{font-size:12px;font-weight:600;margin-top:5px;letter-spacing:.02em;color:var(--neutral)}
-  .sumlist{display:flex;flex-direction:column;gap:12px}
-  .si{border:1px solid var(--line2);border-radius:12px;padding:12px 14px;background:#f9f8fc}
-  .si .siq{font-size:13px;font-weight:600;margin:0 0 4px}
-  .si .sia{font-size:12px;color:var(--accent-deep);font-weight:600;margin:0 0 6px}
-  .si ul.rlist li{font-size:12.5px;color:var(--muted)}
-  /* The ending. A separate card below the summary, because actions are a different kind
-     of content from findings and should not read as one more result block. The rail and
-     the numbers carry the claim that the order matters. */
-  .nextsteps{margin-top:22px}
-  .nslead{font-size:14.5px;color:var(--muted);margin-bottom:6px}
-  .nslead p{margin:0 0 10px}
-  .nslead h3{font-family:var(--display);font-size:15px;color:var(--ink);margin:16px 0 4px}
-  .nssteps{list-style:none;margin:18px 0 0;padding:0;position:relative}
-  .nssteps::before{content:"";position:absolute;left:15px;top:10px;bottom:14px;
-    width:2px;background:var(--line2)}
-  .nsstep{position:relative;padding:0 0 22px 46px}
-  .nsstep:last-child{padding-bottom:2px}
-  .nsnum{position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;
-    background:var(--lav);border:1px solid var(--accent);color:var(--accent-deep);
-    font-family:var(--display);font-weight:700;font-size:14px;
-    display:flex;align-items:center;justify-content:center}
-  .nsbody h4{font-family:var(--display);font-size:15.5px;font-weight:600;margin:5px 0 5px}
-  .nsbody p{margin:0 0 8px;font-size:13.5px;color:var(--muted)}
-  .nsbody ul{margin:0 0 8px;padding-left:20px}
-  .nsbody li{font-size:13.5px;color:var(--muted);margin-bottom:3px}
-  .nsbody a{color:var(--accent-deep);font-weight:500}
-  @media(max-width:460px){.nsstep{padding-left:40px}}
+  .oq .lead{font-size:14px;color:var(--muted);margin:0 0 var(--s1)}
+  .oq ul.rlist li{font-size:14px;color:var(--muted)}
+  /* collapsible questions in the All-questions view */
+  details.oq{border-bottom:1px solid var(--ink-20);padding:0}
+  details.oq:last-child{border-bottom:0}
+  details.oq>summary{list-style:none;cursor:pointer;padding:14px var(--s1) 14px 28px;
+    position:relative;display:block;transition:background .12s ease;border-radius:0}
+  details.oq>summary::-webkit-details-marker{display:none}
+  details.oq>summary:hover{background:var(--lav)}
+  details.oq>summary::before{content:"▸";position:absolute;left:8px;top:14px;color:var(--accent);
+    font-size:12px;transition:transform .14s;display:inline-block}
+  details.oq[open]>summary::before{transform:rotate(90deg)}
+  .oq-q{font-weight:600;font-size:16px;line-height:1.4;color:var(--ink);margin:0}
+  .rcount{display:inline-block;margin-left:var(--s1);font-size:11px;font-weight:600;
+    color:var(--accent-deep);background:var(--lav);border:1px solid var(--rule);
+    border-radius:var(--r);padding:1px 8px;vertical-align:2px;font-variant-numeric:tabular-nums}
+  .oq-body{padding:var(--s1) var(--s1) var(--s3) 28px}
+  .oq-help{color:var(--muted);font-size:14px;line-height:1.6;margin:0 0 var(--s2);max-width:66ch}
+
+  /* ── Summary ───────────────────────────────────────────────────────────── */
+  .summary>.lead{font-size:17px;line-height:1.6;color:var(--muted);
+    margin-bottom:var(--s3);max-width:64ch}
+  .sumh{font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:-.015em;
+    line-height:1.25;margin:var(--s5) 0 var(--s1);padding-top:var(--s3);
+    border-top:1px solid var(--rule);color:var(--ink)}
+  .sumh:first-of-type{margin-top:var(--s3);padding-top:0;border-top:0}
+  .sumlist{display:flex;flex-direction:column;gap:var(--s2)}
+  /* Was paper on a white card — a 1.04:1 box, and the summary is a stack of ten or more
+     of them, so the whole screen went flat. They carry rule bullets, so they take the
+     same band as .expl: one fill, one meaning. muted on --lav is 5.61:1. */
+  .si{border:1px solid var(--rule);border-radius:var(--r);padding:var(--s3);background:var(--lav)}
+  .si .siq{font-size:16px;font-weight:600;line-height:1.4;margin:0 0 6px}
+  .si .sia{font-size:13px;color:var(--accent-deep);font-weight:600;margin:0 0 var(--s2);
+    letter-spacing:.02em}
+  .si ul.rlist li{font-size:14px;color:var(--muted)}
+  .si .lead{font-size:14px;color:var(--muted)}   /* match the bullets it introduces */
   /* the collapsed "nothing was implicated" list is an appendix to the summary, not a
      finding — set it apart from the blocks above and drop the card treatment so it
      stops reading as one more result. */
-  .summary details.sec{margin-top:34px;background:transparent;box-shadow:none;
-    border:1px dashed var(--line)}
-  .summary details.sec>summary{font-size:13px;color:var(--muted)}
-  .summary details.sec>summary:hover{color:var(--accent)}
-  .note{background:#faf8f4;border:1px dashed var(--line);border-radius:12px;
-    padding:15px 17px;color:var(--muted);font-size:13px;margin-top:22px}
+  .summary details.sec{margin-top:var(--s5);background:transparent;
+    border:1px dashed var(--rule)}
+  .summary details.sec>summary{font-size:14px;font-weight:500;color:var(--muted)}
+  .summary details.sec>summary:hover{color:var(--ink);background:transparent}
+
+  /* Tally tiles — not emitted by the current build, styled so the skin is complete
+     if `.tally` is ever switched back on. */
+  .tally{display:flex;gap:var(--s2);margin:var(--s1) 0 var(--s3);flex-wrap:wrap}
+  .tile{flex:1;min-width:140px;border-radius:var(--r);padding:var(--s3);
+    border:1px solid var(--rule);background:var(--card)}
+  .tile .n{font-family:var(--display);font-size:40px;font-weight:400;line-height:1;
+    letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums}
+  .tile .l{font-size:11px;font-weight:600;margin-top:var(--s1);letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink-70)}
+
+  /* ── The ending (dormant until NEXT_STEPS_LIVE) ────────────────────────── */
+  .nextsteps{margin-top:var(--s4)}
+  .nslead{font-size:16px;color:var(--muted);margin-bottom:var(--s1);max-width:66ch}
+  .nslead p{margin:0 0 12px}
+  .nslead h3{font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:-.01em;
+    color:var(--ink);margin:var(--s3) 0 6px}
+  .nssteps{list-style:none;margin:var(--s3) 0 0;padding:0;position:relative}
+  .nssteps::before{content:"";position:absolute;left:16px;top:12px;bottom:16px;
+    width:1px;background:var(--rule)}
+  .nsstep{position:relative;padding:0 0 var(--s3) 52px}
+  .nsstep:last-child{padding-bottom:2px}
+  .nsnum{position:absolute;left:0;top:0;width:32px;height:32px;border-radius:0;
+    background:var(--lav);border:1px solid var(--accent);color:var(--accent-deep);
+    font-family:var(--display);font-weight:600;font-size:14px;
+    display:flex;align-items:center;justify-content:center}
+  .nsbody h4{font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:-.01em;
+    margin:4px 0 6px}
+  .nsbody p{margin:0 0 var(--s1);font-size:15px;color:var(--muted)}
+  .nsbody ul{margin:0 0 var(--s1);padding-left:20px}
+  .nsbody li{font-size:15px;color:var(--muted);margin-bottom:4px}
+  .nsbody a{color:var(--accent-deep);font-weight:500}
+  @media(max-width:460px){.nsstep{padding-left:44px}}
+
+  /* ── Advisory note ─────────────────────────────────────────────────────── */
+  /* This was the last cream on the page. It could not simply become paper: .note renders
+     inside a white .card (the how-to-read block on the intro, both disclaimers on Sources),
+     and paper-on-white is 1.04:1, so an advisory set apart from the body copy would have
+     stopped being set apart at all. It takes the band instead — same #F4ECFF as .expl and
+     .si, which is right: all three are "here is something other than the running text". */
+  .note{background:var(--lav);border:1px solid var(--rule);border-radius:var(--r);
+    padding:var(--s3);color:var(--muted);font-size:15px;line-height:1.65;margin-top:var(--s4)}
   .note b{color:var(--ink)}
-  @media (prefers-reduced-motion:reduce){
-    *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
-    button.opt:hover{transform:none}
+  .note a{color:var(--accent-deep)}
+  .howto ul{margin:12px 0 0;padding-left:20px}
+  .howto li{margin:0 0 var(--s1);line-height:1.65}
+  .howto p{margin:12px 0 0}
+
+  /* ── Intro / first page ────────────────────────────────────────────────── */
+  .intro h3{font-size:20px;font-weight:600;letter-spacing:-.015em;line-height:1.25;
+    margin:var(--s4) 0 12px;padding-top:var(--s3);border-top:1px solid var(--rule)}
+  .intro h3:first-child{margin-top:0;padding-top:0;border-top:0}
+  .intro p{margin:0 0 var(--s2);line-height:1.75;max-width:66ch}
+  .intro ul{margin:0 0 var(--s2);padding-left:20px;max-width:66ch}
+  .intro li{margin:0 0 var(--s1);line-height:1.75}
+  .intro a{color:var(--accent-deep)}
+
+  /* ── Sources ───────────────────────────────────────────────────────────── */
+  .card>h4{font-family:var(--display);font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;font-weight:600;color:var(--ink-70)}
+  .srcgrid{width:100%;max-width:1000px;border-collapse:collapse;font-size:15px;margin-top:var(--s1)}
+  .srcgrid th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.16em;
+    color:var(--ink-70);border-bottom:1px solid var(--rule);
+    padding:0 var(--s2) 10px 0;font-weight:600}
+  .srcgrid td{padding:14px var(--s2) 14px 0;border-bottom:1px solid var(--ink-20);
+    vertical-align:top;line-height:1.55}
+  .srcgrid tr:last-child td{border-bottom:0}
+  .srcgrid td.v{color:var(--muted)}
+  .srcnote{color:var(--slight);font-size:13px}
+  /* the only rule on the page drawn straight on the ground, with no surface behind it */
+  .stamp{color:var(--ink-70);font-size:14px;margin:var(--s5) 0 0;
+    padding-top:var(--s3);border-top:1px solid var(--rule);max-width:880px}
+
+  /* ── Small screens ─────────────────────────────────────────────────────── */
+  @media(max-width:700px){
+    :root{--gut:20px}
+    .wrap{padding:24px var(--gut) 72px}
+    header{margin:-24px calc(50% - 50vw) var(--s4);padding:var(--s5) var(--gut) var(--s4)}
+    .card{padding:var(--s3) 20px var(--s3)}
+    aside{padding:var(--s3) 20px;position:static}
+    .views{padding:10px 12px}
+    .expl{padding:20px}
+    .srcgrid{font-size:14px}
+  }
+  @media(max-width:400px){
+    .views button{flex:1 1 calc(50% - 4px)}
+    .nav{flex-wrap:wrap}
+    .nav button{flex:1 1 100%}
   }
 
-  .rkind{font-family:var(--display);font-size:11px;letter-spacing:.07em;text-transform:uppercase;
-    color:var(--muted);margin:14px 0 4px;font-weight:700}
-  .rkind:first-child{margin-top:0}
-  /* shown before answering, so it must not re-animate on every re-render */
-  .expl.pre{animation:none;margin-top:6px;margin-bottom:18px}
-  .howto ul{margin:8px 0 0;padding-left:20px}
-  .howto li{margin:0 0 6px;line-height:1.5}
-  .howto p{margin:8px 0 0}
-  .intro h3{font-size:15px;margin:20px 0 6px}
-  .intro p{margin:0 0 12px;line-height:1.62}
-  .intro ul{margin:0 0 12px;padding-left:20px}
-  .intro li{margin:0 0 6px;line-height:1.55}
-  .gatechip{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
-    background:var(--lav);color:var(--accent-deep);border:1px solid var(--lav2);border-radius:999px;padding:2px 9px;margin-bottom:8px}
-  .fuchip{background:#e6f3f1;color:var(--less);border-color:#c2e3df}
-  .srcgrid{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
-  .srcgrid th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
-    border-bottom:1px solid var(--line);padding:6px 10px 6px 0;font-weight:700}
-  .srcgrid td{padding:7px 10px 7px 0;border-bottom:1px solid var(--line2);vertical-align:top}
-  .srcgrid td.v{color:var(--muted)}
-  .srcnote{color:var(--slight);font-size:12px}
-  .stamp{color:var(--muted);font-size:12.5px;margin:10px 0 0}
-  /* collapsible questions in the All-questions view */
-  details.oq{border-bottom:1px solid var(--line2);padding:0}
-  details.oq:last-child{border-bottom:0}
-  details.oq>summary{list-style:none;cursor:pointer;padding:11px 4px 11px 26px;position:relative;
-    display:block;transition:background .12s;border-radius:7px}
-  details.oq>summary::-webkit-details-marker{display:none}
-  details.oq>summary:hover{background:var(--lav)}
-  details.oq>summary::before{content:"▸";position:absolute;left:7px;top:11px;color:var(--accent);
-    font-size:12px;transition:transform .14s;display:inline-block}
-  details.oq[open]>summary::before{transform:rotate(90deg)}
-  .oq-q{font-weight:600;font-size:14.5px;color:var(--ink);margin:0}
-  .rcount{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;color:var(--muted);
-    background:var(--lav);border:1px solid var(--lav2);border-radius:999px;padding:1px 8px;vertical-align:2px}
-  .oq-body{padding:2px 4px 14px 26px}
-  .oq-help{color:var(--muted);font-size:13px;margin:0 0 8px}
-  .sumh{font-family:var(--display);font-size:16px;font-weight:700;margin:26px 0 4px;color:var(--ink)}
-  .sumh:first-of-type{margin-top:18px}
-  .expandbar{display:flex;gap:8px;align-items:center;margin:0 0 14px}
-  .expandbar button{font:inherit;font-size:12.5px;font-weight:600;padding:6px 14px;border-radius:999px;
-    border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer}
-  .expandbar button:hover{border-color:var(--accent);color:var(--accent-deep)}
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
+  }
 </style>
 </head>
 <body>
@@ -226,7 +495,7 @@ const INTRO = "<h3>About this tool</h3><p>This tool is a thinking aid for people
 const HOWTOREAD = "<p>The rules don't all bind in the same way:</p><ul><li>Most rules bind directly. In these cases, a \"No\" is likely a violation of the rule, and a \"Yes\" means the rule is not broken.</li><li>It is unclear to us whether the EU AI Act and the Code of Practice cover internal deployments, but there are <a href=\"https://www.apolloresearch.ai/governance/internal-deployment-eu-ai-act\">several ways</a> to interpret the Act that support including internal deployment. We include EU AI Act and CoP provisions where they are relevant for loss of control risk, but they are marked *\"whether internal-only use counts is contested\"*.</li><li>New York's RAISE Act is not yet in force. It applies only from 1 January 2027.</li><li>The capability threshold questions do not indicate whether a rule has been broken or not. Instead, they indicate whether a threshold has been crossed that would make some other rules applicable.</li></ul><p>Frontier safety frameworks are commitments, not law. A departure from one is not illegal in itself — though under California SB 53 §22757.15, a large frontier developer that \"fails to comply with its own frontier AI framework\" commits a statutory violation. However, the general company frameworks differ from these frontier AI frameworks required by SB 53.</p>";
 const QS = [{"id": "q01", "g": "m1", "q": "Is the model capable of automating the AI research and development in the company?", "rules": [{"r": "Anthropic (Responsible Scaling Policy §1)", "t": "\"fully substitute for our entire set of Research Scientists and Research Engineers, at competitive costs (i.e., within a factor of 5)\".", "k": "framework"}, {"r": "OpenAI (Preparedness Framework Table 1)", "t": "High: impact equal to \"a highly performant mid-career research engineer\" for every researcher, against a 2024 baseline. Critical: \"a superhuman research-scientist agent\".", "k": "framework"}, {"r": "Google DeepMind (Frontier Safety Framework Table 3.2.2.a)", "t": "\"ML R&D automation level 1: Can fully automate the work of any team of researchers at Google focused on improving AI capabilities, with approximately comparable all-inclusive costs.\"", "k": "framework"}, {"r": "Meta (Advanced AI Scaling Framework §4.2.3)", "t": "enhanced evaluation: \"Autonomously complete research tasks which are representative of the work of a senior research engineer improving AI capabilities at Meta\".", "k": "framework"}, {"r": "Microsoft (Frontier Governance Framework App I)", "t": "Critical: \"fully automate the AI R&D pipeline at a fraction of human labor costs\".", "k": "framework"}, {"r": "Amazon (Frontier Model Safety Framework p. 2)", "t": "\"replacing human researchers and fully automating the research, development, and deployment of frontier models\".", "k": "framework"}], "flag": null, "help": "Different companies have defined different thresholds for this. Broadly speaking, the model has crossed the threshold if it is capable of fully automating the work of mid-career research engineers in your company.", "anchor": "A"}, {"id": "q02", "g": "m1", "q": "Has the model's use significantly accelerated the company's AI progress?", "rules": [{"r": "Anthropic (Responsible Scaling Policy §1, fn 8)", "t": "\"double the rate of progress\" against both the expected rate and the fastest pre-AI rate, over at least three model generations, plausibly attributable to automation rather than headcount or compute.", "k": "framework"}, {"r": "OpenAI (Preparedness Framework Table 1)", "t": "\"a generational model improvement… in 1/5th the wall-clock time of equivalent progress in 2024… sustainably for several months\".", "k": "framework"}, {"r": "Google DeepMind (Frontier Safety Framework Table 3.2.2.a)", "t": "\"ML R&D acceleration level 1: Has been used to accelerate AI development, resulting in AI progress substantially accelerating from historical rates.\" Past tense, about actual internal use.", "k": "framework"}, {"r": "Meta (Advanced AI Scaling Framework §4.2.3 fn 8)", "t": "quantifies it: the model \"saturates benchmarks in each domain six months or less after public release of a benchmark\", consistently, for at least two benchmarks within 18 months.", "k": "framework"}], "flag": null, "help": "Different companies have defined different thresholds for this. Broadly speaking, the model has crossed the threshold if the AI progress in the company has at least doubled and this can be attributed to the model's use.", "anchor": "A"}, {"id": "q03", "g": "m1", "q": "Is the model capable of carrying out cyber operations largely on its own?", "rules": [{"r": "California SB 53 §22757.11(c)(1)(B)", "t": "catastrophic risk covers conduct \"with no meaningful human oversight… that is either a cyberattack or, if the conduct had been committed by a human, would constitute the crime of murder, assault, extortion, or theft\".", "k": "law"}, {"r": "EU Code of Practice, Appendix 1.4(3)", "t": "cyber offence as a specified systemic risk, \"e.g. through automated vulnerability discovery, exploit generation, operational use, and attack scaling\".", "k": "law"}, {"r": "OpenAI (Preparedness Framework Table 1, Cybersecurity High)", "t": "\"automating end-to-end cyber operations against reasonably hardened targets OR… automating the discovery and exploitation of operationally relevant vulnerabilities\". Crossing it requires High-standard misalignment safeguards for large-scale internal deployment.", "k": "framework"}, {"r": "Meta (Advanced AI Scaling Framework §4.2.1)", "t": "a hard number: below \"75% pass@10 success on all categories of simple capture the flag (CTF) challenges in unguided mode\" the model is rated moderate or lower; at or above it, the deployment \"will not be implemented\" pending complex evaluation.", "k": "framework"}], "flag": null, "anchor": "B"}, {"id": "q04", "g": "m1", "q": "Is the model capable of evading oversight?", "rules": [{"r": "California SB 53 §22757.11(c)(1)(C)", "t": "catastrophic risk covers a model \"evading the control of its frontier developer or user\".", "k": "law"}, {"r": "EU Code of Practice, Appendix 1.4(2)", "t": "loss of control arising from \"misalignment with human intent or values, self-reasoning, self-replication, self-improvement, deception, resistance to goal modification, power-seeking behaviour\".", "k": "law"}, {"r": "Anthropic (Responsible Scaling Policy §1)", "t": "its misalignment threshold names the internal case as the leading one: systems \"extensively used within major AI companies, with the opportunity to manipulate how their successor systems are trained and deployed as well as the evidence used to assess their safety\".", "k": "framework"}, {"r": "Google DeepMind (Frontier Safety Framework §3.2.1)", "t": "the Stealth and Situational Awareness threshold: enough situational awareness and \"stealth (ability to circumvent basic oversight mechanisms)\" that \"we cannot rule out the model significantly undermining human control\".", "k": "framework"}, {"r": "OpenAI (Frontier Governance Framework §2.4)", "t": "Tier 2 is \"the capability to evade chain of thought monitoring\"; Tier 3 is where monitoring \"cannot reliably detect or rule out evasion of human control\".", "k": "framework"}], "flag": null, "help": "E.g. hiding its actions or intentions, or sabotaging safety research or decision-making in the company.", "anchor": "C"}, {"id": "q05", "g": "m1", "q": "Has the company developed risk scenarios about loss of control?", "rules": [{"r": "EU Code of Practice, Measure 2.2 + Measure 2.1 + Appendix 1.4(2)", "t": "\"Signatories will develop appropriate systemic risk scenarios… for each identified systemic risk (pursuant to Measure 2.1)\"; Measure 2.1 obliges \"compiling a list of risks that could stem from the model and be systemic, based on the types of risks in Appendix 1.1\"; and Appendix 1.4(2) names \"Loss of control: Risks from humans losing the ability to reliably direct, modify, or shut down a model\" as one of those types. So the duty reaches loss-of-control scenarios specifically, not risk scenarios in general. ⚠ Attaches via market placement; whether internal-only use counts is contested.", "k": "law"}, {"r": "OpenAI (Frontier Governance Framework §2.1)", "t": "\"structured processes to identify systemic risks stemming from our frontier models and to develop risk scenarios and threat models through which these systemic risks may develop or materialize\".", "k": "framework"}, {"r": "OpenAI (Preparedness Framework §2.2)", "t": "\"For each Tracked Category, we develop and maintain a threat model identifying specific risks of severe harms that could arise from the frontier capabilities in that domain\". ⚠ Loss of control is not a Tracked Category; AI self-improvement is.", "k": "framework"}, {"r": "Meta (Advanced AI Scaling Framework §2.1.1)", "t": "\"we conduct periodic threat modeling exercises as a proactive measure to anticipate catastrophic risks from our Frontier AI\".", "k": "framework"}, {"r": "Microsoft (Frontier Governance Framework §2)", "t": "\"For each tracked high-risk capability, we conduct risk modeling to guide our red teaming and evaluation practices.\" ⚠ Appendix I gives loss of control no capability threshold, while CBRN, cyber and autonomy each get one.", "k": "framework"}, {"r": "xAI (Frontier AI Framework §2.1)", "t": "\"We systematically identify failure modes that could originate from our models, characterize those modes, and determine which present significant or unmitigated risk.\"", "k": "framework"}], "flag": "No"}, {"id": "q06", "g": "m1", "q": "Has the company concluded a capability threshold was not reached without sufficient evidence?", "rules": [{"r": "OpenAI (Frontier Governance Framework §2.3)", "t": "\"out of an abundance of caution we have treated models as crossing a capability threshold in circumstances where we are unable to rule out that a new threshold had been reached, even in the absence of direct evidence\". Also: \"passing them does not establish that the threshold has actually been reached\".", "k": "framework"}, {"r": "Meta (Advanced AI Scaling Framework §4.2.3)", "t": "two enhanced criteria are satisfied by \"or we cannot rule out the presence of such evasion capability with reasonable confidence\" — inability to rule out counts as presence.", "k": "framework"}], "flag": "Yes", "help": "With capability thresholds we mean any of the previously mentioned thresholds (automating & accelerating AI R&D, autonomous cyber operations, evading oversight)."}, {"id": "q07", "g": "m45", "q": "After a capability threshold was crossed, was the development and/or use of the model paused until stronger safeguards were in place?", "rules": [{"r": "EU Code of Practice, Measure 4.2", "t": "\"Signatories will only proceed with the development, the making available on the market, and/or the use of the model, if the systemic risks stemming from the model are determined to be acceptable.\"", "k": "law"}, {"r": "Meta (Advanced AI Scaling Framework Table 1, Critical)", "t": "\"Proceed with development of the Frontier AI only if catastrophic risks are within acceptable levels.\" ⚠ Appendix II records this measure was changed from \"Stop\" in v1.", "k": "framework"}, {"r": "OpenAI (Preparedness Framework Table 1)", "t": "at Critical in bio/chem, cyber and self-improvement alike: \"Until we have specified safeguards and security controls that would meet a Critical standard, halt further development.\" ⚠ This limb is about development specifically — holding the model back from use does not satisfy it. The document does not say whether \"further development\" means this model or the capability line.", "k": "framework"}, {"r": "OpenAI (Preparedness Framework §1)", "t": "\"We do not deploy models that reach a High capability threshold until the associated risks that they pose are sufficiently minimized.\"", "k": "framework"}, {"r": "Amazon (Frontier Model Safety Framework §2–§3)", "t": "\"When a maximal capability evaluation indicates that a model has hit a Critical Capability Threshold, we will not deploy the model until we have implemented appropriate safeguards.\" ⚠ Ten of twelve gate sentences in this document are unqualified as to \"publicly\"; the headline commitment on p. 1 is one of them.", "k": "framework"}, {"r": "Meta (Advanced AI Scaling Framework Table 1, High and Critical)", "t": "\"Proceed with deployment of the Frontier AI only if sufficient mitigations are defined, implemented and validated to reduce risk to that of a moderate or lower model.\" Appendix I defines deployment to include internal deployment. ⚠ The same appendix adds that \"Not all actions or requirements described in the Framework apply to every deployment type\", and §4.2.2 has two gates expressly scoped \"externally\".", "k": "framework"}], "flag": "No", "gate": "ABC", "help": "With capability thresholds we mean any of the previously mentioned thresholds (automating & accelerating AI R&D, autonomous cyber operations, evading oversight)."}, {"id": "q08", "g": "m45", "q": "After a capability threshold was crossed, did the company tighten security around the model's weights?", "rules": [{"r": "Google DeepMind (Frontier Safety Framework Table 3.2.2.a)", "t": "recommended security level 3 at the acceleration threshold, level 4 at automation, the latter needing \"exceptional security even though they may have substantial innovation costs\". ⚠ \"Recommend\", explicitly to the field.", "k": "framework"}, {"r": "Meta (Advanced AI Scaling Framework Table 1, Critical)", "t": "\"Initiate protocols for heightened access controls to model weights as overseen by the Chief AI Officer and/or Director of Alignment and Risk\". ⚠ Qualified by \"insofar as is technically feasible and commercially practicable\".", "k": "framework"}, {"r": "Microsoft (Frontier Governance Framework §4)", "t": "at high risk: \"security measures protective against most cybercrime groups and insider threats\", weight access \"limited to… core research and for safety and security teams\", weights encrypted.", "k": "framework"}, {"r": "OpenAI (Preparedness Framework Table 1)", "t": "High in self-improvement and in cyber both \"Require security controls meeting High standard\".", "k": "framework"}], "flag": "No", "help": "With capability thresholds we mean any of the previously mentioned thresholds (automating & accelerating AI R&D, autonomous cyber operations, evading oversight).", "gate": "ABC"}, {"id": "q09", "g": "m6", "q": "Were the model's dangerous capability evaluations designed to elicit maximal capability?", "rules": [{"r": "EU Code of Practice, Appendix 3.2(1)", "t": "elicitation must use \"at least state-of-the-art techniques that… minimise the risk of under-elicitation\".", "k": "law"}, {"r": "OpenAI (Preparedness Framework §3.1)", "t": "evaluations use \"the highest-capability tier of system settings… a version of the model that has a negligible rate of safety-based refusals on our Tracked Category capability evaluations (which may require a separate model variant), and with the best presently-available scaffolds\".", "k": "framework"}, {"r": "Microsoft (Frontier Governance Framework §3)", "t": "elicitation includes \"fine-tuning the model to improve performance on the capability being evaluated or ensuring the model is prompted and scaffolded to enhance the tracked capability — for example, by using a multi-agent setup, leveraging prompt optimization, or connecting the model to whichever tools and plugins will maximize its performance\".", "k": "framework"}, {"r": "EU AI Act Art 55(1)(a)", "t": "model evaluation \"in accordance with standardised protocols and tools reflecting the state of the art, including conducting and documenting adversarial testing of the model\". ⚠ Attaches via market placement; whether internal-only use counts is contested.", "k": "law"}], "flag": "No", "help": "Best available scaffolding and tools, and ensuring the capability isn't hidden by safety training."}, {"id": "q10", "g": "m6", "q": "Was the model evaluated in a setting that resembles actual deployment?", "rules": [{"r": "EU Code of Practice, Appendix 3.2(2)", "t": "evaluations must \"match the expected use context (e.g. equivalent scaffolding and/or tool access) of the model, as informed by integrations into AI systems that are… planned or considered for the model\".", "k": "law"}, {"r": "Meta (Advanced AI Scaling Framework §2.2.1)", "t": "\"capturing the upper bound of risk by evaluating the model as part of a system with scaffolding and tooling available for the proposed deployment scenario\". ⚠ Hybrid: upper-bound framing, use-context object. And §4.2.1 exempts internal deployment from it for cybersecurity — \"we assess capabilities on the base model\" — so the two cannot both hold for an internally deployed model with scaffolding. ⚠ Preparedness reports are triggered by a closed or open release, so for a model that is never released this is a comparison rather than a requirement — though the report's content, when one exists, must reach back over internal deployments.", "k": "framework"}], "flag": "No"}, {"id": "q11", "g": "m6", "q": "Were the model's dangerous capability evaluations designed to catch it underperforming on purpose?", "rules": [{"r": "EU Code of Practice, Appendix 3.2", "t": "elicitation must use \"at least state-of-the-art techniques that… (2) minimise the risk of model deception during model evaluations (e.g. sandbagging)\". The Glossary defines deception to include \"a model's detecting that it is being evaluated and under-performing or otherwise undermining oversight\".", "k": "law"}, {"r": "Meta (Advanced AI Scaling Framework §4.1)", "t": "\"We also account for model capabilities and propensities that might undermine the reliability of model evaluation results, such as whether a model can identify when it is being evaluated and, in such cases, selectively adapt its outputs.\"", "k": "framework"}, {"r": "Meta (Advanced AI Scaling Framework §4.2.3)", "t": "gives the method: compare \"performance on target evaluations… substantially different from control evaluations (with reasonable confidence levels)\".", "k": "framework"}, {"r": "OpenAI (Preparedness Framework §2.3, Table 2)", "t": "the stated response to sandbagging: \"Adopt elicitation approach that overcomes sandbagging, or use a conservative upper bound of the model's non-sandbagged evaluation results\". ⚠ A research category, expressly not threshold-bearing.", "k": "framework"}], "flag": "No", "help": "This is often called \"sandbagging\"."}, {"id": "q12", "g": "m6", "q": "Did the people who evaluated the model get sufficient access, time and compute?", "rules": [{"r": "EU Code of Practice, Appendix 3.4", "t": "evaluation teams must get \"adequate access to the model… including, as appropriate, access to model activations, gradients, logits… chains-of-thought… and access to the model version(s) with the fewest safety mitigations implemented (such as a helpful-only model version, if it exists)\"; \"a period of at least 20 business days is appropriate for most systemic risks\"; and \"adequate compute budgets… adequate staffing; and… adequate engineering budgets and support\".", "k": "law"}, {"r": "EU Code of Practice, Measure 8.2", "t": "those with assigned risk responsibilities must receive \"human resources… financial resources… access to information and knowledge; and… computational resources\".", "k": "law"}, {"r": "Anthropic (Responsible Scaling Policy §4)", "t": "the Responsible Scaling Officer's duties include \"overseeing the implementation of this policy, including the allocation of sufficient resources\".", "k": "framework"}, {"r": "Meta (Advanced AI Scaling Framework §2.3)", "t": "the Chief AI Officer \"will ensure that the Director of Alignment and Risk has resources, including human, financial, and computational resources, sufficient to perform state-of-the-art risk mitigation and assessment\".", "k": "framework"}], "flag": "No", "help": "For example, access to the model's internals and chain-of-thought, enough time to run and analyze the evaluations, and compute to elicit full capabilities and to run the evaluations enough times."}, {"id": "q13", "g": "m6", "q": "Has the model been evaluated since anything material about the model or its deployment context was changed?", "rules": [{"r": "EU Code of Practice, Measure 1.2", "t": "continuous assessment \"along the entire model lifecycle\", at trigger points defined by \"time, training compute, development stages, user access, inference compute, and/or affordances\".", "k": "law"}, {"r": "Microsoft (Frontier Governance Framework §3)", "t": "a leading-indicator assessment runs \"during pre-training, after pre-training is complete, after post-training, and prior to deployment\", and at least every six months thereafter; and additionally \"when Microsoft substantially fine-tunes first- or third-party models, where the compute used for fine-tuning is more than 1/3 of the base model\".", "k": "framework"}, {"r": "Meta (Advanced AI Scaling Framework §2.2.2)", "t": "\"We will update a preparedness report promptly when there is a change in circumstances that materially alters our previous risk assessment\", giving as examples a major incident or the model being \"deployed with more affordances relative to prior versions\". ⚠ Replaced the §3.3.1 bullet on 2026-08-13: that provision is a *presumption of inheritance* dispensing with re-assessment for non-material fine-tuning, scaffolding and tool integration, so a \"no\" here would have been compliant with the rule cited against it.", "k": "framework"}, {"r": "Amazon (Frontier Model Safety Framework §2)", "t": "\"We will re-evaluate deployed models prior to any major updates that could meaningfully enhance underlying capabilities.\"", "k": "framework"}], "flag": "No", "help": "Changes here include e.g. further fine-tuning, new tools, more inference compute, or wider access."}, {"id": "q14", "g": "m6", "q": "Has anyone outside the company evaluated this model?", "rules": [{"r": "EU Code of Practice, Appendix 3.5", "t": "independent external evaluators must evaluate, unless the model is a similarly-safe reference model or no qualified evaluator could be appointed \"despite using early search efforts\"; and signatories \"will not undermine the integrity of external model evaluations by storing and/or analysing inputs and/or outputs from test runs without express permission\".", "k": "law"}, {"r": "Anthropic (Responsible Scaling Policy §3.6)", "t": "a significantly redacted Risk Report covering \"highly capable\" models requires full external review; reviewers must have no financial interest, are approved by the LTBT, and \"will not be restricted in what they can publish, including concerns about… Anthropic's conduct\".", "k": "framework"}, {"r": "Microsoft (Frontier Governance Framework §3)", "t": "\"We engage qualified third parties to conduct evaluations in ways that are appropriate to the risk profile of the model.\"", "k": "framework"}], "flag": "No", "help": "An independent evaluator given access, a third party reviewing testing done internally, or an external reviewer of the risk documentation."}, {"id": "q15", "g": "m2", "q": "Are the model's weights protected against exfiltration?", "rules": [{"r": "EU Code of Practice, Appendix 4.2", "t": "\"Signatories will protect unreleased model parameters by implementing security mitigations that achieve the following mitigation objectives\", the first being \"accountability over all copies of stored model parameters across all devices and locations\". The general protection duty; 4.4 below is the insider-specific one.", "k": "law"}, {"r": "EU Code of Practice, Appendix 4.4", "t": "\"Signatories will protect against insider threats, including in the form of (self-)exfiltration or sabotage carried out by models\", via background checks on anyone with read or write access to unreleased model parameters, insider-threat training, \"sandboxes around models\" against self-exfiltration, and training-data tampering checks. The Glossary defines insider threats as \"hostile operations by humans, AI models, and/or AI systems… with access to sensitive organisational resources, and/or accidental model leakage\".", "k": "law"}, {"r": "EU Code of Practice, Measure 6.2", "t": "carries the outsider limb: \"Signatories will implement appropriate security mitigations to meet the Security Goal, including the security mitigations pursuant to Appendix 4\", the Goal itself (Measure 6.1) having to name \"non-state external threats, insider threats, and other expected threat actors\". ⚠ Commitment 6 applies \"until [the model's] parameters are made publicly available for download or securely deleted\" — a duty of general application over closed-weight models, not an internal-deployment duty.", "k": "law"}, {"r": "EU AI Act Art 55(1)(d)", "t": "\"ensure an adequate level of cybersecurity protection for the general-purpose AI model with systemic risk and the physical infrastructure of the model\". ⚠ Recital 115 glosses this to cover \"accidental model leakage, unauthorised releases, circumvention of safety measures… unauthorised access or model theft\". ⚠ Attaches via market placement; whether internal-only use counts is contested.", "k": "law"}, {"r": "Meta (Advanced AI Scaling Framework §4.2)", "t": "nearest company match to the statutory wording: \"we maintain processes to ensure our model weight security meets a baseline of controls to protect model weights from exfiltration or tampering by internal and external threat actors.\" ⚠ Scoped to \"Frontier AI models we release under this Framework\".", "k": "framework"}, {"r": "Google DeepMind (Frontier Safety Framework §2.1, §2.1.1, §3.1.1)", "t": "\"security mitigations intended to prevent the exfiltration or unauthorized modification of model weights\", by \"identity and access management practices and hardening interface-access to unreleased model parameters\", at security levels set per CCL. ⚠ The levels are aligned to RAND only loosely and by GDM's express disclaimer: fn 6 says \"we are referring to the security goals and principles in the RAND framework, rather than the benchmarks (i.e. concrete measures)\". Do not read the RAND OC/SL references as an external compliance yardstick. §3.1.1 adds that \"Security mitigations also protect against the risk of the model exfiltrating itself.\"", "k": "framework"}, {"r": "Microsoft (Frontier Governance Framework §4 \"Security measures\", p. 7)", "t": "controls tiered to risk level; at high risk, \"Examples of requirements for models having a high-risk score include\" — \"Restricted access, including access control list hygiene and limiting access to weights of the most capable models other than for core research and for safety and security teams\"; \"Model weights are encrypted\"; red teaming \"to reasonably simulate relevant threat actors seeking to steal the model weights\". ⚠ Critical-risk controls are future-tense (\"will likely include… physical bandwidth limitations between devices or networks containing weights and the outside world\").", "k": "framework"}, {"r": "xAI (Frontier AI Framework §2.4)", "t": "\"encryption of model weights, role-based access controls, and real-time monitoring to prevent unauthorized transfer\", plus measures \"against the large-scale extraction and distillation of reasoning traces\".", "k": "framework"}, {"r": "Amazon (Frontier Model Safety Framework §3, p. 3)", "t": "\"Security Measures are designed to prevent unauthorized access to model weights or guardrails implemented as part of the Safety Measures, which could enable a malicious actor to remove or bypass existing guardrails to exceed Critical Capability Thresholds\", backed by the most detailed control list in the corpus: hardware-based multi-factor authentication, \"two-person rules for more sensitive operations\", zero-trust privilege revocation, and \"strong separation of duties and least-privilege access\".", "k": "framework"}], "flag": "No", "help": "The appropriate security level is defined differently across documents. For loss of control arising from internal deployment, the main relevant actor to protect the weights from is the model itself."}, {"id": "q16", "g": "m2", "q": "Is the internal deployment monitored?", "rules": [{"r": "OpenAI (Preparedness Framework App C.2)", "t": "examples of potential safeguards: \"Agent actions are all logged in an uneditable database, and asynchronous monitoring routines review those actions for evidence of harm\"; \"Monitor AI supervises agent actions\"; \"System forces human approval of agent actions\".", "k": "framework"}, {"r": "Google DeepMind (Frontier Safety Framework §3.2.1)", "t": "past the Stealth threshold, where residual internal-deployment risk is judged unacceptable without added safeguards \"(such as chain-of-thought monitoring on high-risk deployments), these will be applied\". ⚠ Self-assessed condition.", "k": "framework"}, {"r": "Meta (Advanced AI Scaling Framework §2.2.2)", "t": "\"We will also regularly assess the potential for catastrophic risk from internal use of Frontier AI models and, as appropriate, provide relevant authorities with a summary of these assessments through an internal-use risk report\", which \"will describe evidence regarding risks from internal use… particularly relying on monitoring and preparedness evaluations tied to internal deployment threat models\". No capability trigger.", "k": "framework"}], "flag": "No", "help": "For instance, are the model's actions logged and/or monitored by other AI systems? Is chain-of-thought monitoring used?"}, {"id": "q17", "g": "m8", "q": "Does the company have a designated party that approves internal deployments?", "rules": [{"r": "EU Code of Practice, Measure 8.1", "t": "\"Signatories will clearly define responsibilities for managing the systemic risks stemming from their models across all levels of the organisation\", naming systemic risk oversight and ownership as two of the four, and requiring them to be allocated across levels up to \"the management body in its supervisory function or another suitable independent body (such as a council or board)\". ⚠ The duty is to define responsibility for managing systemic risk, not specifically to name a deployment approver — so it grounds \"someone is designated\" more squarely than \"someone approves\".", "k": "law"}, {"r": "Meta (Advanced AI Scaling Framework §2.1.3, §2.3)", "t": "\"the Chief AI Officer or the Director of Alignment and Risk will determine whether to… approve the model for deployment\"; deployment follows \"the approval of the Chief AI Officer\". ⚠ The bullet's bridge — Appendix I defining deployment to include internal deployment — is qualified by the next sentence of the same definition: \"Not all actions or requirements described in the Framework apply to every deployment type\".", "k": "framework"}, {"r": "Google DeepMind (Frontier Safety Framework §3.1.2)", "t": "\"external deployments and high-risk internal deployments of a model take place only after the appropriate governance function determines the residual risk to be acceptable\". ⚠ \"The appropriate governance function\" is used four times in the document and defined nowhere.", "k": "framework"}, {"r": "Anthropic (Responsible Scaling Policy §3.4)", "t": "\"The CEO and RSO will make the ultimate determination regarding the adequacy of the risk assessment and any downstream deployment or development plans.\"", "k": "framework"}, {"r": "OpenAI (Preparedness Framework §1, App B)", "t": "the Safety Advisory Group recommends; \"OpenAI Leadership can approve or reject these recommendations\". ⚠ App B adds that leadership \"can also make decisions without the SAG's participation, i.e., the SAG does not have the ability to 'filibuster'\".", "k": "framework"}], "flag": "No", "help": "Any named person or body that decides whether models can be used internally."}, {"id": "q18", "g": "m8", "q": "Has the company written a justification for why this model's risks are acceptable?", "rules": [{"r": "EU Code of Practice, Measure 7.2(1)", "t": "the Model Report must contain \"a detailed justification for why the systemic risks stemming from the model are acceptable, including details of the safety margins incorporated (pursuant to Measure 4.1)\". ⚠ Attaches via market placement; whether internal-only use counts is contested. For a model that is on the market, Art 55(1)(b) reaches its \"use\".", "k": "law"}, {"r": "OpenAI (Frontier Governance Framework §2.5)", "t": "\"We document a justification for why the systemic risks stemming from the model are acceptable\". ⚠ Near-verbatim Measure 7.2(1) — this framework is OpenAI's Code of Practice public summary, so this restates the source above rather than adding a second instrument.", "k": "framework"}, {"r": "Google DeepMind (Frontier Safety Framework §1.3.4)", "t": "models reaching a critical level get a residual risk assessment \"informed by a supplemental safety case\".", "k": "framework"}], "flag": "No"}, {"id": "q19", "g": "m8", "q": "Does the justification say what would change its conclusion?", "rules": [{"r": "EU Code of Practice, Measure 7.2(2)", "t": "the report must state \"the reasonably foreseeable conditions under which the justification… would no longer hold\". ⚠ Attaches via market placement; whether internal-only use counts is contested.", "k": "law"}, {"r": "OpenAI (Frontier Governance Framework §2.5)", "t": "the justification must include \"reasonably foreseeable conditions under which the justification may no longer hold\".", "k": "framework"}], "flag": "No", "fu": "q18"}, {"id": "q20", "g": "m8", "q": "Have the evaluation results reached senior leadership?", "rules": [{"r": "Amazon (Frontier Model Safety Framework p. 5)", "t": "the evaluating team \"will report to Amazon senior leadership any evaluation that exceeds the Critical Capability Threshold… to the SVP for the model development team, the Chief Security Officer, and legal counsel\".", "k": "framework"}, {"r": "Anthropic (Responsible Scaling Policy §3.4)", "t": "\"The Risk Report, along with the internal feedback and any available external feedback, will be sent to the CEO and Responsible Scaling Officer.\"", "k": "framework"}, {"r": "Microsoft (Frontier Governance Framework §5)", "t": "documentation plus a written case goes to \"Executive Officers responsible for Microsoft's AI governance program\", who are \"responsible for assessing that the recommendation… ha[s] been developed in a good faith attempt to determine the ultimate capabilities of the model\".", "k": "framework"}], "flag": "No"}, {"id": "q21", "g": "b_inc", "q": "Does the company have a plan for responding to incidents?", "rules": [{"r": "EU Code of Practice, Commitment 9", "t": "Signatories \"commit to implementing appropriate processes and measures for keeping track of, documenting, and reporting… relevant information about serious incidents along the entire model lifecycle and possible corrective measures to address them\". ⚠ Attaches via market placement; whether internal-only use counts is contested.", "k": "law"}, {"r": "OpenAI (Frontier Governance Framework §2.6)", "t": "\"OpenAI maintains an AI Safety Incident Response Plan (AIRP) that outlines OpenAI's plan for identifying and responding to AI safety incidents.\" The only framework in the corpus naming its plan.", "k": "framework"}, {"r": "Meta (Advanced AI Scaling Framework §2.3.2)", "t": "\"We maintain a comprehensive global incident response program, including identifying incidents from both internal and external sources, and reporting critical incidents as appropriate.\"", "k": "framework"}, {"r": "Microsoft (Frontier Governance Framework §4)", "t": "where serious or critical incidents are identified, \"we operationalize incident response policies and processes, conduct investigations… apply mitigations and remediation, and manage after-action reviews\".", "k": "framework"}, {"r": "xAI (Frontier AI Framework §3)", "t": "\"xAI has measures in place to detect, investigate and remediate, as appropriate, serious AI safety incidents.\" ⚠ None of these five duties is scoped to loss of control — they cover safety incidents generally, so a plan that exists but does not contemplate loss of control still satisfies them.", "k": "framework"}], "flag": "No"}, {"id": "q22", "g": "b_inc", "q": "Has the model done something unlawful?", "rules": [{"r": "California SB 53 §22757.11(c)(1)(B)", "t": "catastrophic risk covers \"engaging in conduct with no meaningful human oversight, intervention, or supervision that is either a cyberattack or, if the conduct had been committed by a human, would constitute the crime of murder, assault, extortion, or theft, including theft by false pretense\".", "k": "law"}, {"r": "OpenAI (Frontier Governance Framework §2.1)", "t": "its loss-of-control category expressly covers \"autonomous conduct that, if conducted by a human, would constitute a crime of murder, assault, extortion, or theft\".", "k": "framework"}, {"r": "New York RAISE §1420.3(a)(ii)", "t": "the identical formulation, word for word. ⚠ Not in force until 1 January 2027.", "k": "law"}, {"r": "New York RAISE §1424", "t": "\"The duties and obligations imposed by this article are cumulative with any other duties or obligations imposed under other law\" — textual warrant that generally-applicable law is not displaced by the AI-specific regime. ⚠ Not in force until 1 January 2027.", "k": "law"}], "flag": "Yes", "help": "For instance, whether the model has conducted fraud or achieved unauthorised access to systems."}, {"id": "q23", "g": "b_inc", "q": "Has the model undermined its oversight?", "rules": [{"r": "California SB 53 §22757.11(d)(4) + §22757.13(c)", "t": "a legally defined critical safety incident: \"deceptive techniques against the frontier developer to subvert the controls or monitoring of its frontier developer outside of the context of an evaluation designed to elicit this behavior and in a manner that demonstrates materially increased catastrophic risk\"; reportable in 15 days, 24 hours where danger is imminent.", "k": "law"}, {"r": "OpenAI (Frontier Governance Framework §1)", "t": "internal deployment is scoped in \"in some cases… with respect to risks resulting from circumventing oversight mechanisms\".", "k": "framework"}, {"r": "New York RAISE §1420.4(d) + §1422.3", "t": "identical definition; 72 hours from determination *or* from \"learning facts sufficient to establish a reasonable belief\". ⚠ The clock cannot be stopped by declining to determine. In force 2027. ⚠ Not in force until 1 January 2027.", "k": "law"}], "flag": "Yes"}, {"id": "q24", "g": "b_inc", "q": "Is there something authorities should know about the model but that they don't?", "rules": [{"r": "California SB 53 §22757.13", "t": "15 days; the state's report form asks \"whether the incident was associated with internal use of a frontier model\".", "k": "law"}, {"r": "EU Code of Practice, Measure 9.2", "t": "the report must include \"a root cause analysis… including the inputs used and any failures or circumventions of systemic risk mitigations\".", "k": "law"}, {"r": "EU AI Act Art 55(1)(c)", "t": "systemic-risk model providers must \"keep track of, document, and report, without undue delay, to the AI Office… relevant information about serious incidents\". ⚠ Unlike Art 73(1), this carries no market-placement condition — the strongest textual reach to an internal model in the Regulation. But \"serious incident\" is defined at Art 3(49) against an *AI system*, and all four limbs require realised external harm. ⚠ Attaches via market placement; whether internal-only use counts is contested.", "k": "law"}], "flag": "Yes", "help": "Both California SB 53 and the EU Code of Practice mandate reporting serious incidents."}, {"id": "q25", "g": "b_pub", "q": "Has the company made a false or misleading statement about the model or its risks (publicly or to authorities)?", "rules": [{"r": "California SB 53 §22757.12(e)", "t": "no \"materially false or misleading statement about catastrophic risk… or its management\"; for large developers, none about \"implementation of, or compliance with, its frontier AI framework\". Good-faith exception.", "k": "law"}, {"r": "EU AI Act Arts 101(1)(b), 99(5)", "t": "supplying \"incorrect, incomplete or misleading information\" to the Commission or a national authority is fineable. ⚠ No market-placement condition visible in Art 101's own text.", "k": "law"}, {"r": "Anthropic (Responsible Scaling Policy §3.2)", "t": "practices must stay in line with what Risk Reports describe, \"or track and report noteworthy changes and deviations\".", "k": "framework"}, {"r": "New York RAISE §1421.4(a)(i)", "t": "binds all frontier developers, unconditional on size, deployment or internal/external. ⚠ Not in force until 1 January 2027.", "k": "law"}], "flag": "Yes"}, {"id": "q26", "g": "b_pub", "q": "Has the safety framework been changed without a published justification?", "rules": [{"r": "California SB 53 §22757.12(b)(2)", "t": "material modifications published with a justification within 30 days.", "k": "law"}, {"r": "EU Code of Practice, Measure 1.3", "t": "every update carries \"a changelog, describing how and why the Framework has been updated, along with a version number and the date of change\".", "k": "law"}, {"r": "OpenAI (Frontier Governance Framework §7.1)", "t": "\"changes and justifications for material updates documented in a changelog and published within 30 days\". ⚠ The one commitment where an insider's private knowledge (the internal change date) and the public record can be directly diffed.", "k": "framework"}, {"r": "Meta (Advanced AI Scaling Framework §5.1)", "t": "\"we will publish a timely update that includes a justification for the modification, as recorded in the change log\". ⚠ Appendix II records the v1→v2 removal of the stop condition and gives no justification for it.", "k": "framework"}, {"r": "New York RAISE §1421.2(b)", "t": "identical, in force 2027. ⚠ Not in force until 1 January 2027.", "k": "law"}], "flag": "Yes"}];
 const SOURCES = [["Law", "California SB 53 — Transparency in Frontier Artificial Intelligence Act", "Stats. 2025 ch. 138; in force 1 Jan 2026", ""], ["Law", "New York RAISE Act — Article 44-B", "as replaced by ch. 96 of 2026 (S8828)", "Not in force until 1 Jan 2027"], ["Law", "EU AI Act — Regulation (EU) 2024/1689", "OJ L 2024/1689, 12 July 2024", ""], ["Law", "GPAI Code of Practice — Safety and Security Chapter", "final version, published 10 July 2025", ""], ["Framework", "Anthropic — Responsible Scaling Policy", "version 3.4, effective 8 July 2026", ""], ["Framework", "OpenAI — Preparedness Framework", "version 2, last updated 15 April 2025", ""], ["Framework", "OpenAI — Frontier Governance Framework", "undated", "No version or date printed anywhere in the document"], ["Framework", "Google DeepMind — Frontier Safety Framework", "version 3.1, published 17 April 2026", ""], ["Framework", "Meta — Advanced AI Scaling Framework", "version 2, April 2026", ""], ["Framework", "Microsoft — Frontier Governance Framework", "February 2026 edition", ""], ["Framework", "Amazon — Frontier Model Safety Framework", "February 2025, unchanged since", "No version number in the document"], ["Framework", "xAI — Frontier AI Framework", "effective 30 June 2026", ""], ["Taxonomy", "METR — Common Elements of Frontier AI Safety Policies", "December 2025 (12-developer edition)", ""]];
-const NEXTSTEPS = {"leadA": "", "leadB": "", "steps": []};
+const NEXTSTEPS = {"lead": "<p>What you have seen may be worth acting on. Below are some suggestions for what you could do next, along with links to resources.</p>", "steps": [{"t": "Take care of your security.", "b": "<p>Your employer may monitor your work equipment. Move to a personal device and a personal account before you start doing any actions, such as searching for anything or contacting organizations listed below.</p><p><a href=\"https://aiwi.org/technology/\">The AI insider’s OpSec & Privacy Toolkit</a></p>"}, {"t": "Document evidence.", "b": "<p>Collect a clear chronological timeline of the concerning things you've observed, documenting dates of the suspected wrongdoing and the attempts you've made to address the issue internally. Focus on factual information rather than opinions, and be specific about what rules or laws you believe are being violated.</p>"}, {"t": "Seek advice.", "b": "<p>Seek legal advice early, before making any disclosure. This makes it more likely your actions remain protected under whistleblowing laws. Various organizations offer <a href=\"https://aiwi.org/ai-whistleblower-defense-fund/\">pro bono legal support</a> for whistleblowers.</p><p>If you're unsure of the scale of the wrongdoing you have witnessed, you can get external support for figuring this out. <a href=\"https://aiwi.org/third-opinion/\">Third Opinion</a> lets you get advise from independent experts without having to reveal sensitive information. <a href=\"https://psst.org/safe\">Psst Safe</a>, on the other hand, enables anonymous \"collective whistleblowing\" by matching similar reports. <a href=\"https://aiwi.org/contact-hub/\">Other kinds of support</a> are available as well, such as psychological and career support.</p>"}]};
 
 const $=s=>document.querySelector(s), pane=$("#pane");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -413,18 +682,16 @@ function renderSum(){
   if(!answered) html+=`<p class="help" style="margin:0">Nothing answered yet.</p>`;
 
   html+=`<div class="note howto" style="margin-top:22px"><b>How to read the rules.</b>${HOWTOREAD}</div></div>`;
-  html+=nextStepsHTML(answered, flagged.length>0);
+  html+=nextStepsHTML(answered);
   pane.innerHTML=html;
 }
 
-// The ending. Two states: `implicated` once any answer put a rule in play, `nothing`
-// otherwise. A step marked "both" appears in either. The whole block is absent from the
-// build until NEXT_STEPS_LIVE is switched on, so this is a no-op until then.
-function nextStepsHTML(answered, implicated){
+// The ending. State-agnostic by design: the same steps show whatever the answers
+// were, so nothing here branches on the result. Absent from the build entirely while
+// NEXT_STEPS_LIVE is False.
+function nextStepsHTML(answered){
   if(!answered) return "";
-  const state = implicated ? "implicated" : "nothing";
-  const steps = (NEXTSTEPS.steps||[]).filter(s=>s.s===state||s.s==="both");
-  const lead  = implicated ? NEXTSTEPS.leadA : NEXTSTEPS.leadB;
+  const steps = NEXTSTEPS.steps||[], lead = NEXTSTEPS.lead||"";
   if(!steps.length && !lead) return "";
   let h=`<div class="card nextsteps"><div class="stage">What you could do next</div>`;
   if(lead) h+=`<div class="nslead">${lead}</div>`;
@@ -479,27 +746,39 @@ render();
      name so the two tools' responses stay separable in one sheet). Nothing else ever
      leaves the page. All widget copy is Claude placeholder pending Santeri's wording. -->
 <style>
-  #fbBtn{position:fixed;right:18px;bottom:18px;z-index:60;font-family:var(--display);
-    background:var(--accent-deep);color:#fff;border:none;border-radius:999px;
-    padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:var(--shadow);}
-  #fbBtn:hover{background:var(--accent);}
-  #fbPanel{position:fixed;right:18px;bottom:70px;z-index:60;width:min(340px,calc(100vw - 36px));
-    background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
-    padding:16px;display:none;}
-  #fbPanel h4{margin:0 0 8px;font-family:var(--display);color:var(--ink);font-size:15px;}
-  #fbText{width:100%;box-sizing:border-box;min-height:110px;resize:vertical;border:1px solid var(--line);
-    /* not the `font:` shorthand — "inherit" is read there as a family NAME, so the box
-       fell back to the browser's default textarea face instead of Inter. */
-    border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13.5px;line-height:1.45;
-    color:var(--ink);background:#fff;}
-  #fbText:focus{outline:none;border-color:var(--accent);}
-  #fbNote{font-size:11.5px;color:var(--muted);margin:8px 0 10px;line-height:1.45;}
-  #fbRow{display:flex;gap:8px;align-items:center;}
-  #fbSend{background:var(--accent-deep);color:#fff;border:none;border-radius:8px;
-    padding:8px 16px;font-size:13.5px;font-weight:600;cursor:pointer;}
-  #fbSend:disabled{opacity:.5;cursor:default;}
-  #fbClose{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;margin-left:auto;}
-  #fbDone{font-size:13px;color:var(--less);display:none;}
+  /* Squared onto the same system as everything else. This is the ONE place the
+     skin still uses a shadow: the widget floats above the page, so a hairline
+     alone would not lift it. Value is AIWI's own card shadow [3rd].
+     The paper swap barely touches this block — the panel is the only surface in the
+     study whose separation was never resting on its fill, because the shadow was
+     always doing it. Which is the whole finding, stated in miniature. */
+  #fbBtn{position:fixed;right:20px;bottom:20px;z-index:60;font-family:var(--display);
+    background:var(--ink);color:var(--card);border:1.5px solid var(--ink);border-radius:var(--r);
+    padding:12px 22px;font-size:14px;font-weight:500;min-height:44px;cursor:pointer;
+    box-shadow:var(--shadow);transition:background .12s ease,border-color .12s ease;}
+  #fbBtn:hover{background:var(--accent-deep);border-color:var(--accent-deep);}
+  #fbPanel{position:fixed;right:20px;bottom:76px;z-index:60;width:min(360px,calc(100vw - 40px));
+    background:var(--card);border:1px solid var(--rule);border-radius:var(--r);
+    box-shadow:var(--shadow);padding:20px;display:none;}
+  #fbPanel h4{margin:0 0 12px;font-family:var(--display);color:var(--accent-deep);
+    font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;}
+  /* a field is a control: --ink-50, 3.15:1 on the white panel, not the .16 divider weight */
+  #fbText{width:100%;box-sizing:border-box;min-height:110px;resize:vertical;
+    border:1px solid var(--ink-50);border-radius:var(--r);padding:10px 12px;
+    font-family:inherit;font-size:15px;line-height:1.55;color:var(--ink);background:var(--paper);}
+  #fbText:focus{outline:none;border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);}
+  #fbText:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+  #fbNote{font-size:12px;color:var(--muted);margin:12px 0 16px;line-height:1.55;}
+  #fbRow{display:flex;gap:var(--s1);align-items:center;}
+  #fbSend{background:var(--ink);color:var(--card);border:1.5px solid var(--ink);border-radius:var(--r);
+    padding:10px 20px;font:inherit;font-size:14px;font-weight:500;min-height:42px;cursor:pointer;
+    transition:background .12s ease,border-color .12s ease;}
+  #fbSend:hover:not(:disabled){background:var(--accent-deep);border-color:var(--accent-deep);}
+  #fbSend:disabled{opacity:.4;cursor:default;}
+  #fbClose{background:none;border:1px solid transparent;border-radius:var(--r);
+    color:var(--muted);font:inherit;font-size:14px;padding:8px 10px;cursor:pointer;margin-left:auto;}
+  #fbClose:hover{color:var(--ink);border-color:var(--ink-50);}
+  #fbDone{font-size:14px;color:var(--less);display:none;}
 </style>
 <button id="fbBtn" type="button">Feedback</button>
 <div id="fbPanel" role="dialog" aria-label="Send feedback">
