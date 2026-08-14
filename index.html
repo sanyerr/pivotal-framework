@@ -109,10 +109,6 @@
   header h1{font-family:var(--display);font-size:clamp(28px,3.4vw,42px);font-weight:400;
     letter-spacing:-.02em;line-height:1.12;margin:0 0 var(--s2);color:var(--ink)}
   header p{margin:0;color:rgba(35,28,87,.72);font-size:16px;line-height:1.6;max-width:690px}
-  /* The "— draft question set" subtitle is styled inline in the markup (#c1c3ff), which
-     was tuned for the dark band and measures 1.31:1 on the pale one. Overridden here
-     rather than in the markup, so the CSS-only property of this study is preserved. */
-  header h1 span{color:rgba(35,28,87,.72)!important}
     /* 690px is AIWI's own body measure — max-width:690px appears 16× in aiwi.html. */
 
   /* ── Tab row ───────────────────────────────────────────────────────────── */
@@ -461,7 +457,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Is a rule being broken? <span style="color:#c1c3ff;font-weight:400">— draft question set</span></h1>
+    <h1>Is a rule being broken?</h1>
     <p>Questions about a model deployed inside a frontier AI company, each tied to a specific requirement
     in law or in a company's own published safety framework.</p>
   </header>
