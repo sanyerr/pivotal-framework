@@ -615,8 +615,7 @@ function renderWalk(){
 }
 
 function renderAll(){
-  let html=`<div class="expandbar"><button id="ex-all">Open all</button><button id="col-all">Collapse all</button>
-    <span class="sub" style="margin-left:4px">${QS.length} questions · ${QS.reduce((n,q)=>n+q.rules.length,0)} rule bullets</span></div>`;
+  let html=`<div class="expandbar"><button id="ex-all">Open all</button><button id="col-all">Collapse all</button></div>`;
   GROUPS.forEach(g=>{
     const qs=QS.filter(x=>x.g===g.id);
     if(!qs.length) return;
