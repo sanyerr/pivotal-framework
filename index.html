@@ -227,16 +227,28 @@
      carries rule bullets (.expl here, .si in the summary, .note) uses the same one — one
      fill, one meaning. Border moved --lav2 -> --rule: --lav2 against --lav measured
      1.11:1, i.e. the band had no visible edge at all. --rule gives it 1.55:1. */
+  /* Since 2026-08-24 the band is a <details>: the rules sit on every question BEFORE
+     it is answered (Santeri's call), and collapse so they are not a wall of text.
+     The summary line carries the old h4's eyebrow styling; the caret matches the
+     All-questions rows. */
   .expl{margin-top:var(--s4);background:var(--lav);border:1px solid var(--rule);
-    border-radius:var(--r);padding:var(--s3) var(--s4);animation:fadein .25s ease}
-  @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-  .expl h4{font-family:var(--display);font-size:11px;letter-spacing:.16em;
-    text-transform:uppercase;color:var(--accent-deep);margin:0 0 var(--s2);font-weight:600}
+    border-radius:var(--r)}
+  details.expl>summary{list-style:none;cursor:pointer;display:block;position:relative;
+    padding:14px var(--s4) 14px 38px;font-family:var(--display);font-size:11px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);font-weight:600;
+    transition:background .12s ease}
+  details.expl>summary::-webkit-details-marker{display:none}
+  details.expl>summary:hover{background:var(--lav2)}
+  details.expl>summary::before{content:"▸";position:absolute;left:19px;top:13px;
+    color:var(--accent);font-size:12px;letter-spacing:0;transition:transform .14s;
+    display:inline-block}
+  details.expl[open]>summary::before{transform:rotate(90deg)}
+  .explbody{padding:4px var(--s4) var(--s3)}
   /* `.lead` is emitted by ruleList() in four different parents, so it is styled once
      here and only the summary's own top line overrides it (see .summary>.lead). */
   .lead{font-size:15px;line-height:1.65;margin:0 0 var(--s2);max-width:66ch}
-  /* shown before answering, so it must not re-animate on every re-render */
-  .expl.pre{animation:none;margin-top:var(--s1);margin-bottom:var(--s3)}
+  /* sits between the question and the answer buttons */
+  .expl.pre{margin-top:var(--s1);margin-bottom:var(--s3)}
 
   ul.rlist{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:14px}
   ul.rlist li{font-size:15px;line-height:1.6;padding-left:18px;position:relative;max-width:70ch}
@@ -496,7 +508,9 @@
     .card{padding:var(--s3) 20px var(--s3)}
     aside{padding:var(--s3) 20px;position:static}
     .views{padding:10px 12px}
-    .expl{padding:20px}
+    .explbody{padding:4px 20px 16px}
+    details.expl>summary{padding:12px 20px 12px 34px}
+    details.expl>summary::before{left:15px;top:11px}
     .srcgrid{font-size:14px}
   }
   @media(max-width:400px){
@@ -753,13 +767,12 @@ function renderWalk(){
     ${chips(q)}
     <h2 class="q">${esc(q.q)}</h2>
     ${q.help?`<p class="help">${esc(q.help)}</p>`:""}
-    ${q.anchor?`<div class="expl pre"><h4>The thresholds</h4>${ruleList(q)}</div>`:""}
+    <details class="expl pre"><summary>${q.anchor?"The thresholds":"The rules at stake"} · ${qRules(q).length}</summary>
+      <div class="explbody">${ruleList(q)}</div></details>
     <div class="opts">${["Yes","No","Unsure"].map(o=>`<button class="opt ${a===o?"sel":""}" data-a="${o}">${o}</button>`).join("")}</div>
     <div class="skiprow"><button class="skipbtn ${a==="Skipped"?"on":""}" data-a="Skipped">
       ${a==="Skipped"?"Skipped — this question doesn't apply. Click to un-skip.":"This question doesn't apply to my situation → skip it"}
     </button></div>`;
-  if(a!==undefined && a!=="Skipped" && !q.anchor) html+=`<div class="expl">
-    <h4>The rules at stake</h4>${ruleList(q)}</div>`;
   html+=`<div class="nav">
       <button id="prev" ${state.cur===0&&FIRST===0?"disabled":""}>← Back</button>
       <button id="next">${state.cur===list.length-1?"Finish → Summary":"Next →"}</button>
@@ -781,9 +794,10 @@ function renderWalk(){
     b.onclick=()=>{
       const v=b.dataset.a, wasSet=state.answers[q.id]===v;
       if(wasSet) delete state.answers[q.id]; else state.answers[q.id]=v;
-      // a skip means "this doesn't apply" — move straight on rather than
-      // showing rules the person has just said are irrelevant to them
-      if(v==="Skipped" && !wasSet) return advance();
+      // every answer — Yes/No/Unsure and skip alike — moves straight on (fewer
+      // clicks, Santeri's call 2026-08-24; the rules now sit before the buttons).
+      // Clicking the already-selected answer unsets it and stays.
+      if(!wasSet) return advance();
       render();
     };
   });
