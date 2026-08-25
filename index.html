@@ -496,9 +496,9 @@
   .fnotes{margin:var(--s2) 0 0;padding-left:18px;max-width:820px;
     color:var(--slight);font-size:13px;line-height:1.6}
   .fnotes li{margin-top:6px}
-  /* the only rule on the page drawn straight on the ground, with no surface behind it */
-  .stamp{color:var(--ink-70);font-size:14px;margin:var(--s5) 0 0;
-    padding-top:var(--s3);border-top:1px solid var(--rule);max-width:880px}
+  /* Moved into the header band 2026-08-25 (mentors: not visible enough at the page
+     foot). Sits under the intro paragraph, same 690px measure, quieter than it. */
+  .stamp{color:rgba(35,28,87,.55);font-size:13px;margin:var(--s2) 0 0;max-width:690px}
 
   /* ── Small screens ─────────────────────────────────────────────────────── */
   @media(max-width:700px){
@@ -530,6 +530,7 @@
     <h1>Is a rule being broken?</h1>
     <p>Questions about a model deployed inside a frontier AI company, each tied to a specific requirement
     in law or in a company's own published safety framework.</p>
+    <p class="stamp" id="stamp"></p>
   </header>
 
   <div class="views">
@@ -541,7 +542,6 @@
   </div>
 
   <div id="pane"></div>
-  <p class="stamp" id="stamp"></p>
 </div>
 
 <script>
