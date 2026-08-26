@@ -501,6 +501,19 @@
     color:var(--accent-deep);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
   .linkbtn:hover{color:var(--accent)}
 
+  /* ── Start over ─────────────────────────────────────────────────────────── */
+  /* Wiping a run takes two clicks, so a stray one cannot lose twenty answers.
+     Quiet until armed; armed, it takes the "more concerning" red and says what
+     the second click does, so the warning is in the label and not in a dialog. */
+  .resetwrap{margin-top:var(--s3);padding-top:var(--s3);border-top:1px solid var(--ink-20)}
+  .summary .resetwrap{margin-top:var(--s3)}
+  .resetbtn{display:block;width:100%;text-align:left;font:inherit;font-size:13px;
+    background:none;color:var(--muted);border:1px solid var(--ink-20);border-radius:var(--r);
+    padding:7px 10px;cursor:pointer}
+  .resetbtn:hover{color:var(--ink);border-color:var(--rule)}
+  .resetbtn.arm{color:var(--more);border-color:var(--more);background:var(--more-bg)}
+  .locnote{font-size:13px;color:var(--muted);line-height:1.55;margin:var(--s3) 0 0}
+
   /* ── Sources ───────────────────────────────────────────────────────────── */
   /* The section headings above the three tables. They used to carry the same
      11px uppercase treatment as the column headers below them, so the two read as
@@ -724,12 +737,87 @@ function setView(v){
 }
 VIEWS.forEach(k=>$("#v-"+k).onclick=()=>setView(k));
 
+// ── The run is kept in this browser and nowhere else ──────────────────────────
+// No network, no account, no server: `localStorage` is the whole mechanism, so a
+// reload or a closed tab does not cost the reader their answers, and "Start over"
+// erases them. This does not weaken the 2026-07-31 collect-nothing stance — nothing
+// leaves the page — but the tool used to store *nothing*, which was stronger, so the
+// first screen says plainly what is kept and where.
+const SKEY="pivotal-rules-tool/v1";
+
+function save(){
+  try{
+    localStorage.setItem(SKEY,JSON.stringify({
+      v:1, view:state.view, cur:state.cur, mid:state.mid,
+      answers:state.answers, tracked:[...state.tracked]
+    }));
+  }catch(e){}   // private window, storage disabled, quota — the tool still works
+}
+function wipe(){ try{ localStorage.removeItem(SKEY); }catch(e){} }
+
+// Restoring is deliberately distrustful of what it reads. The question set and the
+// source list move between builds, so a stored run can name a question that was cut
+// or a company that was renamed; anything not in THIS build is dropped rather than
+// carried, and the position is clamped to what is actually shown.
+function restore(){
+  let raw=null;
+  try{ raw=localStorage.getItem(SKEY); }catch(e){ return; }
+  if(!raw) return;
+  let d; try{ d=JSON.parse(raw); }catch(e){ return wipe(); }
+  if(!d || d.v!==1) return wipe();
+  const qids=new Set(QS.map(q=>q.id));
+  if(d.answers && typeof d.answers==="object")
+    for(const k in d.answers) if(qids.has(k)) state.answers[k]=d.answers[k];
+  if(Array.isArray(d.tracked)){
+    const known=d.tracked.filter(id=>TRACK.some(t=>t.id===id));
+    // An empty stored selection would restore the reader straight into the
+    // empty state, so it is treated as no selection at all.
+    if(known.length) state.tracked=new Set(known);
+  }
+  if(VIEWS.includes(d.view)) state.view=d.view;
+  state.mid=!!d.mid;
+  if(Number.isInteger(d.cur))
+    state.cur=Math.max(FIRST,Math.min(d.cur,Math.max(0,shown().length-1)));
+}
+const hasRun=()=>Object.keys(state.answers).length>0 || state.tracked.size!==TRACK.length;
+
+function resetAll(){
+  wipe();
+  state.answers={}; state.tracked=new Set(TRACK.map(t=>t.id));
+  state.mid=false; state.revealRules=null; state.armReset=false;
+  state.cur=FIRST;
+  setView("walk");
+}
+function resetHTML(){
+  return `<div class="resetwrap"><button class="resetbtn${state.armReset?" arm":""}" id="resetBtn">${
+    state.armReset?"Click again to erase everything":"Start over"}</button></div>`;
+}
+function wireReset(){
+  const b=$("#resetBtn"); if(!b) return;
+  b.onclick=()=>{
+    if(state.armReset){ state.armReset=false; return resetAll(); }
+    state.armReset=true; render();
+    clearTimeout(state.armT);
+    // Disarm on its own, so a button left armed does not wipe a run on a click
+    // the reader makes minutes later meaning something else.
+    state.armT=setTimeout(()=>{ if(state.armReset){ state.armReset=false; render(); } },5000);
+  };
+}
+// ⚠ Claude placeholder copy, pending Santeri's wording — as with the picker lines.
+function localNoteHTML(){
+  return `<p class="locnote">Your answers are saved in this browser, so you can close the page and
+    come back to them. Nothing is sent anywhere.${hasRun()?" You can erase them at any time with the "+
+    "Start over button in the sidebar.":""}</p>`;
+}
+
 function render(){
   if(state.view==="walk") renderWalk();
   else if(state.view==="all") renderAll();
   else if(state.view==="sum") renderSum();
   else if(state.view==="meth") renderMeth();
   else renderSrc();
+  wireReset();
+  save();
 }
 
 // ── The company / law picker (intro page) ─────────────────────────────────────
@@ -798,7 +886,7 @@ function wireMini(){
 function renderWalk(){
   const list=shown();
   if(INTRO && state.cur===-2){
-    $("#pane").innerHTML=`<div class="card intro">${INTRO}${pickerHTML()}
+    $("#pane").innerHTML=`<div class="card intro">${INTRO}${pickerHTML()}${localNoteHTML()}
       <div class="nav"><span></span><button id="next">Start →</button></div></div>`;
     wirePicker();
     $("#next").onclick=()=>{state.cur=AFTER_INTRO;render();toTop();};
@@ -827,7 +915,7 @@ function renderWalk(){
     pane.innerHTML=`<div class="layout"><div><div class="card">
       <h2 class="q">No questions to show</h2>
       <p class="help" style="margin:0">Nothing is tracked — select at least one company or law.</p>
-      </div></div><aside>${trackboxHTML()}</aside></div>`;
+      </div></div><aside>${trackboxHTML()}${resetHTML()}</aside></div>`;
     wireMini();
     return;
   }
@@ -863,7 +951,7 @@ function renderWalk(){
     html+=`<div class="gi ${q.g===g.id?"cur":""}" data-g="${g.id}">
       <span class="gn">${esc(g.name)}</span><span class="gc">${done}/${qs.length}</span></div>`;
   });
-  html+=`</div>${trackboxHTML()}</aside></div>`;
+  html+=`</div>${trackboxHTML()}${resetHTML()}</aside></div>`;
   pane.innerHTML=html;
   if(revealRules){ state.revealRules=null; requestAnimationFrame(()=>smoothOpenDetails($("#rulesPanel"))); }
   wireMini();
@@ -956,7 +1044,8 @@ function renderSum(){
 
   if(!answered) html+=`<p class="help" style="margin:0">Nothing answered yet.</p>`;
 
-  html+=`<div class="note howto" style="margin-top:22px"><b>How to read the rules.</b>${HOWTOREAD}</div></div>`;
+  html+=`<div class="note howto" style="margin-top:22px"><b>How to read the rules.</b>${HOWTOREAD}</div>`;
+  html+=resetHTML()+`</div>`;
   html+=nextStepsHTML(answered);
   pane.innerHTML=html;
 }
@@ -1023,7 +1112,8 @@ function renderSrc(){
   </div>`;
 }
 
-render();
+restore();
+setView(state.view);
 </script>
 
 <!-- ============ FEEDBACK WIDGET ============
