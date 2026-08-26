@@ -314,6 +314,11 @@
     min-height:36px;border-radius:var(--r);border:1px solid var(--ink-50);
     background:var(--paper);color:var(--ink);cursor:pointer;transition:background .12s ease}
   .expandbar button:hover{background:var(--lav)}
+  /* The "change" control is a text link in a sentence, not a chip beside the two
+     chips. `.expandbar button` is more specific than `.linkbtn`, so without this it
+     wins and the link renders underlined inside a bordered box. */
+  .expandbar .linkbtn{border:none;background:none;padding:0;min-height:0;font-weight:inherit}
+  .expandbar .linkbtn:hover{background:none}
   .expandbar .sub{font-size:13px;color:var(--muted)}
 
   .ov-group{margin-bottom:var(--s4)}
