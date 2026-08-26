@@ -227,8 +227,8 @@
      carries rule bullets (.expl here, .si in the summary, .note) uses the same one — one
      fill, one meaning. Border moved --lav2 -> --rule: --lav2 against --lav measured
      1.11:1, i.e. the band had no visible edge at all. --rule gives it 1.55:1. */
-  /* Since 2026-08-24 the band is a <details>: the rules sit on every question BEFORE
-     it is answered (Santeri's call), and collapse so they are not a wall of text.
+  /* Since 2026-08-24 the band is a <details>: the rules sit on every question, and
+     collapse so they are not a wall of text.
      The summary line carries the old h4's eyebrow styling; the caret matches the
      All-questions rows. */
   .expl{margin-top:var(--s4);background:var(--lav);border:1px solid var(--rule);
@@ -247,8 +247,9 @@
   /* `.lead` is emitted by ruleList() in four different parents, so it is styled once
      here and only the summary's own top line overrides it (see .summary>.lead). */
   .lead{font-size:15px;line-height:1.65;margin:0 0 var(--s2);max-width:66ch}
-  /* sits between the question and the answer buttons */
-  .expl.pre{margin-top:var(--s1);margin-bottom:var(--s3)}
+  /* On question screens, the response controls come first; this stays available
+     below them without interrupting the answer flow. */
+  .expl.pre{margin-top:var(--s3);margin-bottom:0}
 
   ul.rlist{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:14px}
   ul.rlist li{font-size:15px;line-height:1.6;padding-left:18px;position:relative;max-width:70ch}
@@ -808,12 +809,12 @@ function renderWalk(){
     ${chips(q)}
     <h2 class="q">${esc(q.q)}</h2>
     ${q.help?`<p class="help">${esc(q.help)}</p>`:""}
-    <details class="expl pre"><summary>${q.anchor?"The thresholds":"The rules at stake"} · ${qRules(q).length}</summary>
-      <div class="explbody">${ruleList(q)}</div></details>
     <div class="opts">${["Yes","No","Unsure"].map(o=>`<button class="opt ${a===o?"sel":""}" data-a="${o}">${o}</button>`).join("")}</div>
     <div class="skiprow"><button class="skipbtn ${a==="Skipped"?"on":""}" data-a="Skipped">
       ${a==="Skipped"?"Skipped — this question doesn't apply. Click to un-skip.":"This question doesn't apply to my situation → skip it"}
-    </button></div>`;
+    </button></div>
+    <details class="expl pre"><summary>${q.anchor?"The thresholds":"The rules at stake"} · ${qRules(q).length}</summary>
+      <div class="explbody">${ruleList(q)}</div></details>`;
   html+=`<div class="nav">
       <button id="prev" ${state.cur===0&&FIRST===0?"disabled":""}>← Back</button>
       ${nextButton}
@@ -836,7 +837,7 @@ function renderWalk(){
       const v=b.dataset.a, wasSet=state.answers[q.id]===v;
       if(wasSet) delete state.answers[q.id]; else state.answers[q.id]=v;
       // every answer — Yes/No/Unsure and skip alike — moves straight on (fewer
-      // clicks, Santeri's call 2026-08-24; the rules now sit before the buttons).
+      // clicks, Santeri's call 2026-08-24).
       // Clicking the already-selected answer unsets it and stays.
       if(!wasSet) return advance();
       render();
