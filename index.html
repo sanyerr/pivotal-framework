@@ -277,6 +277,8 @@
   .nav button:hover:not(:disabled){background:var(--lav)}
   .nav button#next{background:var(--ink);color:var(--card);border-color:var(--ink)}
   .nav button#next:hover{background:var(--accent-deep);border-color:var(--accent-deep)}
+  .nav button#next.qnext{background:var(--card);color:var(--ink);border-color:var(--ink)}
+  .nav button#next.qnext:hover{background:var(--lav);border-color:var(--ink)}
   /* disabled at .35 opacity over a white card leaves the border at ~1.2:1, which is the
      correct reading — 1.4.11 exempts disabled controls — but --ink-20 on top of that was
      doubly faint. --ink-50 keeps the button findable while still reading as inert. */
@@ -798,6 +800,9 @@ function renderWalk(){
   }
   if(state.cur>=list.length) state.cur=Math.max(0,list.length-1);
   const q=list[state.cur], grp=GROUPS.find(g=>g.id===q.g), a=state.answers[q.id];
+  const nextButton=a!==undefined
+    ? `<button id="next" class="qnext">${state.cur===list.length-1?"Finish → Summary":"Next →"}</button>`
+    : "";
   let html=`<div class="layout"><div><div class="card">
     <div class="stage">${esc(grp.name)} · ${state.cur+1} of ${list.length}</div>
     ${chips(q)}
@@ -811,7 +816,7 @@ function renderWalk(){
     </button></div>`;
   html+=`<div class="nav">
       <button id="prev" ${state.cur===0&&FIRST===0?"disabled":""}>← Back</button>
-      <button id="next">${state.cur===list.length-1?"Finish → Summary":"Next →"}</button>
+      ${nextButton}
     </div></div></div>
     <aside><h2>Progress</h2>
     <p class="sub">${list.filter(x=>state.answers[x.id]!==undefined).length} of ${list.length} shown questions answered</p>
@@ -838,7 +843,7 @@ function renderWalk(){
     };
   });
   const pv=$("#prev"); if(pv) pv.onclick=back;
-  $("#next").onclick=advance;
+  const nx=$("#next"); if(nx) nx.onclick=advance;
   pane.querySelectorAll(".gi").forEach(el=>{
     el.onclick=()=>{ const i=shown().findIndex(x=>x.g===el.dataset.g); if(i>=0){state.mid=false;state.cur=i;render();toTop();} };
   });
