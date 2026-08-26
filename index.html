@@ -248,7 +248,7 @@
      here and only the summary's own top line overrides it (see .summary>.lead). */
   .lead{font-size:15px;line-height:1.65;margin:0 0 var(--s2);max-width:66ch}
   /* On question screens, the response controls come first; this stays available
-     below them without interrupting the answer flow. */
+     before the "doesn't apply" escape hatch without interrupting the answer flow. */
   .expl.pre{margin-top:var(--s3);margin-bottom:0}
 
   ul.rlist{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:14px}
@@ -676,6 +676,38 @@ function ruleList(q){
   return `${q.anchor?`<p class="lead">${esc(THRESHOLD_PREAMBLE)}</p>`:""}
     ${q.lead?`<p class="lead">${esc(q.lead)}</p>`:""}${body}`;
 }
+function consequentialAnswer(q,a){
+  return a!==undefined && a!=="Skipped" && (
+    (q.anchor && a==="Yes") ||
+    (q.flag && a===q.flag)
+  );
+}
+function smoothOpenDetails(d){
+  const body=d&&d.querySelector(".explbody");
+  if(!d || !body){ if(d) d.open=true; return; }
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){ d.open=true; return; }
+  d.open=true;
+  const cs=getComputedStyle(body), pt=cs.paddingTop, pb=cs.paddingBottom, target=body.scrollHeight;
+  body.style.overflow="hidden";
+  body.style.maxHeight="0px";
+  body.style.opacity="0";
+  body.style.paddingTop="0px";
+  body.style.paddingBottom="0px";
+  body.offsetHeight;
+  body.style.transition="max-height .24s ease, opacity .18s ease, padding-top .24s ease, padding-bottom .24s ease";
+  body.style.maxHeight=target+"px";
+  body.style.opacity="1";
+  body.style.paddingTop=pt;
+  body.style.paddingBottom=pb;
+  body.addEventListener("transitionend",()=>{
+    body.style.overflow="";
+    body.style.maxHeight="";
+    body.style.opacity="";
+    body.style.paddingTop="";
+    body.style.paddingBottom="";
+    body.style.transition="";
+  },{once:true});
+}
 function chips(q){
   if(q.fu) return `<span class="gatechip fuchip">Follow-up</span> `;
   if(q.gate) return `<span class="gatechip">Asked because of a capability answer</span> `;
@@ -801,6 +833,8 @@ function renderWalk(){
   }
   if(state.cur>=list.length) state.cur=Math.max(0,list.length-1);
   const q=list[state.cur], grp=GROUPS.find(g=>g.id===q.g), a=state.answers[q.id];
+  const revealRules=state.revealRules===q.id && consequentialAnswer(q,a);
+  const rulesOpen=consequentialAnswer(q,a) && !revealRules;
   const nextButton=a!==undefined
     ? `<button id="next" class="qnext">${state.cur===list.length-1?"Finish → Summary":"Next →"}</button>`
     : "";
@@ -810,11 +844,11 @@ function renderWalk(){
     <h2 class="q">${esc(q.q)}</h2>
     ${q.help?`<p class="help">${esc(q.help)}</p>`:""}
     <div class="opts">${["Yes","No","Unsure"].map(o=>`<button class="opt ${a===o?"sel":""}" data-a="${o}">${o}</button>`).join("")}</div>
+    <details id="rulesPanel" class="expl pre" ${rulesOpen?"open":""}><summary>${q.anchor?"The thresholds":"The rules at stake"} · ${qRules(q).length}</summary>
+      <div class="explbody">${ruleList(q)}</div></details>
     <div class="skiprow"><button class="skipbtn ${a==="Skipped"?"on":""}" data-a="Skipped">
       ${a==="Skipped"?"Skipped — this question doesn't apply. Click to un-skip.":"This question doesn't apply to my situation → skip it"}
-    </button></div>
-    <details class="expl pre"><summary>${q.anchor?"The thresholds":"The rules at stake"} · ${qRules(q).length}</summary>
-      <div class="explbody">${ruleList(q)}</div></details>`;
+    </button></div>`;
   html+=`<div class="nav">
       <button id="prev" ${state.cur===0&&FIRST===0?"disabled":""}>← Back</button>
       ${nextButton}
@@ -831,15 +865,16 @@ function renderWalk(){
   });
   html+=`</div>${trackboxHTML()}</aside></div>`;
   pane.innerHTML=html;
+  if(revealRules){ state.revealRules=null; requestAnimationFrame(()=>smoothOpenDetails($("#rulesPanel"))); }
   wireMini();
   pane.querySelectorAll("button.opt,button.skipbtn").forEach(b=>{
     b.onclick=()=>{
       const v=b.dataset.a, wasSet=state.answers[q.id]===v;
       if(wasSet) delete state.answers[q.id]; else state.answers[q.id]=v;
-      // every answer — Yes/No/Unsure and skip alike — moves straight on (fewer
-      // clicks, Santeri's call 2026-08-24).
-      // Clicking the already-selected answer unsets it and stays.
-      if(!wasSet) return advance();
+      // Skip still skips ahead. The ordinary answers keep the user on the
+      // question; consequential answers open the rules box instead.
+      if(!wasSet && v==="Skipped"){ state.revealRules=null; return advance(); }
+      if(!wasSet) state.revealRules=consequentialAnswer(q,v)?q.id:null;
       render();
     };
   });
