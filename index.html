@@ -152,11 +152,11 @@
      MEASURE is capped inside them instead. That split — wide frame, narrow measure —
      is AIWI's own: their .wrap is 1200–1425px while .sec-head inside it is
      max-width:720px and left-aligned, and their body copy blocks are 690px.
-     The three sidebar-less views (intro, summary, sources) therefore sit on the SAME
-     column the walkthrough card occupies — derived from the grid above rather than
-     restated, so the two can never drift apart. The All-questions list left this rule
-     on 2026-08-27 when it gained a sidebar of its own: it is inside .layout now, so
-     the grid gives it the same column directly. */
+     The two sidebar-less views (intro, sources) therefore sit on the SAME column the
+     walkthrough card occupies — derived from the grid above rather than restated, so
+     the two can never drift apart. All questions and the summary left this rule on
+     2026-08-27 when they gained sidebars of their own: both are inside .layout now,
+     so the grid gives them the same column directly. */
   #pane>.card{max-width:calc(100% - 380px - var(--s6))}
   @media(max-width:1080px){#pane>.card{max-width:none}}
 
@@ -998,7 +998,24 @@ function renderAll(){
   wireMini();
 }
 
+// Carries the same tracking sidebar as the walkthrough and All questions, so the
+// selection can be changed from the results screen rather than only from the picker.
+// Santeri's call, 2026-08-27.
 function renderSum(){
+  const aside=`<aside>${trackboxHTML("The questions are filtered by what companies and laws you track. Change your selection here.")}</aside>`;
+  // With nothing tracked the lead would read "0 of 0 questions answered" and the
+  // no-answers line would claim nothing was answered — but the answers are still
+  // stored, it is the filter that emptied the view. So say that instead.
+  if(!state.tracked.size){
+    pane.innerHTML=`<div class="layout"><div><div class="card summary">
+      <div class="stage">Summary</div>
+      <p class="help" style="margin:0">Nothing selected — pick at least one company or law to see your
+        results.</p>
+      <div class="note howto" style="margin-top:22px"><b>How to read the rules.</b>${HOWTOREAD}</div>
+      ${resetHTML()}</div></div>${aside}</div>`;
+    wireMini();
+    return;
+  }
   const list=shown(), ans=q=>state.answers[q.id];
   const flagged = list.filter(q=>q.flag && ans(q)===q.flag);
   const unsure  = list.filter(q=>ans(q)==="Unsure" && q.flag);
@@ -1051,7 +1068,8 @@ function renderSum(){
   html+=`<div class="note howto" style="margin-top:22px"><b>How to read the rules.</b>${HOWTOREAD}</div>`;
   html+=resetHTML()+`</div>`;
   html+=nextStepsHTML(answered);
-  pane.innerHTML=html;
+  pane.innerHTML=`<div class="layout"><div>${html}</div>${aside}</div>`;
+  wireMini();
 }
 
 // The ending. State-agnostic by design: the same steps show whatever the answers
