@@ -506,17 +506,12 @@
   .linkbtn:hover{color:var(--accent)}
 
   /* ── Clear my answers ───────────────────────────────────────────────────── */
-  /* Clearing takes two clicks, so a stray one cannot lose twenty answers. It is a
-     quiet text link rather than a button: a rare, destructive escape hatch should
-     not carry the same visual weight as the tracking filters above it. Between the
-     two clicks it turns the "more concerning" red and says what the second click
-     does — the warning lives in the label, so there is no dialog to style. */
-  .resetwrap{margin-top:var(--s3);padding-top:var(--s3);border-top:1px solid var(--ink-20)}
-  .summary .resetwrap{margin-top:var(--s3)}
-  .resetbtn{background:none;border:none;padding:0;font:inherit;font-size:13px;text-align:left;
-    color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
-  .resetbtn:hover{color:var(--ink)}
-  .resetbtn.arm{color:var(--more);text-decoration-color:var(--more)}
+  /* A persistent top-level action, kept slightly larger than the view tabs. Clearing
+     still takes two clicks; the armed state supplies the destructive warning without
+     opening a dialog. */
+  .views button.resetbtn{padding:9px 18px;min-height:40px;border-width:1.5px}
+  .views button.resetbtn.arm{background:var(--more);border-color:var(--more);color:var(--card)}
+  .views button.resetbtn.arm:hover{background:var(--more);border-color:var(--more)}
 
   /* ── Sources ───────────────────────────────────────────────────────────── */
   /* The section headings above the three tables. They used to carry the same
@@ -595,6 +590,7 @@
     <button id="v-sum">Summary</button>
     <button id="v-src">Sources</button>
     <button id="v-meth">Methodology</button>
+    <button id="resetBtn" class="resetbtn">Clear my answers</button>
   </div>
 
   <div id="pane"></div>
@@ -791,19 +787,21 @@ function resetAll(){
   state.cur=FIRST;
   setView("walk");
 }
-function resetHTML(){
-  return `<div class="resetwrap"><button class="resetbtn${state.armReset?" arm":""}" id="resetBtn">${
-    state.armReset?"Click again to clear everything":"Clear my answers"}</button></div>`;
+function syncReset(){
+  const b=$("#resetBtn"); if(!b) return;
+  b.classList.toggle("arm",!!state.armReset);
+  b.textContent=state.armReset?"Click again to clear everything":"Clear my answers";
 }
 function wireReset(){
   const b=$("#resetBtn"); if(!b) return;
+  syncReset();
   b.onclick=()=>{
     if(state.armReset){ state.armReset=false; return resetAll(); }
-    state.armReset=true; render();
+    state.armReset=true; syncReset();
     clearTimeout(state.armT);
     // Disarm on its own, so a button left armed does not wipe a run on a click
     // the reader makes minutes later meaning something else.
-    state.armT=setTimeout(()=>{ if(state.armReset){ state.armReset=false; render(); } },5000);
+    state.armT=setTimeout(()=>{ if(state.armReset){ state.armReset=false; syncReset(); } },5000);
   };
 }
 
@@ -911,7 +909,7 @@ function renderWalk(){
     pane.innerHTML=`<div class="layout"><div><div class="card">
       <h2 class="q">No questions to show</h2>
       <p class="help" style="margin:0">Nothing selected — pick at least one company or law to start.</p>
-      </div></div><aside>${trackboxHTML()}${resetHTML()}</aside></div>`;
+      </div></div><aside>${trackboxHTML()}</aside></div>`;
     wireMini();
     return;
   }
@@ -947,7 +945,7 @@ function renderWalk(){
     html+=`<div class="gi ${q.g===g.id?"cur":""}" data-g="${g.id}">
       <span class="gn">${esc(g.name)}</span><span class="gc">${done}/${qs.length}</span></div>`;
   });
-  html+=`</div>${trackboxHTML()}${resetHTML()}</aside></div>`;
+  html+=`</div>${trackboxHTML()}</aside></div>`;
   pane.innerHTML=html;
   if(revealRules){ state.revealRules=null; requestAnimationFrame(()=>smoothOpenDetails($("#rulesPanel"))); }
   wireMini();
@@ -1014,7 +1012,7 @@ function renderSum(){
       <p class="help" style="margin:0">Nothing selected — pick at least one company or law to see your
         results.</p>
       <div class="note howto" style="margin-top:22px"><b>How to read the rules.</b>${HOWTOREAD}</div>
-      ${resetHTML()}</div></div>${aside}</div>`;
+      </div></div>${aside}</div>`;
     wireMini();
     return;
   }
@@ -1067,7 +1065,7 @@ function renderSum(){
   if(!answered) html+=`<p class="help" style="margin:0">Nothing answered yet.</p>`;
 
   html+=`<div class="note howto" style="margin-top:22px"><b>How to read the rules.</b>${HOWTOREAD}</div>`;
-  html+=resetHTML()+`</div>`;
+  html+=`</div>`;
   html+=nextStepsHTML(answered);
   pane.innerHTML=`<div class="layout"><div>${html}</div>${aside}</div>`;
   wireMini();
