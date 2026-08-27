@@ -910,7 +910,7 @@ function renderWalk(){
   if(!list.length){
     pane.innerHTML=`<div class="layout"><div><div class="card">
       <h2 class="q">No questions to show</h2>
-      <p class="help" style="margin:0">Nothing is tracked — select at least one company or law.</p>
+      <p class="help" style="margin:0">Nothing selected — pick at least one company or law to start.</p>
       </div></div><aside>${trackboxHTML()}${resetHTML()}</aside></div>`;
     wireMini();
     return;
@@ -971,6 +971,15 @@ function renderWalk(){
 
 function renderAll(){
   const off=TRACK.length-state.tracked.size;
+  if(!state.tracked.size){
+    pane.innerHTML=`<div class="card">
+      <h2 class="q">No questions to show</h2>
+      <p class="help" style="margin:0 0 var(--s2)">Nothing selected — pick at least one company or law
+        to start.</p>
+      <button class="linkbtn" id="allTrack">Choose sources</button></div>`;
+    $("#allTrack").onclick=()=>{state.mid=false;state.cur=FIRST;setView("walk");};
+    return;
+  }
   let html=`<div class="expandbar"><button id="ex-all">Expand all</button><button id="col-all">Collapse all</button>${
     off?`<span class="sub">Filtered to what you track · <button class="linkbtn" id="allTrack">change</button></span>`:""}</div>`;
   GROUPS.forEach(g=>{
