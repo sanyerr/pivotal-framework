@@ -1133,6 +1133,10 @@ function renderSrc(){
       ${SOURCES.filter(r=>r[0]==="Framework").map(row).join("")}</tbody></table>
     ${FOOTNOTES.length?`<ol class="fnotes">${FOOTNOTES.map(t=>`<li>${esc(t)}</li>`).join("")}</ol>`:""}
     <h4 style="margin:34px 0 2px">Categorization</h4>
+    <p class="help" style="margin:8px 0 0">We used the document below as a basis for our categories.
+    The categories were then modified to include questions from law that did not fit in any of METR's
+    categories, and some of METR's categories were combined to avoid categories with too few
+    questions.</p>
     <table class="srcgrid">${head("Publisher","Document","Published")}<tbody>
       ${SOURCES.filter(r=>r[0]==="Taxonomy").map(row).join("")}</tbody></table>
   </div>`;
