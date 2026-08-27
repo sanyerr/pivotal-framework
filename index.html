@@ -152,11 +152,13 @@
      MEASURE is capped inside them instead. That split — wide frame, narrow measure —
      is AIWI's own: their .wrap is 1200–1425px while .sec-head inside it is
      max-width:720px and left-aligned, and their body copy blocks are 690px.
-     The three sidebar-less views (intro, summary, sources) and the All-questions list
-     therefore sit on the SAME column the walkthrough card occupies — derived from the
-     grid above rather than restated, so the two can never drift apart. */
-  #pane>.card,#pane>.expandbar,#pane>.ov-group{max-width:calc(100% - 380px - var(--s6))}
-  @media(max-width:1080px){#pane>.card,#pane>.expandbar,#pane>.ov-group{max-width:none}}
+     The three sidebar-less views (intro, summary, sources) therefore sit on the SAME
+     column the walkthrough card occupies — derived from the grid above rather than
+     restated, so the two can never drift apart. The All-questions list left this rule
+     on 2026-08-27 when it gained a sidebar of its own: it is inside .layout now, so
+     the grid gives it the same column directly. */
+  #pane>.card{max-width:calc(100% - 380px - var(--s6))}
+  @media(max-width:1080px){#pane>.card{max-width:none}}
 
   /* ── Eyebrow / label system ────────────────────────────────────────────── */
   /* [3rd] .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;
@@ -314,12 +316,6 @@
     min-height:36px;border-radius:var(--r);border:1px solid var(--ink-50);
     background:var(--paper);color:var(--ink);cursor:pointer;transition:background .12s ease}
   .expandbar button:hover{background:var(--lav)}
-  /* The "change" control is a text link in a sentence, not a chip beside the two
-     chips. `.expandbar button` is more specific than `.linkbtn`, so without this it
-     wins and the link renders underlined inside a bordered box. */
-  .expandbar .linkbtn{border:none;background:none;padding:0;min-height:0;font-weight:inherit}
-  .expandbar .linkbtn:hover{background:none}
-  .expandbar .sub{font-size:13px;color:var(--muted)}
 
   .ov-group{margin-bottom:var(--s4)}
   details.sec{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);
@@ -489,9 +485,11 @@
   .pk-count b{color:var(--ink)}
 
   /* sidebar "Tracking" block: the picker's tiles at sidebar scale, directly
-     toggleable, plus the link-shaped button the All-questions notice uses */
+     toggleable. Used by the walkthrough and, since 2026-08-27, by All questions,
+     which passes a note explaining what the tiles do. */
   .trackbox{margin-top:var(--s3);padding-top:var(--s3);border-top:1px solid var(--ink-20);
     font-size:13px;color:var(--muted);line-height:1.5}
+  .tb-note{margin:8px 0 0}
   .tracklist{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:10px}
   button.ptm{display:flex;align-items:center;gap:7px;text-align:left;font:inherit;font-size:12px;
     font-weight:500;color:var(--card);background:var(--ink);border:1px solid var(--ink);
@@ -863,8 +861,8 @@ function miniTile(t){
   return `<button class="ptm ${on?"":"off"}" data-t="${t.id}" aria-pressed="${on}" title="${esc(t.sub)}">
     ${t.logo?`<span class="pt-logo">${t.logo}</span>`:""}<span class="ptm-n">${esc(t.name)}</span></button>`;
 }
-function trackboxHTML(){
-  return `<div class="trackbox"><h2>Tracking</h2>
+function trackboxHTML(note){
+  return `<div class="trackbox"><h2>Tracking</h2>${note?`<p class="tb-note">${note}</p>`:""}
     <div class="tracklist">${TRACK.map(miniTile).join("")}</div></div>`;
 }
 function wireMini(){
@@ -969,19 +967,20 @@ function renderWalk(){
   });
 }
 
+// The tab carries the walkthrough's own tracking tiles in a sidebar rather than a
+// notice linking back to the first page: the reader changes the selection where they
+// are reading, and the list re-renders under them. Santeri's call, 2026-08-27.
 function renderAll(){
-  const off=TRACK.length-state.tracked.size;
+  const aside=`<aside>${trackboxHTML("The questions are filtered by what companies and laws you track. Change your selection here.")}</aside>`;
   if(!state.tracked.size){
-    pane.innerHTML=`<div class="card">
+    pane.innerHTML=`<div class="layout"><div><div class="card">
       <h2 class="q">No questions to show</h2>
-      <p class="help" style="margin:0 0 var(--s2)">Nothing selected — pick at least one company or law
-        to start.</p>
-      <button class="linkbtn" id="allTrack">Choose sources</button></div>`;
-    $("#allTrack").onclick=()=>{state.mid=false;state.cur=FIRST;setView("walk");};
+      <p class="help" style="margin:0">Nothing selected — pick at least one company or law to start.</p>
+      </div></div>${aside}</div>`;
+    wireMini();
     return;
   }
-  let html=`<div class="expandbar"><button id="ex-all">Expand all</button><button id="col-all">Collapse all</button>${
-    off?`<span class="sub">Filtered to what you track · <button class="linkbtn" id="allTrack">change</button></span>`:""}</div>`;
+  let html=`<div class="expandbar"><button id="ex-all">Expand all</button><button id="col-all">Collapse all</button></div>`;
   GROUPS.forEach(g=>{
     const qs=QS.filter(x=>x.g===g.id&&qRules(x).length);
     if(!qs.length) return;
@@ -993,10 +992,10 @@ function renderAll(){
     });
     html+=`</div></details></div>`;
   });
-  pane.innerHTML=html;
+  pane.innerHTML=`<div class="layout"><div>${html}</div>${aside}</div>`;
   $("#ex-all").onclick=()=>pane.querySelectorAll("details.oq").forEach(d=>d.open=true);
   $("#col-all").onclick=()=>pane.querySelectorAll("details.oq").forEach(d=>d.open=false);
-  const at=$("#allTrack"); if(at) at.onclick=()=>{state.mid=false;state.cur=FIRST;setView("walk");};
+  wireMini();
 }
 
 function renderSum(){
