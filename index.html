@@ -1101,8 +1101,13 @@ function renderSrc(){
     <div class="note" style="margin:16px 0 4px"><b>AI use disclaimer:</b> The sources to the questions are
     derived using AI, and not every source is yet fully verified. The questions themselves along with
     explanations are human-written.</div>
-    <div class="note" style="margin:10px 0 4px"><b>On internal deployment:</b> The extent to which these
-    provisions apply to internally deployed models varies, and is often unclear.</div>
+    <div class="note" style="margin:10px 0 4px"><b>On internal deployment:</b> The extent to which the
+    provisions in these documents apply to internally deployed models varies, and is often unclear. This is
+    especially true for the EU AI Act and the Code of Practice, but there are
+    <a href="https://www.apolloresearch.ai/governance/internal-deployment-eu-ai-act" target="_blank"
+    rel="noopener noreferrer">several ways</a> to interpret the Act that support including internal
+    deployment. We include EU AI Act and CoP provisions where they are relevant for loss of control risk,
+    but they are marked <i>"whether internal-only use counts is contested"</i>.</div>
     <h4 style="margin:26px 0 2px">Law and regulatory instruments</h4>
     <table class="srcgrid">${head("Jurisdiction","Instrument","Date")}<tbody>
       ${SOURCES.filter(r=>r[0]==="Law").map(row).join("")}</tbody></table>
